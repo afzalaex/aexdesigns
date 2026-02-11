@@ -1,6 +1,5 @@
 import "server-only";
 
-import { cache } from "react";
 import { Client, isFullBlock, isFullPage } from "@notionhq/client";
 import type {
   BlockObjectResponse,
@@ -347,7 +346,7 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
   return dedupeRoutes(routes);
 }
 
-export const getRoutes = cache(async (): Promise<RouteEntry[]> => {
+export async function getRoutes(): Promise<RouteEntry[]> {
   const cachedRoutes = readTimedCache(routesCache);
   if (cachedRoutes) {
     return cachedRoutes;
@@ -376,7 +375,7 @@ export const getRoutes = cache(async (): Promise<RouteEntry[]> => {
   }
 
   return routes;
-});
+}
 
 async function hydrateChildBlocks(blocks: NotionBlock[]): Promise<void> {
   const withChildren = blocks.filter((block) => block.has_children);
@@ -436,51 +435,49 @@ async function loadBlocks(blockId: string): Promise<NotionBlock[]> {
   return blocks;
 }
 
-export const getPageBySlug = cache(
-  async (slugInput: string): Promise<NotionPageData | null> => {
-    const slug = normalizeSlug(slugInput);
-    const cachedPage = readTimedCache(pageCache.get(slug));
-    if (cachedPage !== undefined) {
-      return cachedPage;
-    }
-
-    const routes = await getRoutes();
-    const route = routes.find((entry) => entry.slug === slug);
-
-    if (!route) {
-      if (notionCacheTtlMs > 0) {
-        pageCache.set(slug, createTimedCacheEntry(null));
-      }
-      return null;
-    }
-
-    const client = getNotionClient();
-    const pageResponse = await client.pages.retrieve({ page_id: route.pageId });
-
-    if (!isFullPage(pageResponse) || pageResponse.object !== "page") {
-      return null;
-    }
-
-    const blocks = await loadBlocks(route.pageId);
-
-    const page: NotionPageData = {
-      id: pageResponse.id,
-      slug: route.slug,
-      title: route.title ?? extractTitle(pageResponse),
-      description: route.description ?? extractDescription(pageResponse),
-      lastEditedTime: pageResponse.last_edited_time,
-      blocks,
-    };
-
-    if (notionCacheTtlMs > 0) {
-      pageCache.set(slug, createTimedCacheEntry(page));
-    }
-
-    return page;
+export async function getPageBySlug(slugInput: string): Promise<NotionPageData | null> {
+  const slug = normalizeSlug(slugInput);
+  const cachedPage = readTimedCache(pageCache.get(slug));
+  if (cachedPage !== undefined) {
+    return cachedPage;
   }
-);
 
-export const getAllSlugs = cache(async (): Promise<string[]> => {
+  const routes = await getRoutes();
+  const route = routes.find((entry) => entry.slug === slug);
+
+  if (!route) {
+    if (notionCacheTtlMs > 0) {
+      pageCache.set(slug, createTimedCacheEntry(null));
+    }
+    return null;
+  }
+
+  const client = getNotionClient();
+  const pageResponse = await client.pages.retrieve({ page_id: route.pageId });
+
+  if (!isFullPage(pageResponse) || pageResponse.object !== "page") {
+    return null;
+  }
+
+  const blocks = await loadBlocks(route.pageId);
+
+  const page: NotionPageData = {
+    id: pageResponse.id,
+    slug: route.slug,
+    title: route.title ?? extractTitle(pageResponse),
+    description: route.description ?? extractDescription(pageResponse),
+    lastEditedTime: pageResponse.last_edited_time,
+    blocks,
+  };
+
+  if (notionCacheTtlMs > 0) {
+    pageCache.set(slug, createTimedCacheEntry(page));
+  }
+
+  return page;
+}
+
+export async function getAllSlugs(): Promise<string[]> {
   const routes = await getRoutes();
   return routes.map((route) => route.slug);
-});
+}
