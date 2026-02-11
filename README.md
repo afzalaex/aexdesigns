@@ -4,6 +4,7 @@ Public website built with Next.js and Notion as the CMS layer.
 
 ## Project Overview
 - Runtime: Next.js App Router with TypeScript
+- Node runtime baseline: `>=20.19.0` (`.nvmrc` included)
 - Content source: Notion API via `@notionhq/client`
 - Hosting target: Vercel
 - Primary behavior: dynamic page rendering from Notion routes and blocks
