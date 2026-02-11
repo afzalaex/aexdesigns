@@ -40,6 +40,10 @@ Public website built with Next.js and Notion as the CMS layer.
   - `NOTION_CACHE_TTL_SECONDS`
   - `SITE_URL`
 
-## Repository Notes
-- `README.md` is intentionally overview-only.
-- Operational setup/run/deploy instructions are maintained in local `instructions.md` (git-ignored).
+## Basic Operations
+- Install dependencies: `npm install`
+- Set runtime env values in `.env.local` (minimum: `NOTION_TOKEN`, `SITE_URL`)
+- Run development server: `npm run dev`
+- Run type checks: `npm run typecheck`
+- Build production bundle: `npm run build`
+- Run production server: `npm run start`
