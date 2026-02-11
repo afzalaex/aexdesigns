@@ -1,46 +1,45 @@
 # aexdesigns
 
-Public website powered by Next.js and Notion content.
+Public website built with Next.js and Notion as the CMS layer.
 
-## Summary
-- Framework: Next.js (App Router) + TypeScript
-- CMS: Notion API (`@notionhq/client`)
+## Project Overview
+- Runtime: Next.js App Router with TypeScript
+- Content source: Notion API via `@notionhq/client`
 - Hosting target: Vercel
-- Routing: dynamic pages from Notion (database mode or static route map)
+- Primary behavior: dynamic page rendering from Notion routes and blocks
 
-## Quick Start
-1. Install dependencies:
-   - `npm install`
-2. Create a local env file:
-   - `.env.local`
-3. Add required values:
-   - `NOTION_TOKEN`
-   - `SITE_URL` (for local use `http://localhost:3000`, for prod use your domain)
-4. Start dev server:
-   - `npm run dev`
-5. Open:
-   - `http://localhost:3000`
+## Architecture
+- `lib/notion.ts` handles route resolution, page fetch, block fetch, and normalization.
+- `app/page.tsx` serves `/` from Notion data.
+- `app/[...slug]/page.tsx` serves dynamic routes and static params generation.
+- `components/NotionRenderer.tsx` renders Notion blocks into local UI components.
+- `components/TypeTester.tsx` provides the native type tester experience.
+- `components/SitePage.tsx` provides page shell and page-specific top actions.
+- `app/globals.css` contains local global styles and component-level class styling.
 
-## Common Scripts
-- `npm run dev` - run local dev server
-- `npm run build` - production build
-- `npm run start` - run production server
-- `npm run typecheck` - TypeScript check
-- `npm run seed:route-map` - seed route map from sitemap
-- `npm run fill:route-map-live` - fill route map page IDs from live site
+## Routing and Content Model
+- Supports database-driven route publishing through Notion properties.
+- Supports static slug mapping through `content/route-map.json`.
+- Hidden tester routes (`-type-tester`) are excluded from child-page navigation output.
+- Type tester placement is marker-driven from Notion paragraph content.
 
-## Env Variables
-- `NOTION_TOKEN`
-- `NOTION_DATABASE_ID` (optional, database mode)
-- `NOTION_HOME_PAGE_ID` (optional)
-- `NOTION_SLUG_PROPERTY` (optional, default `Slug`)
-- `NOTION_PUBLISHED_PROPERTY` (optional, default `Published`)
-- `NOTION_DESCRIPTION_PROPERTY` (optional, default `Description`)
-- `NOTION_CACHE_TTL_SECONDS` (optional, default `60`)
-- `SITE_URL`
+## Runtime Characteristics
+- Server-side route/page helpers are memoized with React `cache`.
+- Additional TTL memory cache is applied for route/page payloads (`NOTION_CACHE_TTL_SECONDS`).
+- Nested block fetch is parallelized with bounded concurrency for deep page trees.
+- Internal navigation is wired through Next.js `Link` for client-side transitions.
 
-## Deploy
-1. Push to GitHub.
-2. Import repo in Vercel.
-3. Set env vars in Vercel.
-4. Deploy.
+## Technical Configuration Surface
+- Environment variables used by runtime:
+  - `NOTION_TOKEN`
+  - `NOTION_DATABASE_ID`
+  - `NOTION_HOME_PAGE_ID`
+  - `NOTION_SLUG_PROPERTY`
+  - `NOTION_PUBLISHED_PROPERTY`
+  - `NOTION_DESCRIPTION_PROPERTY`
+  - `NOTION_CACHE_TTL_SECONDS`
+  - `SITE_URL`
+
+## Repository Notes
+- `README.md` is intentionally overview-only.
+- Operational setup/run/deploy instructions are maintained in local `instructions.md` (git-ignored).
