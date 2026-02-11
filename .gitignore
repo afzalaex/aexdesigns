@@ -3,9 +3,8 @@ node_modules
 out
 coverage
 
-# Environment files (keep template only)
+# Environment files
 .env*
-!.env.example
 
 # Local tool state
 .vercel
@@ -30,3 +29,8 @@ pnpm-debug.log*
 *.pfx
 *.jks
 .npmrc
+
+# Local process docs (not for public repo)
+MIGRATION_HANDOFF.md
+MIGRATION_RULES.md
+instructions.md
