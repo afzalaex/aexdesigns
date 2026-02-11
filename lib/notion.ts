@@ -42,7 +42,7 @@ const slugPropertyName = process.env.NOTION_SLUG_PROPERTY ?? "Slug";
 const publishedPropertyName = process.env.NOTION_PUBLISHED_PROPERTY ?? "Published";
 const descriptionPropertyName =
   process.env.NOTION_DESCRIPTION_PROPERTY ?? "Description";
-const rawCacheTtlSeconds = Number(process.env.NOTION_CACHE_TTL_SECONDS ?? "60");
+const rawCacheTtlSeconds = Number(process.env.NOTION_CACHE_TTL_SECONDS ?? "0");
 const notionCacheTtlSeconds =
   Number.isFinite(rawCacheTtlSeconds) && rawCacheTtlSeconds >= 0
     ? rawCacheTtlSeconds

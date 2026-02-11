@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { SitePage } from "@/components/SitePage";
 import { getPageBySlug, getSiteUrl } from "@/lib/notion";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/");

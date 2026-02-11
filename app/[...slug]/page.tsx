@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SitePage } from "@/components/SitePage";
-import { getAllSlugs, getPageBySlug, getSiteUrl, slugFromSegments } from "@/lib/notion";
+import { getPageBySlug, getSiteUrl, slugFromSegments } from "@/lib/notion";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type Params = {
   slug?: string[];
@@ -12,16 +13,6 @@ type Params = {
 type PageProps = {
   params: Promise<Params>;
 };
-
-export async function generateStaticParams() {
-  const slugs = await getAllSlugs();
-
-  return slugs
-    .filter((slug) => slug !== "/")
-    .map((slug) => ({
-      slug: slug.split("/").filter(Boolean),
-    }));
-}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
