@@ -11,9 +11,12 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "seed:route-map": "node scripts/seed-route-map-from-sitemap.mjs",
-    "fill:route-map-live": "node scripts/fill-route-map-from-live-site.mjs"
+    "fill:route-map-live": "node scripts/fill-route-map-from-live-site.mjs",
+    "migrate:images:r2": "node scripts/migrate-notion-images-to-r2.mjs",
+    "migrate:images:r2:write": "node scripts/migrate-notion-images-to-r2.mjs --write"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.888.0",
     "@notionhq/client": "^2.3.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
