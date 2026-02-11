@@ -557,7 +557,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
       const src =
         block.image.type === "external"
           ? block.image.external.url
-          : block.image.file.url;
+          : `/api/notion-image/${encodeURIComponent(block.id)}`;
       const captionText = joinRichText(block.image.caption).trim();
 
       return (
