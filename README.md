@@ -79,6 +79,7 @@ Home page setup:
    - `NOTION_SLUG_PROPERTY` (optional)
    - `NOTION_PUBLISHED_PROPERTY` (optional)
    - `NOTION_DESCRIPTION_PROPERTY` (optional)
+   - `NOTION_CACHE_TTL_SECONDS` (optional, default `60`)
    - `SITE_URL` (set to `https://aex.design`)
 4. Deploy preview.
 5. Verify URLs.

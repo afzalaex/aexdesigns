@@ -24,6 +24,8 @@ export function SiteNav() {
                 width={80}
                 height={55}
                 decoding="async"
+                loading="eager"
+                fetchPriority="high"
                 style={{ color: "transparent", objectFit: "contain", objectPosition: "left" }}
                 src={LOGO_SRC}
               />
