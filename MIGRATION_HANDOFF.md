@@ -16,6 +16,9 @@ Project path: C:\Users\AMD\projects\aex-site
 - Super-hosted CSS and Super CDN dependencies have been removed.
 - Class naming is now neutral (`site-*`, no `super-*` classes in app/components).
 - Homepage is visually tuned and currently accepted as baseline.
+- Internal site navigation now uses Next.js `Link` (client-side routing) for homepage logo, child pages, and internal rich-text links.
+- Notion block loading is now concurrent (bounded worker pool) to reduce deep-page fetch latency.
+- Runtime TTL cache was added for routes/pages in `lib/notion.ts` (default `60s`, configurable via `NOTION_CACHE_TTL_SECONDS`).
 - Top-action links/buttons are implemented for:
   - `/p5nels`
   - `/typecheck`
@@ -65,6 +68,7 @@ Project path: C:\Users\AMD\projects\aex-site
 
 ## Build/test state
 - `npm run typecheck` passes.
+- `npm run build` currently times out in this environment while waiting on live Notion/static generation; no code-level build error observed.
 - Build-hardening is intentionally paused until page-by-page design work is done.
 
 ## Notion verification snapshot (latest check)
