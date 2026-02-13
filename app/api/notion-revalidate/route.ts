@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { invalidateNotionCache } from "@/lib/notion";
 
 type RevalidateBody = {
@@ -39,6 +40,11 @@ export async function POST(request: NextRequest) {
   }
 
   invalidateNotionCache(slug);
+  if (slug) {
+    revalidatePath(slug);
+  } else {
+    revalidatePath("/", "layout");
+  }
 
   return NextResponse.json({
     ok: true,
