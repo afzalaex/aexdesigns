@@ -49,7 +49,7 @@ For normal Notion content edits, do not redeploy. Revalidate cache instead.
 
 Single page refresh:
 ```powershell
-curl.exe -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
+curl.exe -X POST https://www.aex.design/api/notion-revalidate `
   -H "x-revalidate-secret: YOUR_SECRET" `
   -H "content-type: application/json" `
   -d "{\"slug\":\"/typecheck\"}"
@@ -57,7 +57,7 @@ curl.exe -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
 
 Full-site refresh:
 ```powershell
-curl.exe -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
+curl.exe -X POST https://www.aex.design/api/notion-revalidate `
   -H "x-revalidate-secret: YOUR_SECRET"
 ```
 
@@ -72,7 +72,7 @@ YOUR_SECRET_VALUE
 PowerShell usage:
 ```powershell
 $env:REVALIDATE_SECRET = (Get-Content .secret -Raw).Trim()
-curl.exe -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
+curl.exe -X POST https://www.aex.design/api/notion-revalidate `
   -H "x-revalidate-secret: $env:REVALIDATE_SECRET"
 ```
 
