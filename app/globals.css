@@ -104,11 +104,18 @@ a {
   display: inline-flex;
   align-items: center;
   line-height: 0;
+  padding: 10px;
 }
 
 .site-navbar__logo-image {
   display: inline-flex;
   align-items: center;
+}
+
+.site-navbar__logo-image img {
+  display: block;
+  width: auto;
+  height: 51px;
 }
 
 .site-navbar__item-list {
@@ -299,12 +306,23 @@ h3.notion-heading {
   margin-bottom: 0.5rem;
 }
 
+.notion-image.page-width {
+  width: calc(100% + var(--padding-left) + var(--padding-right));
+  margin-left: calc(-1 * var(--padding-left));
+  margin-right: calc(-1 * var(--padding-right));
+  align-items: stretch;
+}
+
 .notion-image img {
   max-width: 100%;
   height: auto;
   display: block;
   margin-left: auto;
   margin-right: auto;
+}
+
+.notion-image.page-width img {
+  width: 100%;
 }
 
 .notion-embed {
@@ -553,6 +571,12 @@ figure.notion-embed {
   .notion-root {
     padding-left: var(--padding-left-mobile);
     padding-right: var(--padding-right-mobile);
+  }
+
+  .notion-image.page-width {
+    width: calc(100% + var(--padding-left-mobile) + var(--padding-right-mobile));
+    margin-left: calc(-1 * var(--padding-left-mobile));
+    margin-right: calc(-1 * var(--padding-right-mobile));
   }
 
   .aex-type-tester__input {
