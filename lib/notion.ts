@@ -492,7 +492,11 @@ async function refreshPage(slug: string): Promise<NotionPageData | null> {
     routes = await getRoutes();
   } catch (error) {
     console.error("Failed to load routes while resolving slug:", slug, error);
-    return stalePage ?? null;
+    if (stalePage !== undefined) {
+      return stalePage;
+    }
+
+    throw error;
   }
 
   const route = routes.find((entry) => entry.slug === slug);
@@ -552,7 +556,11 @@ async function refreshPage(slug: string): Promise<NotionPageData | null> {
     return page;
   } catch (error) {
     console.error("Failed to load Notion page by slug:", slug, error);
-    return stalePage ?? null;
+    if (stalePage !== undefined) {
+      return stalePage;
+    }
+
+    throw error;
   }
 }
 
