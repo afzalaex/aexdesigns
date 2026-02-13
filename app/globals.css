@@ -554,6 +554,50 @@ figure.notion-embed {
   user-select: none;
 }
 
+.type-playground {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-top: 16px;
+}
+
+.type-playground__font-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.type-playground__font-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.type-playground__font-info-row {
+  display: block;
+}
+
+.type-playground__font-link {
+  width: fit-content;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  opacity: 0.75;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0 2px;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in;
+}
+
+.type-playground__font-link:hover {
+  opacity: 1;
+  border-color: #fff;
+}
+
 .error-shell {
   min-height: 100dvh;
   display: grid;
