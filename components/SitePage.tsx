@@ -9,91 +9,110 @@ function toPageClass(slug: string): string {
   return slug.replace(/^\//, "").replace(/\//g, "-");
 }
 
+type TopActionConfig = {
+  metaClassName: "cc0" | "mint-link" | "license-one";
+  metaHref: string;
+  metaLabel: string;
+  releaseYear: number;
+  buttonClassName: "get-button" | "buy-button";
+  buttonHref: string;
+  buttonLabel: string;
+};
+
+const topActionBySlug: Record<string, TopActionConfig> = {
+  "/p5nels": {
+    metaClassName: "cc0",
+    metaHref: "https://creativecommons.org/share-your-work/public-domain/cc0/",
+    metaLabel: "CC0",
+    releaseYear: 2024,
+    buttonClassName: "get-button",
+    buttonHref: "https://store.aex.design/l//p5nels",
+    buttonLabel: "Get-Free",
+  },
+  "/typecheck": {
+    metaClassName: "mint-link",
+    metaHref: "https://opensea.io/collection/typecheck",
+    metaLabel: "Mint NFT",
+    releaseYear: 2023,
+    buttonClassName: "get-button",
+    buttonHref: "https://store.aex.design/l/typecheck",
+    buttonLabel: "Get-Free",
+  },
+  "/nounty": {
+    metaClassName: "mint-link",
+    metaHref: "https://opensea.io/collection/nounty-font",
+    metaLabel: "Mint NFT",
+    releaseYear: 2023,
+    buttonClassName: "get-button",
+    buttonHref: "https://store.aex.design/l/nounty",
+    buttonLabel: "Get-Free",
+  },
+  "/aexpective": {
+    metaClassName: "mint-link",
+    metaHref: "https://zora.co/collect/eth:0xa2b28076129f8cb404202077f3cbda8a513b62ed",
+    metaLabel: "Mint NFT",
+    releaseYear: 2022,
+    buttonClassName: "get-button",
+    buttonHref: "https://store.aex.design/l/aexpective",
+    buttonLabel: "Get-Free",
+  },
+  "/designassetpack2": {
+    metaClassName: "license-one",
+    metaHref: "https://aex.design/license-one",
+    metaLabel: "License-one",
+    releaseYear: 2023,
+    buttonClassName: "buy-button",
+    buttonHref: "https://store.aex.design/l/designassetpack2",
+    buttonLabel: "Buy-$1",
+  },
+  "/aextract": {
+    metaClassName: "license-one",
+    metaHref: "https://aex.design/license-one",
+    metaLabel: "License-one",
+    releaseYear: 2022,
+    buttonClassName: "buy-button",
+    buttonHref: "https://store.aex.design/l/aextract",
+    buttonLabel: "Buy-$1",
+  },
+  "/aextract36": {
+    metaClassName: "cc0",
+    metaHref: "https://creativecommons.org/share-your-work/public-domain/cc0/",
+    metaLabel: "CC0",
+    releaseYear: 2021,
+    buttonClassName: "get-button",
+    buttonHref: "https://store.aex.design/l/aextract36",
+    buttonLabel: "Get-Free",
+  },
+  "/designassetpack1": {
+    metaClassName: "cc0",
+    metaHref: "https://creativecommons.org/share-your-work/public-domain/cc0/",
+    metaLabel: "CC0",
+    releaseYear: 2021,
+    buttonClassName: "get-button",
+    buttonHref: "https://store.aex.design/l//designassetpack1",
+    buttonLabel: "Get-Free",
+  },
+};
+
 export function SitePage({ page }: { page: NotionPageData }) {
   const pageClass = toPageClass(page.slug);
   const articleId = `block-${page.id.replace(/-/g, "")}`;
+  const topAction = topActionBySlug[page.slug];
 
   return (
     <main id={`page-${pageClass}`} className={`site-content page__${pageClass}`}>
-      {page.slug === "/p5nels" ? (
+      {topAction ? (
         <div className="p5nels-top-actions">
-          <a className="cc0" href="https://creativecommons.org/share-your-work/public-domain/cc0/">
-            CC0
-          </a>
-          <a className="get-button" href="https://store.aex.design/l//p5nels">
-            Get-Free
-          </a>
-        </div>
-      ) : page.slug === "/typecheck" ? (
-        <div className="p5nels-top-actions">
-          <a
-            className="mint-link"
-            href="https://opensea.io/collection/typecheck"
-          >
-            Mint NFT
-          </a>
-          <a className="get-button" href="https://store.aex.design/l/typecheck">
-            Get-Free
-          </a>
-        </div>
-      ) : page.slug === "/nounty" ? (
-        <div className="p5nels-top-actions">
-          <a
-            className="mint-link"
-            href="https://opensea.io/collection/nounty-font"
-          >
-            Mint NFT
-          </a>
-          <a className="get-button" href="https://store.aex.design/l/nounty">
-            Get-Free
-          </a>
-        </div>
-      ) : page.slug === "/aexpective" ? (
-        <div className="p5nels-top-actions">
-          <a
-            className="mint-link"
-            href="https://zora.co/collect/eth:0xa2b28076129f8cb404202077f3cbda8a513b62ed"
-          >
-            Mint NFT
-          </a>
-          <a className="get-button" href="https://store.aex.design/l/aexpective">
-            Get-Free
-          </a>
-        </div>
-      ) : page.slug === "/designassetpack2" ? (
-        <div className="p5nels-top-actions">
-          <a className="license-one" href="https://aex.design/license-one">
-            License-one
-          </a>
-          <a className="buy-button" href="https://store.aex.design/l/designassetpack2">
-            Buy-$1
-          </a>
-        </div>
-      ) : page.slug === "/aextract" ? (
-        <div className="p5nels-top-actions">
-          <a className="license-one" href="https://aex.design/license-one">
-            License-one
-          </a>
-          <a className="buy-button" href="https://store.aex.design/l/aextract">
-            Buy-$1
-          </a>
-        </div>
-      ) : page.slug === "/aextract36" ? (
-        <div className="p5nels-top-actions">
-          <a className="cc0" href="https://creativecommons.org/share-your-work/public-domain/cc0/">
-            CC0
-          </a>
-          <a className="get-button" href="https://store.aex.design/l/aextract36">
-            Get-Free
-          </a>
-        </div>
-      ) : page.slug === "/designassetpack1" ? (
-        <div className="p5nels-top-actions">
-          <a className="cc0" href="https://creativecommons.org/share-your-work/public-domain/cc0/">
-            CC0
-          </a>
-          <a className="get-button" href="https://store.aex.design/l//designassetpack1">
-            Get-Free
+          <div className="p5nels-top-actions__meta">
+            <a className={topAction.metaClassName} href={topAction.metaHref}>
+              {topAction.metaLabel}
+            </a>
+            <span className="p5nels-top-actions__release">
+              Released: {topAction.releaseYear}
+            </span>
+          </div>
+          <a className={topAction.buttonClassName} href={topAction.buttonHref}>
+            {topAction.buttonLabel}
           </a>
         </div>
       ) : null}
