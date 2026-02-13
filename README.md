@@ -25,7 +25,9 @@ Public website built with Next.js and Notion as the CMS layer.
 - Type tester placement is marker-driven from Notion paragraph content.
 
 ## Runtime Characteristics
-- Server-side route/page helpers are memoized with React `cache`.
+- Route/page payloads use in-memory TTL caching with stale-while-refresh behavior.
+- Concurrent requests for the same slug are deduplicated to avoid repeated Notion API fetches.
+- When a page `last_edited_time` is unchanged, cached blocks are reused to skip deep block-tree reloads.
 - Additional TTL memory cache is applied for route/page payloads (`NOTION_CACHE_TTL_SECONDS`).
 - Nested block fetch is parallelized with bounded concurrency for deep page trees.
 - Internal navigation is wired through Next.js `Link` for client-side transitions.
@@ -39,7 +41,17 @@ Public website built with Next.js and Notion as the CMS layer.
   - `NOTION_PUBLISHED_PROPERTY`
   - `NOTION_DESCRIPTION_PROPERTY`
   - `NOTION_CACHE_TTL_SECONDS`
+  - `NOTION_REVALIDATE_SECRET`
   - `SITE_URL`
+
+## Instant Content Refresh (No Deploy Needed)
+- The site renders dynamically from Notion at runtime, so content changes do not require Vercel redeploys.
+- Optional: configure `NOTION_REVALIDATE_SECRET` and call `POST /api/notion-revalidate` to invalidate cache instantly.
+- Auth for this endpoint:
+  - Header: `x-revalidate-secret: <NOTION_REVALIDATE_SECRET>`
+  - Or query param: `?secret=<NOTION_REVALIDATE_SECRET>`
+- Optional JSON body for single-page invalidation:
+  - `{ "slug": "/your-page" }`
 
 ## Basic Operations
 - Install dependencies: `npm install`

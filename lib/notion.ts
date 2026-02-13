@@ -51,6 +51,8 @@ const notionCacheTtlMs = notionCacheTtlSeconds * 1000;
 const childBlockFetchConcurrency = 6;
 let routesCache: TimedCacheEntry<RouteEntry[]> | undefined;
 const pageCache = new Map<string, TimedCacheEntry<NotionPageData | null>>();
+let routesRefreshPromise: Promise<RouteEntry[]> | undefined;
+const pageRefreshPromises = new Map<string, Promise<NotionPageData | null>>();
 
 function getNotionClient(): Client {
   if (!notion) {
@@ -127,6 +129,18 @@ export function getSiteUrl(): string {
   }
 
   return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
+export function invalidateNotionCache(slugInput?: string): void {
+  routesCache = undefined;
+
+  if (typeof slugInput === "string" && slugInput.trim().length > 0) {
+    const slug = normalizeSlug(slugInput);
+    pageCache.delete(slug);
+    return;
+  }
+
+  pageCache.clear();
 }
 
 function plainText(richText: RichTextItemResponse[] | undefined): string {
@@ -352,31 +366,64 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
 
 export async function getRoutes(): Promise<RouteEntry[]> {
   const cachedRoutes = readTimedCache(routesCache);
-  if (cachedRoutes) {
+  if (cachedRoutes !== undefined) {
     return cachedRoutes;
   }
 
-  let routes: RouteEntry[];
-
-  if (process.env.NOTION_DATABASE_ID) {
-    try {
-      const databaseRoutes = await loadDatabaseRoutes();
-      if (databaseRoutes.length > 0) {
-        routes = databaseRoutes;
-      } else {
-        routes = loadStaticRoutes();
-      }
-    } catch (error) {
-      console.error("Failed to load routes from Notion database:", error);
-      routes = loadStaticRoutes();
+  const staleRoutes = readStaleTimedCache(routesCache);
+  if (staleRoutes !== undefined) {
+    if (!routesRefreshPromise) {
+      routesRefreshPromise = refreshRoutes().finally(() => {
+        routesRefreshPromise = undefined;
+      });
     }
-  } else {
-    routes = loadStaticRoutes();
+
+    return staleRoutes;
   }
 
-  routesCache = createTimedCacheEntry(routes);
+  if (!routesRefreshPromise) {
+    routesRefreshPromise = refreshRoutes().finally(() => {
+      routesRefreshPromise = undefined;
+    });
+  }
 
-  return routes;
+  return routesRefreshPromise;
+}
+
+async function refreshRoutes(): Promise<RouteEntry[]> {
+  try {
+    let routes: RouteEntry[];
+
+    if (process.env.NOTION_DATABASE_ID) {
+      try {
+        const databaseRoutes = await loadDatabaseRoutes();
+        if (databaseRoutes.length > 0) {
+          routes = databaseRoutes;
+        } else {
+          routes = loadStaticRoutes();
+        }
+      } catch (error) {
+        console.error("Failed to load routes from Notion database:", error);
+        routes = loadStaticRoutes();
+      }
+    } else {
+      routes = loadStaticRoutes();
+    }
+
+    routesCache = createTimedCacheEntry(routes);
+    return routes;
+  } catch (error) {
+    console.error("Failed to refresh routes:", error);
+
+    const staleRoutes = readStaleTimedCache(routesCache);
+    if (staleRoutes !== undefined) {
+      return staleRoutes;
+    }
+
+    const fallbackRoutes = loadStaticRoutes();
+    routesCache = createTimedCacheEntry(fallbackRoutes);
+    return fallbackRoutes;
+  }
 }
 
 async function hydrateChildBlocks(blocks: NotionBlock[]): Promise<void> {
@@ -437,14 +484,8 @@ async function loadBlocks(blockId: string): Promise<NotionBlock[]> {
   return blocks;
 }
 
-export async function getPageBySlug(slugInput: string): Promise<NotionPageData | null> {
-  const slug = normalizeSlug(slugInput);
-  const pageCacheEntry = pageCache.get(slug);
-  const cachedPage = readTimedCache(pageCacheEntry);
-  if (cachedPage !== undefined) {
-    return cachedPage;
-  }
-  const stalePage = readStaleTimedCache(pageCacheEntry);
+async function refreshPage(slug: string): Promise<NotionPageData | null> {
+  const stalePage = readStaleTimedCache(pageCache.get(slug));
 
   let routes: RouteEntry[];
   try {
@@ -453,6 +494,7 @@ export async function getPageBySlug(slugInput: string): Promise<NotionPageData |
     console.error("Failed to load routes while resolving slug:", slug, error);
     return stalePage ?? null;
   }
+
   const route = routes.find((entry) => entry.slug === slug);
 
   if (!route) {
@@ -462,14 +504,40 @@ export async function getPageBySlug(slugInput: string): Promise<NotionPageData |
 
   try {
     const client = getNotionClient();
-    const pageResponse = await client.pages.retrieve({ page_id: route.pageId });
+
+    if (stalePage && stalePage.id === route.pageId) {
+      const pageResponse = await client.pages.retrieve({ page_id: route.pageId });
+
+      if (!isFullPage(pageResponse) || pageResponse.object !== "page") {
+        pageCache.set(slug, createTimedCacheEntry(null));
+        return null;
+      }
+
+      const blocksUnchanged = stalePage.lastEditedTime === pageResponse.last_edited_time;
+      const blocks = blocksUnchanged ? stalePage.blocks : await loadBlocks(route.pageId);
+
+      const page: NotionPageData = {
+        id: pageResponse.id,
+        slug: route.slug,
+        title: route.title ?? extractTitle(pageResponse),
+        description: route.description ?? extractDescription(pageResponse),
+        lastEditedTime: pageResponse.last_edited_time,
+        blocks,
+      };
+
+      pageCache.set(slug, createTimedCacheEntry(page));
+      return page;
+    }
+
+    const [pageResponse, blocks] = await Promise.all([
+      client.pages.retrieve({ page_id: route.pageId }),
+      loadBlocks(route.pageId),
+    ]);
 
     if (!isFullPage(pageResponse) || pageResponse.object !== "page") {
       pageCache.set(slug, createTimedCacheEntry(null));
       return null;
     }
-
-    const blocks = await loadBlocks(route.pageId);
 
     const page: NotionPageData = {
       id: pageResponse.id,
@@ -481,12 +549,44 @@ export async function getPageBySlug(slugInput: string): Promise<NotionPageData |
     };
 
     pageCache.set(slug, createTimedCacheEntry(page));
-
     return page;
   } catch (error) {
     console.error("Failed to load Notion page by slug:", slug, error);
     return stalePage ?? null;
   }
+}
+
+export async function getPageBySlug(slugInput: string): Promise<NotionPageData | null> {
+  const slug = normalizeSlug(slugInput);
+  const pageCacheEntry = pageCache.get(slug);
+  const cachedPage = readTimedCache(pageCacheEntry);
+  if (cachedPage !== undefined) {
+    return cachedPage;
+  }
+
+  const stalePage = readStaleTimedCache(pageCacheEntry);
+  if (stalePage !== undefined) {
+    if (!pageRefreshPromises.has(slug)) {
+      pageRefreshPromises.set(
+        slug,
+        refreshPage(slug).finally(() => {
+          pageRefreshPromises.delete(slug);
+        })
+      );
+    }
+    return stalePage;
+  }
+
+  if (!pageRefreshPromises.has(slug)) {
+    pageRefreshPromises.set(
+      slug,
+      refreshPage(slug).finally(() => {
+        pageRefreshPromises.delete(slug);
+      })
+    );
+  }
+
+  return pageRefreshPromises.get(slug) as Promise<NotionPageData | null>;
 }
 
 export async function getAllSlugs(): Promise<string[]> {
