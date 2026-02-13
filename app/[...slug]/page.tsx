@@ -3,8 +3,7 @@ import { notFound } from "next/navigation";
 import { SitePage } from "@/components/SitePage";
 import { getPageBySlug, getSiteUrl, slugFromSegments } from "@/lib/notion";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 3600;
 
 type Params = {
   slug?: string[];

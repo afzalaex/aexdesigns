@@ -29,6 +29,7 @@ Public website built with Next.js and Notion as the CMS layer.
 - Concurrent requests for the same slug are deduplicated to avoid repeated Notion API fetches.
 - When a page `last_edited_time` is unchanged, cached blocks are reused to skip deep block-tree reloads.
 - Additional TTL memory cache is applied for route/page payloads (`NOTION_CACHE_TTL_SECONDS`).
+- Route HTML uses ISR (`revalidate = 3600`) to prioritize CDN speed over per-request Notion fetches.
 - Nested block fetch is parallelized with bounded concurrency for deep page trees.
 - Internal navigation is wired through Next.js `Link` for client-side transitions.
 
