@@ -1,63 +1,87 @@
-# aexdesigns
+# Aex Designs Website
 
-Public website built with Next.js and Notion as the CMS layer.
+Production website for `aex.design`, built with Next.js and Notion as the CMS.
 
-## Project Overview
-- Runtime: Next.js App Router with TypeScript
-- Node runtime baseline: `>=20.19.0` (`.nvmrc` included)
-- Content source: Notion API via `@notionhq/client`
-- Hosting target: Vercel
-- Primary behavior: dynamic page rendering from Notion routes and blocks
+## Overview
+- Framework: Next.js App Router (TypeScript)
+- Runtime baseline: Node `>=20.19.0`
+- CMS: Notion (`@notionhq/client`)
+- Hosting: Vercel
+- Source of route truth: `content/route-map.json` and/or Notion database mode
 
-## Architecture
-- `lib/notion.ts` handles route resolution, page fetch, block fetch, and normalization.
-- `app/page.tsx` serves `/` from Notion data.
-- `app/[...slug]/page.tsx` serves dynamic routes and static params generation.
-- `components/NotionRenderer.tsx` renders Notion blocks into local UI components.
-- `components/TypeTester.tsx` provides the native type tester experience.
-- `components/SitePage.tsx` provides page shell and page-specific top actions.
-- `app/globals.css` contains local global styles and component-level class styling.
+## Key Features
+- Notion block rendering with custom local UI (`components/NotionRenderer.tsx`)
+- Native type tester system (`components/TypeTester.tsx`)
+- Dedicated `/typeplayground` page with interactive font testers
+- Page-level top actions (license/mint + release year + buy/get)
+- Performance-first delivery:
+  - ISR for route HTML (`revalidate = 3600`)
+  - SSG for mapped slugs via `generateStaticParams`
+  - in-memory Notion TTL cache with stale-while-refresh and request deduping
 
-## Routing and Content Model
-- Supports database-driven route publishing through Notion properties.
-- Supports static slug mapping through `content/route-map.json`.
-- Hidden tester routes (`-type-tester`) are excluded from child-page navigation output.
-- Type tester placement is marker-driven from Notion paragraph content.
+## Project Structure
+- `app/page.tsx`: homepage route
+- `app/[...slug]/page.tsx`: mapped content routes
+- `app/typeplayground/page.tsx`: static type playground route
+- `app/api/notion-revalidate/route.ts`: on-demand cache invalidation endpoint
+- `lib/notion.ts`: Notion routing/page/block data layer
+- `components/NotionRenderer.tsx`: Notion block renderer
+- `components/TypeTester.tsx`: native tester component
+- `components/SitePage.tsx`: page shell + top action UI
+- `app/globals.css`: global and component styles
 
-## Runtime Characteristics
-- Route/page payloads use in-memory TTL caching with stale-while-refresh behavior.
-- Concurrent requests for the same slug are deduplicated to avoid repeated Notion API fetches.
-- When a page `last_edited_time` is unchanged, cached blocks are reused to skip deep block-tree reloads.
-- Additional TTL memory cache is applied for route/page payloads (`NOTION_CACHE_TTL_SECONDS`).
-- Route HTML uses ISR (`revalidate = 3600`) to prioritize CDN speed over per-request Notion fetches.
-- Nested block fetch is parallelized with bounded concurrency for deep page trees.
-- Internal navigation is wired through Next.js `Link` for client-side transitions.
+## Environment Variables
+Required:
+- `NOTION_TOKEN`
+- `SITE_URL`
 
-## Technical Configuration Surface
-- Environment variables used by runtime:
-  - `NOTION_TOKEN`
-  - `NOTION_DATABASE_ID`
-  - `NOTION_HOME_PAGE_ID`
-  - `NOTION_SLUG_PROPERTY`
-  - `NOTION_PUBLISHED_PROPERTY`
-  - `NOTION_DESCRIPTION_PROPERTY`
-  - `NOTION_CACHE_TTL_SECONDS`
-  - `NOTION_REVALIDATE_SECRET`
-  - `SITE_URL`
+Optional:
+- `NOTION_DATABASE_ID`
+- `NOTION_HOME_PAGE_ID`
+- `NOTION_SLUG_PROPERTY` (default: `Slug`)
+- `NOTION_PUBLISHED_PROPERTY` (default: `Published`)
+- `NOTION_DESCRIPTION_PROPERTY` (default: `Description`)
+- `NOTION_CACHE_TTL_SECONDS` (default: `300`)
+- `NOTION_REVALIDATE_SECRET` (required for secure revalidate endpoint usage)
 
-## Instant Content Refresh (No Deploy Needed)
-- The site renders dynamically from Notion at runtime, so content changes do not require Vercel redeploys.
-- Optional: configure `NOTION_REVALIDATE_SECRET` and call `POST /api/notion-revalidate` to invalidate cache instantly.
-- Auth for this endpoint:
-  - Header: `x-revalidate-secret: <NOTION_REVALIDATE_SECRET>`
-  - Or query param: `?secret=<NOTION_REVALIDATE_SECRET>`
-- Optional JSON body for single-page invalidation:
-  - `{ "slug": "/your-page" }`
+## Content Update Workflow (Important)
+For normal Notion content edits, do not redeploy. Revalidate cache instead.
 
-## Basic Operations
-- Install dependencies: `npm install`
-- Set runtime env values in `.env.local` (minimum: `NOTION_TOKEN`, `SITE_URL`)
-- Run development server: `npm run dev`
-- Run type checks: `npm run typecheck`
-- Build production bundle: `npm run build`
-- Run production server: `npm run start`
+Single page refresh:
+```powershell
+curl -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
+  -H "x-revalidate-secret: YOUR_SECRET" `
+  -H "content-type: application/json" `
+  -d "{\"slug\":\"/typecheck\"}"
+```
+
+Full-site refresh:
+```powershell
+curl -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
+  -H "x-revalidate-secret: YOUR_SECRET"
+```
+
+The endpoint clears runtime Notion cache and triggers ISR path revalidation.
+
+## Local Development
+```bash
+npm install
+npm run dev
+```
+
+Other commands:
+- `npm run typecheck`
+- `npm run build`
+- `npm run start`
+
+## Deployment
+- Standard flow: push `main` to GitHub; Vercel auto-deploys.
+- Manual production deploy (CLI):
+```bash
+npx vercel --prod --yes
+```
+
+## Notes
+- Avoid committing secrets.
+- `NOTION_TOKEN` and `NOTION_REVALIDATE_SECRET` must remain private.
+- Hidden tester pages ending with `-type-tester` are intentionally excluded from child-page navigation.
