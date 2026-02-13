@@ -49,7 +49,7 @@ For normal Notion content edits, do not redeploy. Revalidate cache instead.
 
 Single page refresh:
 ```powershell
-curl -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
+curl.exe -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
   -H "x-revalidate-secret: YOUR_SECRET" `
   -H "content-type: application/json" `
   -d "{\"slug\":\"/typecheck\"}"
@@ -57,11 +57,32 @@ curl -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
 
 Full-site refresh:
 ```powershell
-curl -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
+curl.exe -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
   -H "x-revalidate-secret: YOUR_SECRET"
 ```
 
 The endpoint clears runtime Notion cache and triggers ISR path revalidation.
+
+### Local Secret Convenience
+Store your revalidate secret in a local ignored file `.secret`:
+```text
+YOUR_SECRET_VALUE
+```
+
+PowerShell usage:
+```powershell
+$env:REVALIDATE_SECRET = (Get-Content .secret -Raw).Trim()
+curl.exe -X POST https://aexdesigns.vercel.app/api/notion-revalidate `
+  -H "x-revalidate-secret: $env:REVALIDATE_SECRET"
+```
+
+### Troubleshooting
+- `{"ok":false,"error":"NOTION_REVALIDATE_SECRET is not configured."}`
+  - `NOTION_REVALIDATE_SECRET` is missing in Vercel env or deployment has not been redeployed yet.
+- `{"ok":false,"error":"Unauthorized."}`
+  - Header secret does not match `NOTION_REVALIDATE_SECRET`.
+- Notion pages returning unauthorized/404 after env updates:
+  - Verify `NOTION_TOKEN` is valid and separate from `NOTION_REVALIDATE_SECRET`.
 
 ## Local Development
 ```bash
