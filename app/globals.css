@@ -392,16 +392,17 @@ figure.notion-embed {
 .p5nels-top-actions__meta {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
   gap: 2px;
+  text-align: right;
 }
 
 .p5nels-top-actions__release {
   color: #fff;
   font-size: 0.75rem;
   line-height: 1.1;
-  opacity: 0.75;
+  opacity: 1;
   white-space: nowrap;
 }
 
