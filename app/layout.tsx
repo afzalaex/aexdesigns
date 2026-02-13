@@ -20,7 +20,8 @@ export const metadata: Metadata = {
   },
   description: "Designing for the internet, on the internet.",
   icons: {
-    icon: "/assets/logo.svg",
+    icon: "/assets/favicon.svg",
+    shortcut: "/assets/favicon.svg",
   },
 };
 
