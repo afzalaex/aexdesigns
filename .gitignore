@@ -29,6 +29,7 @@ pnpm-debug.log*
 *.pfx
 *.jks
 .npmrc
+.secret
 
 # Local process docs (not for public repo)
 MIGRATION_HANDOFF.md
