@@ -116,6 +116,9 @@ export default function TypePlaygroundPage() {
   return (
     <main id="page-typeplayground" className="site-content page__typeplayground">
       <section className="type-playground notion-root max-width">
+        <h1 className="notion-heading notion-semantic-string type-playground__title">
+          Explore the Type
+        </h1>
         {playgroundFonts.map((font) => (
           <article key={font.id} className="type-playground__font-section">
             <TypeTester

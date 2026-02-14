@@ -562,6 +562,11 @@ figure.notion-embed {
   padding-top: 16px;
 }
 
+.type-playground__title {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
 .type-playground__font-section {
   display: flex;
   flex-direction: column;
