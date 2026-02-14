@@ -603,6 +603,10 @@ figure.notion-embed {
   border-color: #fff;
 }
 
+.type-playground__footer-links {
+  margin-top: 8px;
+}
+
 .error-shell {
   min-height: 100dvh;
   display: grid;
