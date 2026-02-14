@@ -98,7 +98,7 @@ const playgroundFonts: PlaygroundFont[] = [
 
 const footerLinks = [
   { label: "Newsletter", href: "http://letter.aex.design/" },
-  { label: "𝕏", href: "https://x.com/aexdesigns" },
+  { label: "\u{1D54F}", href: "https://x.com/aexdesigns" },
   { label: "Instagram", href: "http://instagram.com/aex_designs" },
 ];
 
@@ -170,7 +170,7 @@ export default function TypePlaygroundPage() {
         <p className="notion-text notion-text__content notion-semantic-string type-playground__footer-links">
           {footerLinks.map((link, index) => (
             <span key={link.href}>
-              {index > 0 ? " " : null}
+              {index > 0 ? " | " : null}
               <a
                 className="notion-link link"
                 href={link.href}
