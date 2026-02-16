@@ -7,12 +7,7 @@ type RevalidateBody = {
 };
 
 function readSecretFromRequest(request: NextRequest): string | null {
-  const headerSecret = request.headers.get("x-revalidate-secret");
-  if (headerSecret) {
-    return headerSecret;
-  }
-
-  return request.nextUrl.searchParams.get("secret");
+  return request.headers.get("x-revalidate-secret");
 }
 
 export async function POST(request: NextRequest) {
