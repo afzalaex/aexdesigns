@@ -3,7 +3,10 @@ import { Space_Mono } from "next/font/google";
 import { SiteNav } from "@/components/SiteNav";
 import "./globals.css";
 
-const siteUrl = process.env.SITE_URL || "https://aex.design";
+const siteUrl = process.env.SITE_URL || "https://www.aex.design";
+const previewTitle = "Aex Designs";
+const previewDescription = "Intangible internet things.";
+const previewImagePath = "/icon-512.png";
 
 const spaceMono = Space_Mono({
   weight: ["400", "700"],
@@ -15,10 +18,30 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Aex Designs",
-    template: "%s | Aex Designs",
+    default: previewTitle,
+    template: `%s | ${previewTitle}`,
   },
-  description: "Designing for the internet, on the internet.",
+  description: previewDescription,
+  openGraph: {
+    type: "website",
+    siteName: previewTitle,
+    title: previewTitle,
+    description: previewDescription,
+    images: [
+      {
+        url: previewImagePath,
+        width: 512,
+        height: 512,
+        alt: "Aex Designs logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: previewTitle,
+    description: previewDescription,
+    images: [previewImagePath],
+  },
   icons: {
     icon: [
       { url: "/assets/favicon.svg", type: "image/svg+xml" },

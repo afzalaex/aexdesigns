@@ -107,14 +107,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: "Type Playground",
-    description: "Explore Aex fonts using interactive type testers.",
     alternates: { canonical: url },
-    openGraph: {
-      title: "Type Playground",
-      description: "Explore Aex fonts using interactive type testers.",
-      url,
-      type: "website",
-    },
   };
 }
 
