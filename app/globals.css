@@ -456,7 +456,6 @@ figure.notion-embed {
 .aex-type-tester {
   width: 100%;
   background-color: #000;
-  border: 1px solid var(--color-border-default);
   padding: 10px;
 }
 
