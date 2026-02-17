@@ -23,7 +23,7 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   "/p5nels": {
     metaClassName: "cc0",
     metaHref: "https://creativecommons.org/share-your-work/public-domain/cc0/",
-    metaLabel: "CC0",
+    metaLabel: "License",
     releaseYear: 2024,
     buttonClassName: "get-button",
     buttonHref: "https://store.aex.design/l//p5nels",
@@ -59,7 +59,7 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   "/designassetpack2": {
     metaClassName: "license-one",
     metaHref: "https://aex.design/license-one",
-    metaLabel: "License-one",
+    metaLabel: "License",
     releaseYear: 2023,
     buttonClassName: "buy-button",
     buttonHref: "https://store.aex.design/l/designassetpack2",
@@ -68,7 +68,7 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   "/aextract": {
     metaClassName: "license-one",
     metaHref: "https://aex.design/license-one",
-    metaLabel: "License-one",
+    metaLabel: "License",
     releaseYear: 2022,
     buttonClassName: "buy-button",
     buttonHref: "https://store.aex.design/l/aextract",
@@ -77,7 +77,7 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   "/aextract36": {
     metaClassName: "cc0",
     metaHref: "https://creativecommons.org/share-your-work/public-domain/cc0/",
-    metaLabel: "CC0",
+    metaLabel: "License",
     releaseYear: 2021,
     buttonClassName: "get-button",
     buttonHref: "https://store.aex.design/l/aextract36",
@@ -86,7 +86,7 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   "/designassetpack1": {
     metaClassName: "cc0",
     metaHref: "https://creativecommons.org/share-your-work/public-domain/cc0/",
-    metaLabel: "CC0",
+    metaLabel: "License",
     releaseYear: 2021,
     buttonClassName: "get-button",
     buttonHref: "https://store.aex.design/l//designassetpack1",
