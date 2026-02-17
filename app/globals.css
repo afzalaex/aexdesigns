@@ -566,6 +566,41 @@ figure.notion-embed {
   margin-bottom: 4px;
 }
 
+.type-playground__toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.type-playground__toggle-button {
+  border: 1px solid #555;
+  background: #000;
+  color: #fff;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in, background-color 120ms ease-in,
+    color 120ms ease-in;
+}
+
+.type-playground__toggle-button:hover {
+  opacity: 1;
+  border-color: #fff;
+}
+
+.type-playground__toggle-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.type-playground__toggle-button.is-active {
+  background: #fff;
+  color: #000;
+  opacity: 1;
+  border-color: #fff;
+}
+
 .type-playground__font-section {
   display: flex;
   flex-direction: column;

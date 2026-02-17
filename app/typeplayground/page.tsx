@@ -1,22 +1,6 @@
 import type { Metadata } from "next";
-import { TypeTester } from "@/components/TypeTester";
+import { TypePlayground, type PlaygroundFont } from "@/components/TypePlayground";
 import { getSiteUrl } from "@/lib/notion";
-
-type PlaygroundFont = {
-  id: string;
-  name: string;
-  fontFamily: string;
-  fontWoff2: string;
-  fontWoff?: string;
-  fontSizePx: number;
-  lineHeight: number;
-  textColor: string;
-  licenseLabel: string;
-  licenseHref: string;
-  glyphCount: number;
-  releaseYear: number;
-  seeMoreHref: string;
-};
 
 const playgroundFonts: PlaygroundFont[] = [
   {
@@ -118,48 +102,7 @@ export default function TypePlaygroundPage() {
         <h1 className="notion-heading notion-semantic-string type-playground__title">
           Explore the Type
         </h1>
-        {playgroundFonts.map((font) => (
-          <article key={font.id} className="type-playground__font-section">
-            <TypeTester
-              id={`typeplayground-${font.id}`}
-              fontFamily={font.fontFamily}
-              fontWoff2={font.fontWoff2}
-              fontWoff={font.fontWoff}
-              defaultText="Type your own"
-              fontSizePx={font.fontSizePx}
-              lineHeight={font.lineHeight}
-              textColor={font.textColor}
-            />
-            <div className="type-playground__font-info">
-              <span className="type-playground__font-info-row">Font: {font.name}</span>
-              <span className="type-playground__font-info-row">
-                License:{" "}
-                <a
-                  className="type-playground__font-link"
-                  href={font.licenseHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {font.licenseLabel}
-                </a>
-              </span>
-              <span className="type-playground__font-info-row">
-                Released: {font.releaseYear}
-              </span>
-              <span className="type-playground__font-info-row">
-                Glyph Count: {font.glyphCount}
-              </span>
-              <a
-                className="type-playground__font-link"
-                href={font.seeMoreHref}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                See More
-              </a>
-            </div>
-          </article>
-        ))}
+        <TypePlayground fonts={playgroundFonts} />
         <p className="notion-text notion-text__content notion-semantic-string type-playground__footer-links">
           {footerLinks.map((link, index) => (
             <span key={link.href}>
