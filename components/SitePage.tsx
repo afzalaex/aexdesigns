@@ -32,7 +32,7 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   "/typecheck": {
     metaClassName: "mint-link",
     metaHref: "https://opensea.io/collection/typecheck",
-    metaLabel: "Mint NFT",
+    metaLabel: "Check NFT",
     releaseYear: 2023,
     buttonClassName: "get-button",
     buttonHref: "https://store.aex.design/l/typecheck",
@@ -41,7 +41,7 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   "/nounty": {
     metaClassName: "mint-link",
     metaHref: "https://opensea.io/collection/nounty-font",
-    metaLabel: "Mint NFT",
+    metaLabel: "Check NFT",
     releaseYear: 2023,
     buttonClassName: "get-button",
     buttonHref: "https://store.aex.design/l/nounty",
@@ -50,7 +50,7 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   "/aexpective": {
     metaClassName: "mint-link",
     metaHref: "https://zora.co/collect/eth:0xa2b28076129f8cb404202077f3cbda8a513b62ed",
-    metaLabel: "Mint NFT",
+    metaLabel: "Check NFT",
     releaseYear: 2022,
     buttonClassName: "get-button",
     buttonHref: "https://store.aex.design/l/aexpective",
