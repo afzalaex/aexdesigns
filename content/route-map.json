@@ -12,10 +12,6 @@
     "pageId": "b46dde27bbd94440ac8b98893e12707c"
   },
   {
-    "slug": "/aexpective-type-tester",
-    "pageId": "559d19d7c51e448c9262800ff308cf01"
-  },
-  {
     "slug": "/aexthetics",
     "pageId": "eb35a7cfac864397844e502383cbf84e"
   },
@@ -24,16 +20,8 @@
     "pageId": "dd7ad840586540a2a312da5e9b81e23c"
   },
   {
-    "slug": "/aextract-type-tester",
-    "pageId": "f96c670bb81c45b2aa87fb25e2a23b22"
-  },
-  {
     "slug": "/aextract36",
     "pageId": "4f5951bf60ab4689bc5477baf02280c1"
-  },
-  {
-    "slug": "/aextract36-type-tester",
-    "pageId": "eeb1d2307b74466b858d368b9cf155c3"
   },
   {
     "slug": "/archive",
@@ -176,10 +164,6 @@
     "pageId": "210f1e30768040f8a25421f2e1ad8b54"
   },
   {
-    "slug": "/nounty-type-tester",
-    "pageId": "105d74a1d6ba46c6b84ed6129b2b9b40"
-  },
-  {
     "slug": "/p5nels",
     "pageId": "f14f7ce4345149a6bcb315f145b1550a"
   },
@@ -198,9 +182,5 @@
   {
     "slug": "/typecheck",
     "pageId": "0022ecd0884446d7bd02e60b697d14c9"
-  },
-  {
-    "slug": "/typecheck-type-tester",
-    "pageId": "1dbf3dcedb164a6f83e2be464ac462c1"
   }
 ]
