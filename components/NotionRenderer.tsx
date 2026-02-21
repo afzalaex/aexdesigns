@@ -32,8 +32,9 @@ type RouteInputEntry = {
 };
 
 type ExpandableChildRoute = {
-  slug: string;
+  href: string;
   label: string;
+  external?: boolean;
 };
 
 type RouteRenderContextValue = {
@@ -223,7 +224,7 @@ function buildRouteRenderContext(
 
     const existing = childRoutesByParentSlug.get(parentSlug) ?? [];
     existing.push({
-      slug,
+      href: slug,
       label: childLabelForParent(parentSlug, slug, entry.title),
     });
     childRoutesByParentSlug.set(parentSlug, existing);
@@ -231,7 +232,12 @@ function buildRouteRenderContext(
 
   for (const [parentSlug, children] of childRoutesByParentSlug.entries()) {
     const uniqueChildren = Array.from(
-      new Map(children.map((child) => [child.slug, child])).values()
+      new Map(
+        children.map((child) => [
+          `${child.external ? "external" : "internal"}::${child.href}`,
+          child,
+        ])
+      ).values()
     );
 
     childRoutesByParentSlug.set(parentSlug, uniqueChildren);
@@ -241,16 +247,19 @@ function buildRouteRenderContext(
     for (const [rawParentSlug, rawChildren] of Object.entries(expandableRouteGroups)) {
       const parentSlug = normalizeSlug(rawParentSlug);
       const normalizedChildren = (rawChildren ?? []).filter(
-        (child) => child && typeof child.slug === "string" && child.slug.length > 0
+        (child) => child && typeof child.href === "string" && child.href.length > 0
       );
 
       const uniqueChildren = Array.from(
         new Map(
           normalizedChildren.map((child) => [
-            normalizeSlug(child.slug),
+            `${child.external ? "external" : "internal"}::${
+              child.external ? child.href : normalizeSlug(child.href)
+            }`,
             {
-              slug: normalizeSlug(child.slug),
+              href: child.external ? child.href : normalizeSlug(child.href),
               label: child.label,
+              external: child.external,
             },
           ])
         ).values()
@@ -828,18 +837,34 @@ function Block({
             </Link>
             <div className="notion-page-group__children">
               {expandableChildren.map((child) => (
-                <Link
-                  key={child.slug}
-                  href={child.slug}
-                  className="notion-page notion-page-group__child"
-                  data-server-link={true}
-                  data-link-uri={child.slug}
-                  prefetch={false}
-                >
-                  <span className="notion-page__title notion-semantic-string">
-                    {child.label}
-                  </span>
-                </Link>
+                child.external ? (
+                  <a
+                    key={child.href}
+                    href={child.href}
+                    className="notion-page notion-page-group__child notion-page-group__child--external"
+                    data-server-link={false}
+                    data-link-uri={child.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span className="notion-page__title notion-semantic-string">
+                      {child.label}
+                    </span>
+                  </a>
+                ) : (
+                  <Link
+                    key={child.href}
+                    href={child.href}
+                    className="notion-page notion-page-group__child"
+                    data-server-link={true}
+                    data-link-uri={child.href}
+                    prefetch={false}
+                  >
+                    <span className="notion-page__title notion-semantic-string">
+                      {child.label}
+                    </span>
+                  </Link>
+                )
               ))}
             </div>
           </div>

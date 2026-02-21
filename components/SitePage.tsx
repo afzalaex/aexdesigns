@@ -25,8 +25,9 @@ type TopActionConfig = {
 };
 
 type ExpandableChildRoute = {
-  slug: string;
+  href: string;
   label: string;
+  external?: boolean;
 };
 
 type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
@@ -35,29 +36,92 @@ function normalizePageId(raw: string): string {
   return raw.replace(/-/g, "").toLowerCase();
 }
 
-function collectChildPageBlocks(
-  blocks: NotionBlock[] | undefined
-): Array<{ id: string; title: string }> {
+function isInternalHref(href: string): boolean {
+  if (href.startsWith("/")) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(href);
+    return ["aex.design", "www.aex.design"].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function toInternalHref(href: string): string {
+  if (href.startsWith("/")) {
+    return href;
+  }
+
+  try {
+    const parsed = new URL(href);
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return href;
+  }
+}
+
+function collectExpandableItems(
+  blocks: NotionBlock[] | undefined,
+  slugById: Map<string, string>,
+  includeParagraphLinks: boolean
+): ExpandableChildRoute[] {
   if (!blocks || blocks.length === 0) {
     return [];
   }
 
-  const childPages: Array<{ id: string; title: string }> = [];
+  const items: ExpandableChildRoute[] = [];
+  const seen = new Set<string>();
 
-  for (const block of blocks) {
-    if (block.type === "child_page") {
-      childPages.push({
-        id: block.id,
-        title: block.child_page.title,
-      });
+  function pushUnique(item: ExpandableChildRoute): void {
+    const key = `${item.external ? "external" : "internal"}::${item.href}`;
+    if (seen.has(key)) {
+      return;
     }
 
-    if (block.children?.length) {
-      childPages.push(...collectChildPageBlocks(block.children));
+    seen.add(key);
+    items.push(item);
+  }
+
+  function walk(currentBlocks: NotionBlock[]): void {
+    for (const block of currentBlocks) {
+      if (block.type === "child_page") {
+        const slug = slugById.get(normalizePageId(block.id));
+        if (slug && !/-type-tester$/i.test(slug)) {
+          pushUnique({
+            href: slug,
+            label: block.child_page.title,
+          });
+        }
+      }
+
+      if (includeParagraphLinks && block.type === "paragraph") {
+        for (const richItem of block.paragraph.rich_text) {
+          if (!richItem.href) {
+            continue;
+          }
+
+          const label = richItem.plain_text.trim() || richItem.href;
+          const internal = isInternalHref(richItem.href);
+
+          pushUnique({
+            href: internal ? toInternalHref(richItem.href) : richItem.href,
+            label,
+            external: !internal,
+          });
+        }
+      }
+
+      if (block.children?.length) {
+        walk(block.children);
+      }
     }
   }
 
-  return childPages;
+  walk(blocks);
+
+  return items;
 }
 
 function childSlugByPageId(routeEntries: Array<{ slug: string; pageId?: string }>): Map<string, string> {
@@ -171,24 +235,21 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           continue;
         }
 
-        const childPages = collectChildPageBlocks(parentPage.blocks);
-        const children: ExpandableChildRoute[] = [];
-
-        for (const childPage of childPages) {
-          const childSlug = slugById.get(normalizePageId(childPage.id));
-          if (!childSlug || /-type-tester$/i.test(childSlug)) {
-            continue;
-          }
-
-          children.push({
-            slug: childSlug,
-            label: childPage.title,
-          });
-        }
+        const includeParagraphLinks = parentSlug === "/onchain";
+        const children = collectExpandableItems(
+          parentPage.blocks,
+          slugById,
+          includeParagraphLinks
+        );
 
         if (children.length > 0) {
           groups[parentSlug] = Array.from(
-            new Map(children.map((child) => [child.slug, child])).values()
+            new Map(
+              children.map((child) => [
+                `${child.external ? "external" : "internal"}::${child.href}`,
+                child,
+              ])
+            ).values()
           );
         }
       } catch (error) {
