@@ -234,9 +234,10 @@ h3.notion-heading {
 
 #page-index .notion-text .link:hover,
 #page-index .notion-text .link:focus-visible {
-  background: transparent;
-  color: #fff !important;
+  background: #fff;
+  color: #000 !important;
   border-color: #fff;
+  filter: brightness(0.92);
 }
 
 .notion-page {
@@ -257,7 +258,7 @@ h3.notion-heading {
 .notion-page:hover {
   background: transparent !important;
   opacity: 1;
-  border-color: #fff;
+  border-color: transparent;
 }
 
 .notion-page-group {
@@ -278,8 +279,8 @@ h3.notion-heading {
 
 .notion-page-group__parent:hover,
 .notion-page-group__parent:focus-visible {
-  background: transparent !important;
-  color: #fff !important;
+  background: #fff !important;
+  color: #000 !important;
   border-color: #fff !important;
 }
 
@@ -289,7 +290,7 @@ h3.notion-heading {
 
 .notion-page-group__parent:hover .notion-page__title,
 .notion-page-group__parent:focus-visible .notion-page__title {
-  color: #fff;
+  color: #000;
 }
 
 .notion-page-group__children {
@@ -297,12 +298,24 @@ h3.notion-heading {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  margin-left: 18px;
+  margin-left: 10px;
+  padding-left: 16px;
   max-height: 0;
   overflow: hidden;
   opacity: 0;
   padding-bottom: 0;
+  position: relative;
   transition: max-height 180ms ease-in-out, opacity 120ms ease-in, margin-top 120ms ease-in;
+}
+
+.notion-page-group__children::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .notion-page-group:hover .notion-page-group__children,
@@ -315,7 +328,28 @@ h3.notion-heading {
 }
 
 .notion-page-group__child {
+  position: relative;
   opacity: 0.85;
+}
+
+.notion-page-group__child::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.notion-page-group__child:last-child::after {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: calc(50% + 1px);
+  bottom: -8px;
+  width: 1px;
+  background: var(--color-bg-default);
 }
 
 .notion-page-group__child:hover,
