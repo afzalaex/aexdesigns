@@ -246,6 +246,26 @@ h3.notion-heading {
   align-items: flex-start;
 }
 
+.notion-page-group__parent {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #fff !important;
+  opacity: 1;
+  padding: 2px 8px;
+  text-decoration: none;
+}
+
+.notion-page-group__parent:hover,
+.notion-page-group__parent:focus-visible {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #fff !important;
+}
+
+.notion-page-group__parent .notion-page__title {
+  color: #000;
+}
+
 .notion-page-group__children {
   display: flex;
   flex-direction: column;
