@@ -229,12 +229,13 @@ h3.notion-heading {
   opacity: 1;
   text-decoration: none;
   padding: 2px 8px;
+  transition: background-color 120ms ease-in, color 120ms ease-in, border-color 120ms ease-in;
 }
 
 #page-index .notion-text .link:hover,
 #page-index .notion-text .link:focus-visible {
-  background: #fff;
-  color: #000 !important;
+  background: transparent;
+  color: #fff !important;
   border-color: #fff;
 }
 
@@ -272,17 +273,23 @@ h3.notion-heading {
   opacity: 1;
   padding: 2px 8px;
   text-decoration: none;
+  transition: background-color 120ms ease-in, color 120ms ease-in, border-color 120ms ease-in;
 }
 
 .notion-page-group__parent:hover,
 .notion-page-group__parent:focus-visible {
-  background: #fff !important;
-  color: #000 !important;
+  background: transparent !important;
+  color: #fff !important;
   border-color: #fff !important;
 }
 
 .notion-page-group__parent .notion-page__title {
   color: #000;
+}
+
+.notion-page-group__parent:hover .notion-page__title,
+.notion-page-group__parent:focus-visible .notion-page__title {
+  color: #fff;
 }
 
 .notion-page-group__children {
@@ -294,19 +301,26 @@ h3.notion-heading {
   max-height: 0;
   overflow: hidden;
   opacity: 0;
+  padding-bottom: 0;
   transition: max-height 180ms ease-in-out, opacity 120ms ease-in, margin-top 120ms ease-in;
 }
 
 .notion-page-group:hover .notion-page-group__children,
 .notion-page-group:focus-within .notion-page-group__children {
-  max-height: 640px;
+  max-height: 1400px;
   opacity: 1;
   margin-top: 4px;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
 }
 
 .notion-page-group__child {
-  opacity: 0.65;
+  opacity: 0.85;
+}
+
+.notion-page-group__child:hover,
+.notion-page-group__child:focus-visible {
+  opacity: 1;
 }
 
 .notion-page__icon {

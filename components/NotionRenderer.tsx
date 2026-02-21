@@ -232,7 +232,7 @@ function buildRouteRenderContext(
   for (const [parentSlug, children] of childRoutesByParentSlug.entries()) {
     const uniqueChildren = Array.from(
       new Map(children.map((child) => [child.slug, child])).values()
-    ).sort((a, b) => a.slug.localeCompare(b.slug));
+    );
 
     childRoutesByParentSlug.set(parentSlug, uniqueChildren);
   }
@@ -240,14 +240,13 @@ function buildRouteRenderContext(
   if (expandableRouteGroups) {
     for (const [rawParentSlug, rawChildren] of Object.entries(expandableRouteGroups)) {
       const parentSlug = normalizeSlug(rawParentSlug);
-      const existing = childRoutesByParentSlug.get(parentSlug) ?? [];
-      const combined = [...existing, ...(rawChildren ?? [])].filter(
+      const normalizedChildren = (rawChildren ?? []).filter(
         (child) => child && typeof child.slug === "string" && child.slug.length > 0
       );
 
       const uniqueChildren = Array.from(
         new Map(
-          combined.map((child) => [
+          normalizedChildren.map((child) => [
             normalizeSlug(child.slug),
             {
               slug: normalizeSlug(child.slug),
@@ -255,9 +254,10 @@ function buildRouteRenderContext(
             },
           ])
         ).values()
-      ).sort((a, b) => a.slug.localeCompare(b.slug));
+      );
 
       if (uniqueChildren.length > 0) {
+        // Preserve Notion block order from the parent page for homepage expansions.
         childRoutesByParentSlug.set(parentSlug, uniqueChildren);
       }
     }
