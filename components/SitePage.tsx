@@ -133,6 +133,49 @@ function keepOnlyOnchainCoreItems(items: ExpandableChildRoute[]): ExpandableChil
   return picked;
 }
 
+function isDigitalAssetsParentSlug(slug: string): boolean {
+  return slug === "/digital-design-assets" || slug === "/digitaldesignassets";
+}
+
+function appendDigitalAssetsTailItems(
+  items: ExpandableChildRoute[]
+): ExpandableChildRoute[] {
+  const extras: ExpandableChildRoute[] = [
+    {
+      href: "/typeplayground",
+      label: "Type Playground",
+    },
+    {
+      href: "https://store.aex.design",
+      label: "Store",
+      external: true,
+    },
+  ];
+
+  function normalizeMatch(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  }
+
+  function isTypePlayground(item: ExpandableChildRoute): boolean {
+    const href = normalizeMatch(item.href);
+    const label = normalizeMatch(item.label);
+    return (
+      href === "typeplayground" ||
+      href === "type-playground".replace(/[^a-z0-9]+/g, "") ||
+      label === "typeplayground"
+    );
+  }
+
+  function isStore(item: ExpandableChildRoute): boolean {
+    const href = normalizeMatch(item.href);
+    const label = normalizeMatch(item.label);
+    return href.includes("storeaexdesign") || label === "store";
+  }
+
+  const baseItems = items.filter((item) => !isTypePlayground(item) && !isStore(item));
+  return [...baseItems, ...extras];
+}
+
 function collectExpandableItems(
   blocks: NotionBlock[] | undefined,
   slugById: Map<string, string>,
@@ -314,7 +357,11 @@ export async function SitePage({ page }: { page: NotionPageData }) {
         );
 
         const finalChildren =
-          parentSlug === "/onchain" ? keepOnlyOnchainCoreItems(children) : children;
+          parentSlug === "/onchain"
+            ? keepOnlyOnchainCoreItems(children)
+            : isDigitalAssetsParentSlug(parentSlug)
+              ? appendDigitalAssetsTailItems(children)
+              : children;
 
         if (finalChildren.length > 0) {
           groups[parentSlug] = Array.from(
