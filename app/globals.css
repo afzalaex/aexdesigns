@@ -226,7 +226,7 @@ h3.notion-heading {
   color: #000 !important;
   border: 1px solid #fff;
   border-radius: 0;
-  opacity: 0.78;
+  opacity: 1;
   text-decoration: none;
   padding: 2px 8px;
   transition: background-color 120ms ease-in, color 120ms ease-in, border-color 120ms ease-in,
@@ -238,8 +238,8 @@ h3.notion-heading {
   background: #fff;
   color: #000 !important;
   border-color: #fff;
-  opacity: 1;
-  filter: brightness(0.9);
+  opacity: 0.78;
+  filter: none;
 }
 
 .notion-page {
@@ -273,7 +273,7 @@ h3.notion-heading {
   background: #fff !important;
   color: #000 !important;
   border-color: #fff !important;
-  opacity: 0.78;
+  opacity: 1;
   padding: 2px 8px;
   text-decoration: none;
   transition: background-color 120ms ease-in, color 120ms ease-in, border-color 120ms ease-in,
@@ -285,8 +285,8 @@ h3.notion-heading {
   background: #fff !important;
   color: #000 !important;
   border-color: #fff !important;
-  opacity: 1;
-  filter: brightness(0.9);
+  opacity: 0.78;
+  filter: none;
 }
 
 .notion-page-group__parent .notion-page__title {
