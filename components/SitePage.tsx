@@ -1,5 +1,10 @@
 import { NotionRenderer } from "@/components/NotionRenderer";
-import { getRoutes, type NotionPageData } from "@/lib/notion";
+import {
+  getPageBySlug,
+  getRoutes,
+  type NotionBlock,
+  type NotionPageData,
+} from "@/lib/notion";
 
 function toPageClass(slug: string): string {
   if (slug === "/") {
@@ -18,6 +23,56 @@ type TopActionConfig = {
   buttonHref: string;
   buttonLabel: string;
 };
+
+type ExpandableChildRoute = {
+  slug: string;
+  label: string;
+};
+
+type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
+
+function normalizePageId(raw: string): string {
+  return raw.replace(/-/g, "").toLowerCase();
+}
+
+function collectChildPageBlocks(
+  blocks: NotionBlock[] | undefined
+): Array<{ id: string; title: string }> {
+  if (!blocks || blocks.length === 0) {
+    return [];
+  }
+
+  const childPages: Array<{ id: string; title: string }> = [];
+
+  for (const block of blocks) {
+    if (block.type === "child_page") {
+      childPages.push({
+        id: block.id,
+        title: block.child_page.title,
+      });
+    }
+
+    if (block.children?.length) {
+      childPages.push(...collectChildPageBlocks(block.children));
+    }
+  }
+
+  return childPages;
+}
+
+function childSlugByPageId(routeEntries: Array<{ slug: string; pageId?: string }>): Map<string, string> {
+  const byPageId = new Map<string, string>();
+
+  for (const route of routeEntries) {
+    if (typeof route.pageId !== "string" || route.pageId.trim().length === 0) {
+      continue;
+    }
+
+    byPageId.set(normalizePageId(route.pageId), route.slug);
+  }
+
+  return byPageId;
+}
 
 const topActionBySlug: Record<string, TopActionConfig> = {
   "/p5nels": {
@@ -96,6 +151,56 @@ const topActionBySlug: Record<string, TopActionConfig> = {
 
 export async function SitePage({ page }: { page: NotionPageData }) {
   const routeEntries = await getRoutes().catch(() => []);
+  let expandableRouteGroups: ExpandableRouteGroups | undefined;
+
+  if (page.slug === "/") {
+    const parentSlugs = [
+      "/onchain",
+      "/offchain",
+      "/digital-design-assets",
+      "/digitaldesignassets",
+      "/archive",
+    ];
+    const slugById = childSlugByPageId(routeEntries);
+    const groups: ExpandableRouteGroups = {};
+
+    for (const parentSlug of parentSlugs) {
+      try {
+        const parentPage = await getPageBySlug(parentSlug);
+        if (!parentPage) {
+          continue;
+        }
+
+        const childPages = collectChildPageBlocks(parentPage.blocks);
+        const children: ExpandableChildRoute[] = [];
+
+        for (const childPage of childPages) {
+          const childSlug = slugById.get(normalizePageId(childPage.id));
+          if (!childSlug || /-type-tester$/i.test(childSlug)) {
+            continue;
+          }
+
+          children.push({
+            slug: childSlug,
+            label: childPage.title,
+          });
+        }
+
+        if (children.length > 0) {
+          groups[parentSlug] = Array.from(
+            new Map(children.map((child) => [child.slug, child])).values()
+          );
+        }
+      } catch (error) {
+        console.error("Failed to resolve expandable child pages for:", parentSlug, error);
+      }
+    }
+
+    if (Object.keys(groups).length > 0) {
+      expandableRouteGroups = groups;
+    }
+  }
+
   const pageClass = toPageClass(page.slug);
   const articleId = `block-${page.id.replace(/-/g, "")}`;
   const topAction = topActionBySlug[page.slug];
@@ -134,6 +239,7 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           blocks={page.blocks}
           pageSlug={page.slug}
           routeEntries={routeEntries}
+          expandableRouteGroups={expandableRouteGroups}
         />
       </article>
     </main>

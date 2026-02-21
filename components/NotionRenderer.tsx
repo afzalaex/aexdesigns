@@ -41,6 +41,8 @@ type RouteRenderContextValue = {
   childRoutesByParentSlug: Map<string, ExpandableChildRoute[]>;
 };
 
+type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
+
 const expandableParentKeys = new Set([
   "onchain",
   "offchain",
@@ -190,7 +192,8 @@ function resolveRouteEntries(
 }
 
 function buildRouteRenderContext(
-  routeEntries?: RouteInputEntry[]
+  routeEntries?: RouteInputEntry[],
+  expandableRouteGroups?: ExpandableRouteGroups
 ): RouteRenderContextValue {
   const slugByPageId = new Map<string, string>();
   const childRoutesByParentSlug = new Map<string, ExpandableChildRoute[]>();
@@ -232,6 +235,32 @@ function buildRouteRenderContext(
     ).sort((a, b) => a.slug.localeCompare(b.slug));
 
     childRoutesByParentSlug.set(parentSlug, uniqueChildren);
+  }
+
+  if (expandableRouteGroups) {
+    for (const [rawParentSlug, rawChildren] of Object.entries(expandableRouteGroups)) {
+      const parentSlug = normalizeSlug(rawParentSlug);
+      const existing = childRoutesByParentSlug.get(parentSlug) ?? [];
+      const combined = [...existing, ...(rawChildren ?? [])].filter(
+        (child) => child && typeof child.slug === "string" && child.slug.length > 0
+      );
+
+      const uniqueChildren = Array.from(
+        new Map(
+          combined.map((child) => [
+            normalizeSlug(child.slug),
+            {
+              slug: normalizeSlug(child.slug),
+              label: child.label,
+            },
+          ])
+        ).values()
+      ).sort((a, b) => a.slug.localeCompare(b.slug));
+
+      if (uniqueChildren.length > 0) {
+        childRoutesByParentSlug.set(parentSlug, uniqueChildren);
+      }
+    }
   }
 
   return { slugByPageId, childRoutesByParentSlug };
@@ -874,12 +903,14 @@ export function NotionRenderer({
   blocks,
   pageSlug,
   routeEntries,
+  expandableRouteGroups,
 }: {
   blocks: NotionBlock[];
   pageSlug?: string;
   routeEntries?: RouteInputEntry[];
+  expandableRouteGroups?: ExpandableRouteGroups;
 }) {
-  const routeContext = buildRouteRenderContext(routeEntries);
+  const routeContext = buildRouteRenderContext(routeEntries, expandableRouteGroups);
 
   return (
     <>
