@@ -67,8 +67,21 @@ function normalizeMatchText(value: string): string {
 }
 
 function keepOnlyOnchainCoreItems(items: ExpandableChildRoute[]): ExpandableChildRoute[] {
+  const fixedByKey: Record<string, ExpandableChildRoute> = {
+    opepen: {
+      href: "https://www.opepen.art",
+      label: "Opepen",
+      external: true,
+    },
+    opensea: {
+      href: "https://www.opensea.io",
+      label: "Opensea",
+      external: true,
+    },
+  };
+
   const orderedMatchers: Array<{
-    key: string;
+    key: "every-days" | "collections" | "opepen" | "punkism" | "opensea";
     matches: (item: ExpandableChildRoute) => boolean;
   }> = [
     {
@@ -116,6 +129,16 @@ function keepOnlyOnchainCoreItems(items: ExpandableChildRoute[]): ExpandableChil
   const used = new Set<string>();
 
   for (const matcher of orderedMatchers) {
+    const fixedItem = fixedByKey[matcher.key];
+    if (fixedItem) {
+      const fixedKey = `${fixedItem.external ? "external" : "internal"}::${fixedItem.href}`;
+      if (!used.has(fixedKey)) {
+        used.add(fixedKey);
+        picked.push(fixedItem);
+      }
+      continue;
+    }
+
     const match = items.find((item) => {
       const key = `${item.external ? "external" : "internal"}::${item.href}`;
       return !used.has(key) && matcher.matches(item);
