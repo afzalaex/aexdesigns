@@ -121,6 +121,79 @@ a {
   flex: 1 1 auto;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.site-navbar__item {
+  position: relative;
+  list-style: none;
+}
+
+.site-navbar__item-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  color: var(--color-text-default);
+  text-decoration: none;
+  font-size: 0.88rem;
+  line-height: 1.2;
+  opacity: 0.75;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in;
+}
+
+.site-navbar__item:hover .site-navbar__item-link,
+.site-navbar__item:focus-within .site-navbar__item-link {
+  opacity: 1;
+  border-color: #fff;
+}
+
+.site-navbar__dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: none;
+  min-width: 220px;
+  max-width: 320px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-default);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  z-index: 120;
+}
+
+.site-navbar__item:hover .site-navbar__dropdown,
+.site-navbar__item:focus-within .site-navbar__dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.site-navbar__dropdown-item {
+  list-style: none;
+}
+
+.site-navbar__dropdown-link {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  color: var(--color-text-default);
+  text-decoration: none;
+  font-size: 0.82rem;
+  line-height: 1.25;
+  opacity: 0.78;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in;
+}
+
+.site-navbar__dropdown-link:hover,
+.site-navbar__dropdown-link:focus-visible {
+  opacity: 1;
+  border-color: #fff;
 }
 
 .site-navbar__viewport-wrapper {
@@ -666,6 +739,32 @@ figure.notion-embed {
 @media (max-width: 900px) {
   .site-navbar {
     height: var(--navbar-height);
+  }
+
+  .site-navbar__content {
+    padding-right: 8px;
+  }
+
+  .site-navbar__item-list {
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-navbar__item-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-navbar__item-link {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+    white-space: nowrap;
+  }
+
+  .site-navbar__dropdown {
+    right: auto;
+    left: 0;
+    max-width: min(85vw, 320px);
   }
 
   .notion-root {
