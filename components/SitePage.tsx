@@ -62,6 +62,77 @@ function toInternalHref(href: string): string {
   }
 }
 
+function normalizeMatchText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function keepOnlyOnchainCoreItems(items: ExpandableChildRoute[]): ExpandableChildRoute[] {
+  const orderedMatchers: Array<{
+    key: string;
+    matches: (item: ExpandableChildRoute) => boolean;
+  }> = [
+    {
+      key: "every-days",
+      matches: (item) => {
+        const label = normalizeMatchText(item.label);
+        const href = normalizeMatchText(item.href);
+        return item.href === "/every-days" || label.includes("e very days") || label.includes("every days") || href.includes("every days");
+      },
+    },
+    {
+      key: "collections",
+      matches: (item) => {
+        const label = normalizeMatchText(item.label);
+        return item.href === "/collections" || label.includes("collections");
+      },
+    },
+    {
+      key: "opepen",
+      matches: (item) => {
+        const label = normalizeMatchText(item.label);
+        const href = normalizeMatchText(item.href);
+        return label.includes("opepen") || href.includes("opepen");
+      },
+    },
+    {
+      key: "punkism",
+      matches: (item) => {
+        const label = normalizeMatchText(item.label);
+        const href = normalizeMatchText(item.href);
+        return label.includes("punkism") || href.includes("punkism");
+      },
+    },
+    {
+      key: "opensea",
+      matches: (item) => {
+        const label = normalizeMatchText(item.label);
+        const href = normalizeMatchText(item.href);
+        return label.includes("opensea") || href.includes("opensea");
+      },
+    },
+  ];
+
+  const picked: ExpandableChildRoute[] = [];
+  const used = new Set<string>();
+
+  for (const matcher of orderedMatchers) {
+    const match = items.find((item) => {
+      const key = `${item.external ? "external" : "internal"}::${item.href}`;
+      return !used.has(key) && matcher.matches(item);
+    });
+
+    if (!match) {
+      continue;
+    }
+
+    const key = `${match.external ? "external" : "internal"}::${match.href}`;
+    used.add(key);
+    picked.push(match);
+  }
+
+  return picked;
+}
+
 function collectExpandableItems(
   blocks: NotionBlock[] | undefined,
   slugById: Map<string, string>,
@@ -242,10 +313,13 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           includeParagraphLinks
         );
 
-        if (children.length > 0) {
+        const finalChildren =
+          parentSlug === "/onchain" ? keepOnlyOnchainCoreItems(children) : children;
+
+        if (finalChildren.length > 0) {
           groups[parentSlug] = Array.from(
             new Map(
-              children.map((child) => [
+              finalChildren.map((child) => [
                 `${child.external ? "external" : "internal"}::${child.href}`,
                 child,
               ])
