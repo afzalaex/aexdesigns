@@ -1,5 +1,5 @@
 import { NotionRenderer } from "@/components/NotionRenderer";
-import type { NotionPageData } from "@/lib/notion";
+import { getRoutes, type NotionPageData } from "@/lib/notion";
 
 function toPageClass(slug: string): string {
   if (slug === "/") {
@@ -94,7 +94,8 @@ const topActionBySlug: Record<string, TopActionConfig> = {
   },
 };
 
-export function SitePage({ page }: { page: NotionPageData }) {
+export async function SitePage({ page }: { page: NotionPageData }) {
+  const routeEntries = await getRoutes().catch(() => []);
   const pageClass = toPageClass(page.slug);
   const articleId = `block-${page.id.replace(/-/g, "")}`;
   const topAction = topActionBySlug[page.slug];
@@ -129,7 +130,11 @@ export function SitePage({ page }: { page: NotionPageData }) {
       </div>
 
       <article id={articleId} className="notion-root max-width">
-        <NotionRenderer blocks={page.blocks} pageSlug={page.slug} />
+        <NotionRenderer
+          blocks={page.blocks}
+          pageSlug={page.slug}
+          routeEntries={routeEntries}
+        />
       </article>
     </main>
   );

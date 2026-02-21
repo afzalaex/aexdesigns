@@ -22,7 +22,31 @@ type TesterMarker = {
 type RouteMapEntry = {
   slug?: string;
   pageId?: string;
+  title?: string;
 };
+
+type RouteInputEntry = {
+  slug: string;
+  pageId?: string;
+  title?: string;
+};
+
+type ExpandableChildRoute = {
+  slug: string;
+  label: string;
+};
+
+type RouteRenderContextValue = {
+  slugByPageId: Map<string, string>;
+  childRoutesByParentSlug: Map<string, ExpandableChildRoute[]>;
+};
+
+const expandableParentKeys = new Set([
+  "onchain",
+  "offchain",
+  "digitaldesignassets",
+  "archive",
+]);
 
 const testerConfigs: Record<string, TesterConfig> = {
   "/typecheck-type-tester": {
@@ -115,14 +139,103 @@ function slugFromTitle(title: string): string {
   return normalizeSlug(normalized ? `/${normalized}` : "/");
 }
 
-const childPageSlugById = new Map<string, string>(
-  (Array.isArray(routeMap) ? routeMap : [])
-    .filter(
-      (entry: RouteMapEntry): entry is Required<Pick<RouteMapEntry, "slug" | "pageId">> =>
-        typeof entry?.slug === "string" && typeof entry?.pageId === "string"
-    )
-    .map((entry) => [normalizePageId(entry.pageId), normalizeSlug(entry.slug)])
-);
+function slugKey(raw: string): string {
+  return raw.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function childLabelForParent(
+  parentSlug: string,
+  childSlug: string,
+  explicitTitle?: string
+): string {
+  const title = explicitTitle?.trim();
+  if (title) {
+    return title;
+  }
+
+  const prefix = `${normalizeSlug(parentSlug)}/`;
+  const remainder = normalizeSlug(childSlug).startsWith(prefix)
+    ? normalizeSlug(childSlug).slice(prefix.length)
+    : normalizeSlug(childSlug).replace(/^\//, "");
+
+  return remainder
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => segment.replace(/[-_]+/g, " "))
+    .join(" / ");
+}
+
+function resolveRouteEntries(
+  routeEntries?: RouteInputEntry[]
+): RouteInputEntry[] {
+  if (Array.isArray(routeEntries) && routeEntries.length > 0) {
+    return routeEntries;
+  }
+
+  const fallbackEntries: RouteInputEntry[] = [];
+
+  for (const entry of (Array.isArray(routeMap) ? routeMap : []) as RouteMapEntry[]) {
+    if (typeof entry?.slug !== "string") {
+      continue;
+    }
+
+    fallbackEntries.push({
+      slug: entry.slug,
+      pageId: typeof entry.pageId === "string" ? entry.pageId : undefined,
+      title: typeof entry.title === "string" ? entry.title : undefined,
+    });
+  }
+
+  return fallbackEntries;
+}
+
+function buildRouteRenderContext(
+  routeEntries?: RouteInputEntry[]
+): RouteRenderContextValue {
+  const slugByPageId = new Map<string, string>();
+  const childRoutesByParentSlug = new Map<string, ExpandableChildRoute[]>();
+  const entries = resolveRouteEntries(routeEntries);
+
+  for (const entry of entries) {
+    const slug = normalizeSlug(entry.slug);
+    const pageId = typeof entry.pageId === "string" ? entry.pageId.trim() : "";
+
+    if (pageId) {
+      slugByPageId.set(normalizePageId(pageId), slug);
+    }
+
+    if (/-type-tester$/i.test(slug)) {
+      continue;
+    }
+
+    const segments = slug.replace(/^\//, "").split("/").filter(Boolean);
+    if (segments.length < 2) {
+      continue;
+    }
+
+    const parentSlug = `/${segments[0]}`;
+    if (!expandableParentKeys.has(slugKey(parentSlug))) {
+      continue;
+    }
+
+    const existing = childRoutesByParentSlug.get(parentSlug) ?? [];
+    existing.push({
+      slug,
+      label: childLabelForParent(parentSlug, slug, entry.title),
+    });
+    childRoutesByParentSlug.set(parentSlug, existing);
+  }
+
+  for (const [parentSlug, children] of childRoutesByParentSlug.entries()) {
+    const uniqueChildren = Array.from(
+      new Map(children.map((child) => [child.slug, child])).values()
+    ).sort((a, b) => a.slug.localeCompare(b.slug));
+
+    childRoutesByParentSlug.set(parentSlug, uniqueChildren);
+  }
+
+  return { slugByPageId, childRoutesByParentSlug };
+}
 
 function blockDomId(id: string): string {
   return `block-${id.replace(/-/g, "")}`;
@@ -347,9 +460,11 @@ function RichText({ items }: { items: RichTextItemResponse[] }) {
 function BlockChildren({
   blocks,
   pageSlug,
+  routeContext,
 }: {
   blocks?: NotionBlock[];
   pageSlug?: string;
+  routeContext: RouteRenderContextValue;
 }) {
   if (!blocks || blocks.length === 0) {
     return null;
@@ -358,7 +473,12 @@ function BlockChildren({
   return (
     <>
       {blocks.map((block) => (
-        <Block key={block.id} block={block} pageSlug={pageSlug} />
+        <Block
+          key={block.id}
+          block={block}
+          pageSlug={pageSlug}
+          routeContext={routeContext}
+        />
       ))}
     </>
   );
@@ -383,7 +503,15 @@ function PageIcon() {
   );
 }
 
-function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
+function Block({
+  block,
+  pageSlug,
+  routeContext,
+}: {
+  block: NotionBlock;
+  pageSlug?: string;
+  routeContext: RouteRenderContextValue;
+}) {
   switch (block.type) {
     case "heading_1":
       return (
@@ -392,7 +520,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
           <h1 id={blockDomId(block.id)} className="notion-heading notion-semantic-string">
             <RichText items={block.heading_1.rich_text} />
           </h1>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
@@ -403,7 +531,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
           <h2 id={blockDomId(block.id)} className="notion-heading notion-semantic-string">
             <RichText items={block.heading_2.rich_text} />
           </h2>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
@@ -414,7 +542,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
           <h3 id={blockDomId(block.id)} className="notion-heading notion-semantic-string">
             <RichText items={block.heading_3.rich_text} />
           </h3>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
@@ -443,7 +571,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
           <p id={blockDomId(block.id)} className="notion-text notion-text__content notion-semantic-string">
             <RichText items={block.paragraph.rich_text} />
           </p>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
@@ -456,7 +584,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
           >
             <RichText items={block.quote.rich_text} />
           </blockquote>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
@@ -465,7 +593,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
         <ul className="notion-list notion-list-disc">
           <li id={blockDomId(block.id)} className="notion-text notion-semantic-string">
             <RichText items={block.bulleted_list_item.rich_text} />
-            <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+            <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
           </li>
         </ul>
       );
@@ -475,7 +603,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
         <ol className="notion-list notion-list-numbered">
           <li id={blockDomId(block.id)} className="notion-text notion-semantic-string">
             <RichText items={block.numbered_list_item.rich_text} />
-            <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+            <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
           </li>
         </ol>
       );
@@ -489,7 +617,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
               <RichText items={block.to_do.rich_text} />
             </span>
           </label>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
@@ -516,7 +644,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
           </div>
           {hasChildren ? (
             <div className="notion-toggle__content">
-              <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+              <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
             </div>
           ) : null}
         </div>
@@ -536,7 +664,7 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
               </span>
             </p>
           </div>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} />
+          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
     }
@@ -643,11 +771,50 @@ function Block({ block, pageSlug }: { block: NotionBlock; pageSlug?: string }) {
     }
 
     case "child_page": {
-      const mappedSlug = childPageSlugById.get(normalizePageId(block.id));
+      const mappedSlug = routeContext.slugByPageId.get(normalizePageId(block.id));
       const slug = mappedSlug ?? slugFromTitle(block.child_page.title);
 
       if (/-type-tester$/i.test(slug)) {
         return null;
+      }
+
+      const expandableChildren = routeContext.childRoutesByParentSlug.get(slug);
+
+      if (pageSlug === "/" && expandableChildren && expandableChildren.length > 0) {
+        return (
+          <div id={childPageBlockId(slug)} className="notion-page-group">
+            <Link
+              href={slug}
+              className="notion-page notion-page-group__parent"
+              data-server-link={true}
+              data-link-uri={slug}
+              prefetch={false}
+            >
+              <span className="notion-page__icon">
+                <PageIcon />
+              </span>
+              <span className="notion-page__title notion-semantic-string">
+                {block.child_page.title}
+              </span>
+            </Link>
+            <div className="notion-page-group__children">
+              {expandableChildren.map((child) => (
+                <Link
+                  key={child.slug}
+                  href={child.slug}
+                  className="notion-page notion-page-group__child"
+                  data-server-link={true}
+                  data-link-uri={child.slug}
+                  prefetch={false}
+                >
+                  <span className="notion-page__title notion-semantic-string">
+                    {child.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
       }
 
       return (
@@ -706,16 +873,26 @@ function TesterFigure({
 export function NotionRenderer({
   blocks,
   pageSlug,
+  routeEntries,
 }: {
   blocks: NotionBlock[];
   pageSlug?: string;
+  routeEntries?: RouteInputEntry[];
 }) {
+  const routeContext = buildRouteRenderContext(routeEntries);
+
   return (
     <>
       {blocks.map((block) => (
-        <Block key={block.id} block={block} pageSlug={pageSlug} />
+        <Block
+          key={block.id}
+          block={block}
+          pageSlug={pageSlug}
+          routeContext={routeContext}
+        />
       ))}
     </>
   );
 }
+
 
