@@ -219,6 +219,24 @@ h3.notion-heading {
   border-color: #fff;
 }
 
+#page-index .notion-text .link {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  color: #000 !important;
+  border: 1px solid #fff;
+  opacity: 1;
+  text-decoration: none;
+  padding: 2px 8px;
+}
+
+#page-index .notion-text .link:hover,
+#page-index .notion-text .link:focus-visible {
+  background: #fff;
+  color: #000 !important;
+  border-color: #fff;
+}
+
 .notion-page {
   text-decoration: underline;
   color: inherit;
