@@ -192,32 +192,14 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
           <Cell className={styles.empty} style={boardStyle(110, 490, 116.2, 180)} />
           <Cell className={styles.empty} style={boardStyle(236.2, 490, 186.8, 180)} />
 
-          <svg
-            className={styles.svgBlock}
-            style={boardStyle(236.2, 680, 186.8, 180)}
-            viewBox="0 0 186.8 180"
-            aria-hidden="true"
-          >
-            <polygon
-              className={styles.svgPolygon}
-              points="0,0 0,85 126.3,85 126.3,180 186.8,180 186.8,0"
-            />
-          </svg>
-          <svg
-            className={styles.svgBlock}
-            style={boardStyle(595, 110, 313, 370)}
-            viewBox="0 0 313 370"
-            aria-hidden="true"
-          >
-            <polygon
-              className={styles.svgPolygon}
-              points="0,0 149.7,0 149.7,190 313,190 313,370 0,370"
-            />
-          </svg>
+          <Cell className={styles.empty} style={boardStyle(236.2, 680, 116.2, 180)} />
+          <Cell className={styles.empty} style={boardStyle(362.4, 680, 60.6, 180)} />
+
+          <Cell className={styles.empty} style={boardStyle(595, 110, 149.7, 370)} />
+          <Cell className={styles.empty} style={boardStyle(754.7, 300, 153.3, 180)} />
 
           <Cell label="X" href={links.x} style={boardStyle(110, 680, 116.2, 85)} />
           <Cell label="IG" href={links.ig} style={boardStyle(110, 775, 116.2, 85)} />
-          <Cell label="GH" href={links.gh} style={boardStyle(236.2, 775, 116.2, 85)} />
 
           <h1 className={styles.heroTitle}>Intangible internet things.</h1>
         </div>

@@ -110,25 +110,6 @@
   cursor: default;
 }
 
-.svgBlock {
-  position: absolute;
-  display: block;
-  cursor: default;
-  z-index: 0;
-  overflow: visible;
-}
-
-.svgPolygon {
-  fill: transparent;
-  stroke: #fff;
-  stroke-width: var(--stroke-width);
-  stroke-linecap: square;
-  stroke-linejoin: miter;
-  vector-effect: non-scaling-stroke;
-  shape-rendering: geometricPrecision;
-  transition: fill 140ms ease;
-}
-
 .block:hover,
 .block:focus-visible {
   background: #fff;
@@ -144,10 +125,6 @@
 .group:has(.groupChild:focus-visible) .groupTitle {
   background: #fff;
   color: #000;
-}
-
-.svgBlock:hover .svgPolygon {
-  fill: #fff;
 }
 
 .block:focus-visible {
