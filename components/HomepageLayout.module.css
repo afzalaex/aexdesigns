@@ -156,5 +156,7 @@
   .heroTitle {
     font-size: clamp(1rem, 5.2vw, 1.6rem);
     line-height: 1.06;
+    max-width: calc(100% - var(--grid-content-start) - 8px);
+    overflow-wrap: anywhere;
   }
 }
