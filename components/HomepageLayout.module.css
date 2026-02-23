@@ -3,35 +3,41 @@
 }
 
 .homeWrap {
+  --frame-max: 820px;
+  --frame-inline-pad: clamp(6px, 1.8vw, 24px);
+  --grid-content-start: 11%;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   padding-top: 8px;
-  padding-left: clamp(10px, 2.2vw, 48px);
-  padding-right: clamp(10px, 2.2vw, 48px);
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .kicker {
-  width: min(820px, 100%);
+  width: min(var(--frame-max), calc(100vw - (var(--frame-inline-pad) * 2)));
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 11%;
+  padding-left: 0;
+  margin-bottom: 0;
+  overflow: visible;
 }
 
 .heroTitle {
   margin: 0;
-  font-size: clamp(0.9rem, 3.9vw, 2.55rem);
+  margin-left: var(--grid-content-start);
+  font-size: clamp(0.7rem, 2.8vw, 1.9rem);
   letter-spacing: 0.01em;
-  line-height: 1;
-  font-weight: 400;
+  line-height: 1.08;
+  font-weight: 700;
 }
 
 .board {
   --stroke-width: clamp(1px, 0.25vw, 2.5px);
-  width: min(820px, 100%);
+  width: min(var(--frame-max), calc(100vw - (var(--frame-inline-pad) * 2)));
   aspect-ratio: 1 / 1;
   position: relative;
   background: #000;
@@ -143,12 +149,7 @@
   .homeWrap {
     gap: 1px;
     padding-top: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
-  .board,
-  .kicker {
-    width: min(760px, 100%);
+    --frame-max: 760px;
+    --frame-inline-pad: 6px;
   }
 }
