@@ -120,10 +120,6 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
   return (
     <main id="page-index" className={`site-content page__index ${styles.homeMain}`}>
       <section className={styles.homeWrap}>
-        <div className={styles.kicker}>
-          <h1 className={styles.heroTitle}>Intangible internet things.</h1>
-        </div>
-
         <div className={styles.board}>
           <div className={styles.group} style={boardStyle(110, 110, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}>
             <Cell
@@ -222,6 +218,8 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
           <Cell label="X" href={links.x} style={boardStyle(110, 680, 116.2, 85)} />
           <Cell label="IG" href={links.ig} style={boardStyle(110, 775, 116.2, 85)} />
           <Cell label="GH" href={links.gh} style={boardStyle(236.2, 775, 116.2, 85)} />
+
+          <h1 className={styles.heroTitle}>Intangible internet things.</h1>
         </div>
       </section>
     </main>

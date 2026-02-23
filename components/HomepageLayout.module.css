@@ -5,34 +5,30 @@
 .homeWrap {
   --frame-max: 820px;
   --frame-inline-pad: clamp(6px, 1.8vw, 24px);
-  --grid-content-start: 11%;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
-  padding-top: 8px;
+  gap: 0;
+  padding-top: 2px;
   padding-left: 0;
   padding-right: 0;
 }
 
-.kicker {
-  width: min(var(--frame-max), calc(100vw - (var(--frame-inline-pad) * 2)));
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 0;
-  margin-bottom: 0;
-  overflow: visible;
-}
-
 .heroTitle {
+  position: absolute;
+  left: 50%;
+  bottom: 2.8%;
+  transform: translateX(-50%);
+  z-index: 2;
   margin: 0;
-  margin-left: var(--grid-content-start);
-  font-size: clamp(0.7rem, 2.8vw, 1.9rem);
+  width: min(84%, 560px);
+  text-align: center;
+  font-size: clamp(0.62rem, 2.35vw, 1.6rem);
   letter-spacing: 0.01em;
-  line-height: 1.08;
+  line-height: 1.06;
   font-weight: 700;
+  pointer-events: none;
 }
 
 .board {
@@ -160,16 +156,17 @@
 
 @media (max-width: 680px) {
   .homeWrap {
-    gap: 1px;
-    padding-top: 4px;
+    gap: 0;
+    padding-top: 1px;
     --frame-max: 760px;
     --frame-inline-pad: 2px;
   }
 
   .heroTitle {
-    font-size: clamp(1rem, 5.2vw, 1.6rem);
-    line-height: 1.06;
-    max-width: calc(100% - var(--grid-content-start) - 8px);
+    bottom: 2.4%;
+    width: min(90%, 520px);
+    font-size: clamp(0.82rem, 3.9vw, 1.25rem);
+    line-height: 1.08;
     overflow-wrap: anywhere;
   }
 }

@@ -47,6 +47,7 @@ type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
 const expandableParentKeys = new Set([
   "onchain",
   "offchain",
+  "dda",
   "digitaldesignassets",
   "archive",
 ]);

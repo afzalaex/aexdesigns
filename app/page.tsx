@@ -14,7 +14,7 @@ export const revalidate = 3600;
 const internalLinkCandidates = {
   onchain: ["/onchain"],
   offchain: ["/offchain"],
-  digitalAssets: ["/digital-design-assets", "/digitaldesignassets"],
+  digitalAssets: ["/dda", "/digital-design-assets", "/digitaldesignassets"],
   archive: ["/archive"],
 } as const;
 
@@ -83,6 +83,7 @@ function keyFromLabel(label: string): HomepageLinkKey | null {
       return "offchain";
     case "digitaldesignassets":
     case "digitalassets":
+    case "dda":
       return "digitalAssets";
     case "newsletter":
     case "letter":
@@ -115,7 +116,11 @@ function keyFromHref(rawHref: string): HomepageLinkKey | null {
       return "offchain";
     }
 
-    if (internalPath === "/digital-design-assets" || internalPath === "/digitaldesignassets") {
+    if (
+      internalPath === "/dda" ||
+      internalPath === "/digital-design-assets" ||
+      internalPath === "/digitaldesignassets"
+    ) {
       return "digitalAssets";
     }
 

@@ -157,7 +157,7 @@ function keepOnlyOnchainCoreItems(items: ExpandableChildRoute[]): ExpandableChil
 }
 
 function isDigitalAssetsParentSlug(slug: string): boolean {
-  return slug === "/digital-design-assets" || slug === "/digitaldesignassets";
+  return slug === "/dda" || slug === "/digital-design-assets" || slug === "/digitaldesignassets";
 }
 
 function appendDigitalAssetsTailItems(
@@ -358,6 +358,7 @@ export async function SitePage({ page }: { page: NotionPageData }) {
     const parentSlugs = [
       "/onchain",
       "/offchain",
+      "/dda",
       "/digital-design-assets",
       "/digitaldesignassets",
       "/archive",
