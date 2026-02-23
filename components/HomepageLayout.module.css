@@ -152,4 +152,9 @@
     --frame-max: 760px;
     --frame-inline-pad: 6px;
   }
+
+  .heroTitle {
+    font-size: clamp(1rem, 5.2vw, 1.6rem);
+    line-height: 1.06;
+  }
 }
