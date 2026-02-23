@@ -150,7 +150,7 @@
     gap: 1px;
     padding-top: 4px;
     --frame-max: 760px;
-    --frame-inline-pad: 6px;
+    --frame-inline-pad: 2px;
   }
 
   .heroTitle {
