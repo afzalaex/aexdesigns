@@ -1,0 +1,140 @@
+.homeMain {
+  padding-bottom: 20px;
+}
+
+.homeWrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  padding-left: clamp(16px, 4vw, 48px);
+  padding-right: clamp(16px, 4vw, 48px);
+}
+
+.kicker {
+  width: min(820px, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.board {
+  --stroke-width: clamp(1px, 0.25vw, 2.5px);
+  width: min(820px, 100%);
+  aspect-ratio: 1 / 1;
+  position: relative;
+  background: #000;
+}
+
+.group {
+  position: absolute;
+  pointer-events: none;
+}
+
+.groupMember {
+  pointer-events: auto;
+}
+
+.groupTitle {
+}
+
+.groupChild {
+}
+
+.block {
+  position: absolute;
+  z-index: 1;
+  border: var(--stroke-width) solid #fff;
+  color: #fff;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  text-align: center;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.interactive {
+  cursor: pointer;
+}
+
+.blockLabel {
+  color: currentColor;
+  pointer-events: none;
+  user-select: none;
+  font-size: clamp(0.5rem, 2.15vw, 1.35rem);
+  line-height: 1.16;
+}
+
+.titleCell .blockLabel,
+.titleLabel {
+  font-size: clamp(0.9rem, 3.9vw, 2.55rem);
+  letter-spacing: 0.01em;
+}
+
+.multiline {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.empty {
+  cursor: default;
+}
+
+.svgBlock {
+  position: absolute;
+  display: block;
+  cursor: default;
+  z-index: 0;
+}
+
+.svgPolygon {
+  fill: transparent;
+  stroke: #fff;
+  stroke-width: var(--stroke-width);
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+  transition: fill 140ms ease;
+}
+
+.block:hover,
+.block:focus-visible {
+  background: #fff;
+  color: #000;
+}
+
+.group:has(.groupTitle:hover) .groupMember {
+  background: #fff;
+  color: #000;
+}
+
+.group:has(.groupChild:hover) .groupTitle,
+.group:has(.groupChild:focus-visible) .groupTitle {
+  background: #fff;
+  color: #000;
+}
+
+.svgBlock:hover .svgPolygon {
+  fill: #fff;
+}
+
+.block:focus-visible {
+  outline: none;
+}
+
+@media (max-width: 680px) {
+  .homeWrap {
+    gap: 7px;
+    padding-top: 6px;
+  }
+
+  .board,
+  .kicker {
+    width: min(760px, 100%);
+  }
+}
