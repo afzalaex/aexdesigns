@@ -120,7 +120,7 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
     <main id="page-index" className={`site-content page__index ${styles.homeMain}`}>
       <section className={styles.homeWrap}>
         <div className={styles.kicker}>
-          <h1 className="notion-heading">Intangible internet things.</h1>
+          <h1 className={styles.heroTitle}>Intangible internet things.</h1>
         </div>
 
         <div className={styles.board}>

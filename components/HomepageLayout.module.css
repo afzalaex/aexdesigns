@@ -18,10 +18,15 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  padding-left: 11%;
 }
 
-.kicker :global(.notion-heading) {
+.heroTitle {
   margin: 0;
+  font-size: clamp(0.9rem, 3.9vw, 2.55rem);
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-weight: 400;
 }
 
 .board {
