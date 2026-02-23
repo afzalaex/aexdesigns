@@ -97,6 +97,19 @@
   gap: 2px;
 }
 
+.builderBlock {
+  text-align: center;
+}
+
+.builderLabel {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .empty {
   cursor: default;
 }

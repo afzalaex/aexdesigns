@@ -214,7 +214,8 @@ h3.notion-heading {
   transition: opacity 120ms ease-in, border-color 120ms ease-in;
 }
 
-.notion-semantic-string .link:hover {
+.notion-semantic-string .link:hover,
+.notion-semantic-string .link:focus-visible {
   opacity: 1;
   border-color: #fff;
 }
@@ -243,8 +244,10 @@ h3.notion-heading {
 }
 
 .notion-page {
-  text-decoration: underline;
   color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
   cursor: pointer;
   margin: 1px 0;
   border-radius: 0;
@@ -254,13 +257,14 @@ h3.notion-heading {
   align-items: center;
   opacity: 0.7;
   border: 1px solid transparent;
-  transition: opacity 120ms ease-in, border-color 120ms ease-in, background 120ms ease-in;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in;
 }
 
-.notion-page:hover {
-  background: transparent !important;
+.notion-page:hover,
+.notion-page:focus-visible {
   opacity: 1;
-  border-color: transparent;
+  border-color: #fff;
+  background: transparent !important;
 }
 
 .notion-page-group {
@@ -270,32 +274,32 @@ h3.notion-heading {
 }
 
 .notion-page-group__parent {
-  background: #fff !important;
-  color: #000 !important;
-  border-color: #fff !important;
-  opacity: 1;
-  padding: 2px 8px;
-  text-decoration: none;
-  transition: background-color 120ms ease-in, color 120ms ease-in, border-color 120ms ease-in,
-    opacity 120ms ease-in, filter 120ms ease-in;
+  background: transparent !important;
+  color: inherit !important;
+  border-color: transparent !important;
+  opacity: 0.7;
+  padding: 0 2px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in;
 }
 
 .notion-page-group__parent:hover,
 .notion-page-group__parent:focus-visible {
-  background: #fff !important;
-  color: #000 !important;
+  background: transparent !important;
+  color: inherit !important;
   border-color: #fff !important;
-  opacity: 0.78;
-  filter: none;
+  opacity: 1;
 }
 
 .notion-page-group__parent .notion-page__title {
-  color: #000;
+  color: inherit;
 }
 
 .notion-page-group__parent:hover .notion-page__title,
 .notion-page-group__parent:focus-visible .notion-page__title {
-  color: #000;
+  color: inherit;
 }
 
 .notion-page-group__children {

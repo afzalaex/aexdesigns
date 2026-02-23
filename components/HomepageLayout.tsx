@@ -18,6 +18,7 @@ const WORKS_GROUP_WIDTH = 475;
 const WORKS_GROUP_HEIGHT = 370;
 const WORDS_GROUP_WIDTH = 475;
 const WORDS_GROUP_HEIGHT = 370;
+const BUILDER_X_HREF = "https://x.com/afzalaex";
 
 function toPercent(value: number, base = BOARD_SIZE): string {
   return `${(value / base) * 100}%`;
@@ -179,7 +180,19 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
             />
           </div>
 
-          <Cell className={styles.empty} style={boardStyle(754.7, 110, 153.3, 180)} />
+          <Cell
+            className={styles.builderBlock}
+            label={
+              <span className={styles.builderLabel}>
+                <span>Built</span>
+                <span>by</span>
+                <span>Afzal</span>
+              </span>
+            }
+            href={BUILDER_X_HREF}
+            ariaLabel="Built by Afzal on X"
+            style={boardStyle(754.7, 110, 153.3, 180)}
+          />
           <Cell className={styles.empty} style={boardStyle(110, 490, 116.2, 180)} />
           <Cell className={styles.empty} style={boardStyle(236.2, 490, 186.8, 180)} />
 
