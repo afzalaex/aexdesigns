@@ -189,8 +189,7 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
             ariaLabel="Built by Afzal on X"
             style={boardStyle(754.7, 110, 153.3, 180)}
           />
-          <Cell className={styles.empty} style={boardStyle(110, 490, 116.2, 180)} />
-          <Cell className={styles.empty} style={boardStyle(236.2, 490, 186.8, 180)} />
+          <Cell className={styles.empty} style={boardStyle(110, 490, 313, 180)} />
 
           <Cell className={styles.empty} style={boardStyle(236.2, 680, 116.2, 180)} />
           <Cell className={styles.empty} style={boardStyle(362.4, 680, 60.6, 180)} />
