@@ -8,7 +8,6 @@ import { TypeTester } from "@/components/TypeTester";
 type TesterConfig = {
   fontFamily: string;
   fontWoff2: string;
-  fontWoff?: string;
   fontSizePx?: number;
   lineHeight?: number;
   textColor?: string;
@@ -55,47 +54,35 @@ const expandableParentKeys = new Set([
 const testerConfigs: Record<string, TesterConfig> = {
   "/typecheck-type-tester": {
     fontFamily: "TypeCheck",
-    fontWoff2:
-      "https://cdn.jsdelivr.net/gh/afzalaex/TypeCheck@main/TypeCheck.woff2",
-    fontWoff: "https://cdn.jsdelivr.net/gh/afzalaex/TypeCheck@main/TypeCheck.woff",
+    fontWoff2: "/fonts/TypeCheck.woff2",
     fontSizePx: 60,
     lineHeight: 1.12,
     textColor: "#fff",
   },
   "/aextract-type-tester": {
     fontFamily: "Aextract",
-    fontWoff2:
-      "https://cdn.jsdelivr.net/gh/afzalaex/Aextract@main/Aextract-Regular.woff2",
-    fontWoff:
-      "https://cdn.jsdelivr.net/gh/afzalaex/Aextract@main/Aextract-Regular.woff",
+    fontWoff2: "/fonts/Aextract.woff2",
     fontSizePx: 60,
     lineHeight: 1.12,
     textColor: "#fff",
   },
   "/nounty-type-tester": {
     fontFamily: "Nounty",
-    fontWoff2: "https://cdn.jsdelivr.net/gh/afzalaex/Nounty@main/Nounty.woff2",
-    fontWoff: "https://cdn.jsdelivr.net/gh/afzalaex/Nounty@main/Nounty.woff",
+    fontWoff2: "/fonts/Nounty.woff2",
     fontSizePx: 56,
     lineHeight: 1.1,
     textColor: "#fff",
   },
   "/aexpective-type-tester": {
     fontFamily: "AEXPECTIVE",
-    fontWoff2:
-      "https://cdn.jsdelivr.net/gh/afzalaex/AEXPECTIVE@main/AEXPECTIVE.woff2",
-    fontWoff:
-      "https://cdn.jsdelivr.net/gh/afzalaex/AEXPECTIVE@main/AEXPECTIVE.woff",
+    fontWoff2: "/fonts/AEXPECTIVE.woff2",
     fontSizePx: 42,
     lineHeight: 1.1,
     textColor: "#fff",
   },
   "/aextract36-type-tester": {
     fontFamily: "AEXTRACT36",
-    fontWoff2:
-      "https://cdn.jsdelivr.net/gh/afzalaex/AEXTRACT36@main/AEXTRACT36.woff2",
-    fontWoff:
-      "https://cdn.jsdelivr.net/gh/afzalaex/AEXTRACT36@main/AEXTRACT36.woff",
+    fontWoff2: "/fonts/AEXTRACT36.woff2",
     fontSizePx: 36,
     lineHeight: 1.1,
     textColor: "#fff",
@@ -254,8 +241,7 @@ function buildRouteRenderContext(
       const uniqueChildren = Array.from(
         new Map(
           normalizedChildren.map((child) => [
-            `${child.external ? "external" : "internal"}::${
-              child.external ? child.href : normalizeSlug(child.href)
+            `${child.external ? "external" : "internal"}::${child.external ? child.href : normalizeSlug(child.href)
             }`,
             {
               href: child.external ? child.href : normalizeSlug(child.href),
@@ -911,7 +897,6 @@ function TesterFigure({
         id={id}
         fontFamily={testerConfig.fontFamily}
         fontWoff2={testerConfig.fontWoff2}
-        fontWoff={testerConfig.fontWoff}
         fontSizePx={testerConfig.fontSizePx}
         lineHeight={testerConfig.lineHeight}
         textColor={testerConfig.textColor}

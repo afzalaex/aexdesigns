@@ -6,7 +6,6 @@ type TypeTesterProps = {
   id: string;
   fontFamily: string;
   fontWoff2: string;
-  fontWoff?: string;
   defaultText?: string;
   fontSizePx?: number;
   lineHeight?: number;
@@ -21,7 +20,6 @@ export function TypeTester({
   id,
   fontFamily,
   fontWoff2,
-  fontWoff,
   defaultText = "Type Your Own",
   fontSizePx = 60,
   lineHeight = 1.12,
@@ -60,9 +58,7 @@ export function TypeTester({
       <style>{`
         @font-face {
           font-family: '${localFontFamily}';
-          src:
-            url('${fontWoff2}') format('woff2')
-            ${fontWoff ? `, url('${fontWoff}') format('woff')` : ""};
+          src: url('${fontWoff2}') format('woff2');
           font-weight: normal;
           font-style: normal;
           font-display: swap;

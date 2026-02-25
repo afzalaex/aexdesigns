@@ -8,7 +8,6 @@ export type PlaygroundFont = {
   name: string;
   fontFamily: string;
   fontWoff2: string;
-  fontWoff?: string;
   fontSizePx: number;
   lineHeight: number;
   textColor: string;
@@ -59,7 +58,6 @@ export function TypePlayground({ fonts }: TypePlaygroundProps) {
           id="typeplayground-tester"
           fontFamily={activeFont.fontFamily}
           fontWoff2={activeFont.fontWoff2}
-          fontWoff={activeFont.fontWoff}
           defaultText="Type your own"
           fontSizePx={activeFont.fontSizePx}
           lineHeight={activeFont.lineHeight}
