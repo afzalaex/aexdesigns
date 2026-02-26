@@ -13,7 +13,7 @@ type TypeTesterProps = {
 };
 
 function escapeFontFamily(value: string): string {
-  return value.replace(/[^a-zA-Z0-9_-]/g, "");
+  return value.replace(/[^a-zA-Z0-9_\- ]/g, "");
 }
 
 export function TypeTester({
@@ -25,7 +25,6 @@ export function TypeTester({
   lineHeight = 1.12,
   textColor = "#fff",
 }: TypeTesterProps) {
-  const localFontFamily = `${escapeFontFamily(fontFamily)}-${id.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8)}`;
   const [currentFontSize, setCurrentFontSize] = useState<number>(fontSizePx);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLDivElement | null>(null);
@@ -55,15 +54,6 @@ export function TypeTester({
         inputRef.current?.focus();
       }}
     >
-      <style>{`
-        @font-face {
-          font-family: '${localFontFamily}';
-          src: url('${fontWoff2}') format('woff2');
-          font-weight: normal;
-          font-style: normal;
-          font-display: swap;
-        }
-      `}</style>
       <div className="aex-type-tester__controls">
         <label htmlFor={`aex-size-${id}`} className="aex-type-tester__label">
           Size
@@ -92,7 +82,7 @@ export function TypeTester({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         style={{
-          fontFamily: `'${localFontFamily}', 'Space Mono', monospace`,
+          fontFamily: `'${escapeFontFamily(fontFamily)}', 'Space Mono', monospace`,
           fontSize: `${currentFontSize}px`,
           lineHeight,
           color: textColor,

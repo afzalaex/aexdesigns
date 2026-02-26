@@ -1,3 +1,43 @@
+@font-face {
+  font-family: 'TypeCheck';
+  src: url('/fonts/TypeCheck.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nounty';
+  src: url('/fonts/Nounty.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'AEXPECTIVE';
+  src: url('/fonts/AEXPECTIVE.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aextract';
+  src: url('/fonts/Aextract.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'AEXTRACT36';
+  src: url('/fonts/AEXTRACT36.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --layout-max-width: 900px;
   --padding-right: calc(env(safe-area-inset-right) + 96px);
