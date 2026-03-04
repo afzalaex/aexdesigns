@@ -429,7 +429,7 @@ function RichText({ items }: { items: RichTextItemResponse[] }) {
   return (
     <>
       {items.map((item, index) => {
-        const visibleText = item.plain_text.trim().length > 0 ? item.plain_text : item.href ?? "";
+        const visibleText = item.plain_text || item.href || "";
         let node: ReactNode = textWithLineBreaks(visibleText, `rt-${index}`);
 
         if (item.href) {
@@ -589,6 +589,18 @@ function Block({
             />
           );
         }
+      }
+
+      if (block.paragraph.rich_text.length === 0) {
+        return (
+          <p
+            id={blockDomId(block.id)}
+            className="notion-text notion-text__content notion-semantic-string"
+            aria-hidden="true"
+          >
+            {"\u00a0"}
+          </p>
+        );
       }
 
       return (
