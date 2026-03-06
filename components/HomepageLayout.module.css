@@ -150,19 +150,14 @@
 }
 
 @media (max-width: 900px) {
+  .homeMain {
+    min-height: 0;
+    justify-content: flex-start;
+  }
+
   .homeWrap {
     --frame-max: 760px;
     --frame-inline-pad: clamp(8px, 3.2vw, 20px);
-  }
-}
-
-@media (max-width: 680px) {
-  .homeMain {
-    min-height: 0;
-  }
-
-  .homeWrap {
-    --frame-inline-pad: clamp(8px, 3.8vw, 14px);
     --frame-block-pad: clamp(4px, 1.4svh, 8px);
     min-height: auto;
     justify-content: flex-start;
@@ -181,5 +176,11 @@
     font-size: clamp(0.84rem, 3.9vw, 1.2rem);
     line-height: 1.12;
     overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 680px) {
+  .homeWrap {
+    --frame-inline-pad: clamp(8px, 3.8vw, 14px);
   }
 }
