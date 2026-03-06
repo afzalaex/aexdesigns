@@ -834,11 +834,22 @@ figure.notion-embed {
 }
 
 @media (max-width: 900px) {
+  html:has(#page-index.site-content),
+  body:has(#page-index.site-content) {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   #page-index.site-content {
+    position: fixed;
+    top: var(--navbar-height);
+    right: 0;
+    bottom: 0;
+    left: 0;
     display: block;
-    height: calc(100dvh - var(--navbar-height));
-    min-height: calc(100dvh - var(--navbar-height));
-    max-height: calc(100dvh - var(--navbar-height));
+    height: auto;
+    min-height: auto;
+    max-height: none;
     overflow: hidden;
   }
 
