@@ -158,13 +158,21 @@
 
 @media (max-width: 680px) {
   .homeMain {
-    min-height: calc(100svh - var(--navbar-height));
+    min-height: 0;
   }
 
   .homeWrap {
     --frame-inline-pad: clamp(8px, 3.8vw, 14px);
-    --frame-block-pad: clamp(8px, 2.4svh, 14px);
+    --frame-block-pad: clamp(4px, 1.4svh, 8px);
+    min-height: auto;
+    justify-content: flex-start;
     gap: 0;
+    padding-top: max(2px, env(safe-area-inset-top));
+    padding-bottom: 8px;
+  }
+
+  .board {
+    width: min(100%, var(--frame-max));
   }
 
   .heroTitle {
