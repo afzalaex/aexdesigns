@@ -112,11 +112,11 @@ a {
   display: flex;
   flex-direction: column;
   margin-top: 0;
-  padding-bottom: 96px;
+  padding-bottom: 0;
 }
 
-#page-index.site-content {
-  padding-bottom: 0 !important;
+.site-content:not(.page__index) {
+  padding-bottom: 96px;
 }
 
 .site-navbar {
