@@ -116,7 +116,7 @@ a {
 }
 
 #page-index.site-content {
-  padding-bottom: 0;
+  padding-bottom: 0 !important;
 }
 
 .site-navbar {
@@ -850,6 +850,7 @@ figure.notion-embed {
     height: auto;
     min-height: auto;
     max-height: none;
+    padding-bottom: 0 !important;
     overflow: hidden;
   }
 
