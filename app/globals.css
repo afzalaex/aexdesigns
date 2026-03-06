@@ -115,10 +115,6 @@ a {
   padding-bottom: 0;
 }
 
-.site-content:not(.page__index) {
-  padding-bottom: 96px;
-}
-
 .site-navbar {
   position: sticky;
   top: 0;
