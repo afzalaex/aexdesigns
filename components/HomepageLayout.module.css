@@ -1,41 +1,59 @@
 .homeMain {
-  padding-bottom: 20px;
+  width: 100%;
+  padding-bottom: 0;
+  min-height: calc(100svh - var(--navbar-height));
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
 }
 
 .homeWrap {
   --frame-max: 820px;
-  --frame-inline-pad: clamp(6px, 1.8vw, 24px);
-  width: 100%;
+  --frame-inline-pad: clamp(8px, 2vw, 24px);
+  --frame-block-pad: clamp(8px, 2.2svh, 18px);
+  --usable-height: max(
+    220px,
+    calc(100svh - var(--navbar-height) - (var(--frame-block-pad) * 2))
+  );
+  width: min(100%, var(--layout-max-width));
+  min-height: calc(100svh - var(--navbar-height));
+  margin-left: auto;
+  margin-right: auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 0;
-  padding-top: 2px;
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: max(var(--frame-inline-pad), env(safe-area-inset-left));
+  padding-right: max(var(--frame-inline-pad), env(safe-area-inset-right));
+  padding-top: var(--frame-block-pad);
+  padding-bottom: var(--frame-block-pad);
 }
 
 .heroTitle {
-  position: absolute;
-  left: 50%;
-  bottom: 2.8%;
-  transform: translateX(-50%);
-  z-index: 2;
   margin: 0;
   width: min(84%, 560px);
   text-align: center;
-  font-size: clamp(0.62rem, 2.35vw, 1.6rem);
+  font-size: clamp(0.72rem, 2vw, 1.35rem);
   letter-spacing: 0.01em;
-  line-height: 1.06;
+  line-height: 1.1;
   font-weight: 700;
+  position: absolute;
+  left: 50%;
+  top: 93%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
   pointer-events: none;
 }
 
 .board {
   --stroke-width: clamp(1px, 0.25vw, 2.5px);
-  width: min(var(--frame-max), calc(100vw - (var(--frame-inline-pad) * 2)));
+  width: min(100%, var(--frame-max), var(--usable-height));
   aspect-ratio: 1 / 1;
+  margin-left: auto;
+  margin-right: auto;
   position: relative;
+  z-index: 1;
   background: #000;
 }
 
@@ -131,19 +149,29 @@
   outline: none;
 }
 
-@media (max-width: 680px) {
+@media (max-width: 900px) {
   .homeWrap {
-    gap: 0;
-    padding-top: 1px;
     --frame-max: 760px;
-    --frame-inline-pad: 2px;
+    --frame-inline-pad: clamp(8px, 3.2vw, 20px);
+  }
+}
+
+@media (max-width: 680px) {
+  .homeMain {
+    min-height: calc(100svh - var(--navbar-height));
+  }
+
+  .homeWrap {
+    --frame-inline-pad: clamp(8px, 3.8vw, 14px);
+    --frame-block-pad: clamp(8px, 2.4svh, 14px);
+    gap: 0;
   }
 
   .heroTitle {
-    bottom: 2.4%;
     width: min(90%, 520px);
-    font-size: clamp(0.82rem, 3.9vw, 1.25rem);
-    line-height: 1.08;
+    top: 93.2%;
+    font-size: clamp(0.84rem, 3.9vw, 1.2rem);
+    line-height: 1.12;
     overflow-wrap: anywhere;
   }
 }

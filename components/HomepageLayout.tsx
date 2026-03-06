@@ -14,6 +14,7 @@ export type HomepageLinks = {
 };
 
 const BOARD_SIZE = 1000;
+const BOARD_CONTENT_X_OFFSET = -9;
 const WORKS_GROUP_WIDTH = 475;
 const WORKS_GROUP_HEIGHT = 370;
 const WORDS_GROUP_WIDTH = 475;
@@ -26,7 +27,7 @@ function toPercent(value: number, base = BOARD_SIZE): string {
 
 function boardStyle(x: number, y: number, width: number, height: number): CSSProperties {
   return {
-    left: toPercent(x),
+    left: toPercent(x + BOARD_CONTENT_X_OFFSET),
     top: toPercent(y),
     width: toPercent(width),
     height: toPercent(height),
@@ -199,7 +200,6 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
 
           <Cell label="X" href={links.x} style={boardStyle(110, 680, 116.2, 85)} />
           <Cell label="IG" href={links.ig} style={boardStyle(110, 775, 116.2, 85)} />
-
           <h1 className={styles.heroTitle}>Intangible internet things.</h1>
         </div>
       </section>
