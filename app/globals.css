@@ -115,6 +115,10 @@ a {
   padding-bottom: 96px;
 }
 
+#page-index.site-content {
+  padding-bottom: 0;
+}
+
 .site-navbar {
   position: sticky;
   top: 0;
@@ -830,6 +834,21 @@ figure.notion-embed {
 }
 
 @media (max-width: 900px) {
+  #page-index.site-content {
+    display: block;
+    height: calc(100dvh - var(--navbar-height));
+    min-height: calc(100dvh - var(--navbar-height));
+    max-height: calc(100dvh - var(--navbar-height));
+    overflow: hidden;
+  }
+
+  #page-index > section {
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
   .site-navbar {
     height: var(--navbar-height);
   }
