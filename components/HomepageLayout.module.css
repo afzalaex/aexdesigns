@@ -55,6 +55,7 @@
   position: relative;
   z-index: 1;
   background: #000;
+  overflow: hidden;
 }
 
 .group {
@@ -152,8 +153,10 @@
 @media (max-width: 900px) {
   .homeMain {
     min-height: 0;
+    display: block;
     align-items: flex-start;
     justify-content: flex-start;
+    overflow-x: clip;
   }
 
   .homeWrap {
