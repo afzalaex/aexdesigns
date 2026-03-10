@@ -1,3 +1,4 @@
+import { EveryDays2026Viewer } from "@/components/EveryDays2026Viewer";
 import { NotionRenderer } from "@/components/NotionRenderer";
 import {
   getPageBySlug,
@@ -31,9 +32,42 @@ type ExpandableChildRoute = {
 };
 
 type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
+const everyDaysCanvasMarkers = new Set([
+  "insert canvas here",
+  "[[every-days-2026-canvas]]",
+  "every-days-2026-canvas",
+]);
 
 function normalizePageId(raw: string): string {
   return raw.replace(/-/g, "").toLowerCase();
+}
+
+function joinRichTextPlainText(
+  items: Array<{ plain_text?: string }> | undefined
+): string {
+  if (!items || items.length === 0) {
+    return "";
+  }
+
+  return items.map((item) => item.plain_text ?? "").join("");
+}
+
+function normalizeCanvasMarker(value: string): string {
+  return value.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function findEveryDaysCanvasMarkerIndex(blocks: NotionBlock[]): number {
+  return blocks.findIndex((block) => {
+    if (block.type !== "paragraph") {
+      return false;
+    }
+
+    const text = normalizeCanvasMarker(
+      joinRichTextPlainText(block.paragraph.rich_text)
+    );
+
+    return everyDaysCanvasMarkers.has(text);
+  });
 }
 
 function isInternalHref(href: string): boolean {
@@ -410,6 +444,20 @@ export async function SitePage({ page }: { page: NotionPageData }) {
   const pageClass = toPageClass(page.slug);
   const articleId = `block-${page.id.replace(/-/g, "")}`;
   const topAction = topActionBySlug[page.slug];
+  const everyDaysCanvasMarkerIndex =
+    page.slug === "/every-days" ? findEveryDaysCanvasMarkerIndex(page.blocks) : -1;
+  const blocksBeforeEveryDaysCanvas =
+    everyDaysCanvasMarkerIndex >= 0
+      ? page.blocks.slice(0, everyDaysCanvasMarkerIndex)
+      : page.blocks;
+  const blocksAfterEveryDaysCanvas =
+    everyDaysCanvasMarkerIndex >= 0
+      ? page.blocks.slice(everyDaysCanvasMarkerIndex + 1)
+      : [];
+  const shouldRenderEveryDaysCanvasAtMarker =
+    page.slug === "/every-days" && everyDaysCanvasMarkerIndex >= 0;
+  const shouldRenderEveryDaysCanvasFallback =
+    page.slug === "/every-days" && everyDaysCanvasMarkerIndex < 0;
 
   return (
     <main id={`page-${pageClass}`} className={`site-content page__${pageClass}`}>
@@ -440,13 +488,28 @@ export async function SitePage({ page }: { page: NotionPageData }) {
         </div>
       </div>
 
+      {shouldRenderEveryDaysCanvasFallback ? (
+        <section className="notion-root max-width">
+          <EveryDays2026Viewer />
+        </section>
+      ) : null}
+
       <article id={articleId} className="notion-root max-width">
         <NotionRenderer
-          blocks={page.blocks}
+          blocks={blocksBeforeEveryDaysCanvas}
           pageSlug={page.slug}
           routeEntries={routeEntries}
           expandableRouteGroups={expandableRouteGroups}
         />
+        {shouldRenderEveryDaysCanvasAtMarker ? <EveryDays2026Viewer /> : null}
+        {blocksAfterEveryDaysCanvas.length > 0 ? (
+          <NotionRenderer
+            blocks={blocksAfterEveryDaysCanvas}
+            pageSlug={page.slug}
+            routeEntries={routeEntries}
+            expandableRouteGroups={expandableRouteGroups}
+          />
+        ) : null}
       </article>
     </main>
   );

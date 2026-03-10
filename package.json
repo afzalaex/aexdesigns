@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "sync:collection-2026": "node scripts/sync-collection-2026.mjs",
     "seed:route-map": "node scripts/seed-route-map-from-sitemap.mjs",
     "fill:route-map-live": "node scripts/fill-route-map-from-live-site.mjs",
     "migrate:images:r2": "node scripts/migrate-notion-images-to-r2.mjs",

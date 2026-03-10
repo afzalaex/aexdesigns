@@ -1,0 +1,298 @@
+{
+  "artworks": [
+    {
+      "id": 733,
+      "name": "Arrowhere",
+      "file": "733.js",
+      "description": "Click to interact"
+    },
+    {
+      "id": 734,
+      "name": "Parenticles",
+      "file": "734.js",
+      "description": "Hover to interact"
+    },
+    {
+      "id": 735,
+      "name": "Gridance",
+      "file": "735.js",
+      "description": "Hover over the grid to make it dance"
+    },
+    {
+      "id": 736,
+      "name": "Pointoline",
+      "file": "736.js",
+      "description": "Hover over the grid to convert points to lines"
+    },
+    {
+      "id": 737,
+      "name": "Albersystem",
+      "file": "737.js",
+      "description": "Hover over the grid to fill it up"
+    },
+    {
+      "id": 738,
+      "name": "Connect the dots",
+      "file": "738.js",
+      "description": "Hover over the grid to connect the dots"
+    },
+    {
+      "id": 739,
+      "name": "Diaxis",
+      "file": "739.js",
+      "description": "Hover over the grid to form squares from diagonals"
+    },
+    {
+      "id": 740,
+      "name": "Divibe",
+      "file": "740.js",
+      "description": "Hover over the grid to change its vibe to divide"
+    },
+    {
+      "id": 741,
+      "name": "Organized mess",
+      "file": "741.js",
+      "description": "Hover over the grid to organize the mess"
+    },
+    {
+      "id": 742,
+      "name": "Energrid",
+      "file": "742.js",
+      "description": "Hover over the grid to generate energy"
+    },
+    {
+      "id": 743,
+      "name": "Polyomess",
+      "file": "743.js",
+      "description": "Drag and drop, organize the polyominoes"
+    },
+    {
+      "id": 744,
+      "name": "Tesselost",
+      "file": "744.js",
+      "description": "Hover over the grid to explore the tessellations"
+    },
+    {
+      "id": 745,
+      "name": "Decagem",
+      "file": "745.js",
+      "description": "Click on the Decagem to regenerate"
+    },
+    {
+      "id": 746,
+      "name": "Polygems",
+      "file": "746.js",
+      "description": "Click and explore Polygems"
+    },
+    {
+      "id": 747,
+      "name": "Isobars",
+      "file": "747.js",
+      "description": "Click on a bar to raise the bar"
+    },
+    {
+      "id": 748,
+      "name": "Albers Opepen",
+      "file": "748.js",
+      "description": "Hover and feel the Albers magic"
+    },
+    {
+      "id": 749,
+      "name": "Evoloop",
+      "file": "749.js",
+      "description": "Click to evolve"
+    },
+    {
+      "id": 750,
+      "name": "Linknot",
+      "file": "750.js",
+      "description": "Click on the links to untie"
+    },
+    {
+      "id": 751,
+      "name": "Displaycement",
+      "file": "751.js",
+      "description": "Click on the display to displace"
+    },
+    {
+      "id": 752,
+      "name": "Bend Reality",
+      "file": "752.js",
+      "description": "Scroll to bend reality"
+    },
+    {
+      "id": 753,
+      "name": "Diagrow",
+      "file": "753.js",
+      "description": "Click to grow"
+    },
+    {
+      "id": 754,
+      "name": "Cubide",
+      "file": "754.js",
+      "description": "Click on the cube to divide"
+    },
+    {
+      "id": 755,
+      "name": "UCO - Unidentified Celestial Objects",
+      "file": "755.js",
+      "description": ""
+    },
+    {
+      "id": 756,
+      "name": "Orderrupted",
+      "file": "756.js",
+      "description": "Interact to interrupt the order"
+    },
+    {
+      "id": 757,
+      "name": "way-axis",
+      "file": "757.js",
+      "description": "Hover to distort the axis"
+    },
+    {
+      "id": 758,
+      "name": "Chordrive",
+      "file": "758.js",
+      "description": ""
+    },
+    {
+      "id": 759,
+      "name": "Vectraxis",
+      "file": "759.js",
+      "description": ""
+    },
+    {
+      "id": 760,
+      "name": "Open Mazetrix",
+      "file": "760.js",
+      "description": "Hover to explore the Open Mazetrix"
+    },
+    {
+      "id": 761,
+      "name": "Diaradial",
+      "file": "761.js",
+      "description": "Hover to explore the radillusion"
+    },
+    {
+      "id": 762,
+      "name": "Spiround",
+      "file": "762.js",
+      "description": "Hover to make the spiral go round"
+    },
+    {
+      "id": 763,
+      "name": "Grimpulsive",
+      "file": "763.js",
+      "description": ""
+    },
+    {
+      "id": 764,
+      "name": "Celestia",
+      "file": "764.js",
+      "description": "Click on it to generate new"
+    },
+    {
+      "id": 765,
+      "name": "Slicepace",
+      "file": "765.js",
+      "description": "Click on the space to slice"
+    },
+    {
+      "id": 766,
+      "name": "Rectrip",
+      "file": "766.js",
+      "description": "Scroll over it to rotate"
+    },
+    {
+      "id": 767,
+      "name": "Microfield",
+      "file": "767.js",
+      "description": "Hover over to interact"
+    },
+    {
+      "id": 768,
+      "name": "Wavector",
+      "file": "768.js",
+      "description": "Click on it to regenerate"
+    },
+    {
+      "id": 769,
+      "name": "Spiralysis",
+      "file": "769.js",
+      "description": "Scroll over to interact"
+    },
+    {
+      "id": 770,
+      "name": "Polygo",
+      "file": "770.js",
+      "description": "Click to evolve"
+    },
+    {
+      "id": 771,
+      "name": "Dianamics",
+      "file": "771.js",
+      "description": "Click on it to regenerate"
+    },
+    {
+      "id": 772,
+      "name": "Rectripping",
+      "file": "772.js",
+      "description": ""
+    },
+    {
+      "id": 773,
+      "name": "Desporbs",
+      "file": "773.js",
+      "description": ""
+    },
+    {
+      "id": 774,
+      "name": "Crostate",
+      "file": "774.js",
+      "description": "Hover to make the crosses rotate"
+    },
+    {
+      "id": 775,
+      "name": "Uneven",
+      "file": "775.js",
+      "description": "Click to evolve"
+    },
+    {
+      "id": 776,
+      "name": "Fragmenta",
+      "file": "776.js",
+      "description": "Click to evolve"
+    },
+    {
+      "id": 777,
+      "name": "Distopia",
+      "file": "777.js",
+      "description": "Click to distort"
+    },
+    {
+      "id": 778,
+      "name": "Cryptars",
+      "file": "778.js",
+      "description": "Click to evolve"
+    },
+    {
+      "id": 779,
+      "name": "Cutframe",
+      "file": "779.js",
+      "description": "Click to evolve"
+    },
+    {
+      "id": 780,
+      "name": "Vecture",
+      "file": "780.js",
+      "description": "Click to evolve"
+    },
+    {
+      "id": 781,
+      "name": "Unterra",
+      "file": "781.js",
+      "description": "Click to evolve"
+    }
+  ]
+}

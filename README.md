@@ -13,6 +13,9 @@ Production website for `aex.design`, built with Next.js and Notion as the CMS.
 - Notion block rendering with custom local UI (`components/NotionRenderer.tsx`)
 - Native type tester system (`components/TypeTester.tsx`)
 - Dedicated `/typeplayground` page with interactive font testers
+- Hybrid `/every-days` system:
+  - 2024/2025 remain Notion-rendered
+  - 2026 generative viewer is repo-driven and loaded from external p5 sketches
 - Page-level top actions (license/mint + release year + buy/get)
 - Performance-first delivery:
   - ISR for route HTML (`revalidate = 3600`)
@@ -28,6 +31,9 @@ Production website for `aex.design`, built with Next.js and Notion as the CMS.
 - `components/NotionRenderer.tsx`: Notion block renderer
 - `components/TypeTester.tsx`: native tester component
 - `components/SitePage.tsx`: page shell + top action UI
+- `components/EveryDays2026Viewer.tsx`: `/every-days` 2026 generative viewer
+- `public/data/collection-2026.json`: 2026 artwork metadata registry
+- `scripts/sync-collection-2026.mjs`: registry expansion utility
 - `app/globals.css`: global and component styles
 
 ## Environment Variables
@@ -63,6 +69,58 @@ curl.exe -X POST https://www.aex.design/api/notion-revalidate `
 
 The endpoint clears runtime Notion cache and triggers ISR path revalidation.
 
+## `/every-days` 2026 Workflow
+The `/every-days` page is split:
+- 2024/2025 content: still rendered from Notion
+- 2026 content: rendered by the local viewer component and metadata JSON
+
+### Where To Edit
+- Sketch source:
+  - external repo `afzalaex/every-days-2026`
+  - path pattern: `sketches/<id>.js`
+- Artwork metadata in this repo:
+  - `public/data/collection-2026.json`
+  - editable fields per artwork:
+    - `name`
+    - `description`
+
+Example:
+```json
+{
+  "id": 781,
+  "name": "Example Artwork",
+  "file": "781.js",
+  "description": "Short description."
+}
+```
+
+### Add More Artwork IDs
+To add blank entries past the current max ID:
+```bash
+npm run sync:collection-2026 -- 782
+```
+
+That preserves existing metadata and appends blank entries up to the ID you pass.
+
+### Notion Marker Placement
+The 2026 viewer renders inside `/every-days` where a top-level Notion paragraph matches one of:
+- `insert canvas here`
+- `[[every-days-2026-canvas]]`
+- `every-days-2026-canvas`
+
+If the marker is missing, the viewer falls back to rendering above the Notion content.
+
+### When To Redeploy vs Revalidate
+- Notion-only text/layout edits:
+  - use the revalidation endpoint
+  - no redeploy needed
+- Changes to:
+  - `public/data/collection-2026.json`
+  - `components/EveryDays2026Viewer.tsx`
+  - `components/SitePage.tsx`
+  - sketch-loading logic or scripts
+  - redeploy required
+
 ### Local Secret Convenience
 Store your revalidate secret in a local ignored file `.secret`:
 ```text
@@ -94,10 +152,35 @@ Other commands:
 - `npm run typecheck`
 - `npm run build`
 - `npm run start`
+- `npm run sync:collection-2026 -- <id>`
+
+Check `/every-days` locally:
+```bash
+npm run dev
+```
+
+Then open:
+```text
+http://localhost:3000/every-days
+```
 
 ## Deployment
 - Standard flow: push `main` to GitHub; Vercel auto-deploys.
 - Manual production deploy (CLI):
+```bash
+npx vercel --prod --yes
+```
+
+Recommended release flow for `/every-days` updates:
+```bash
+npm run typecheck
+npm run build
+git add .
+git commit -m "Update every-days 2026 viewer"
+git push origin main
+```
+
+If you need to force production deploy after push:
 ```bash
 npx vercel --prod --yes
 ```
