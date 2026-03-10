@@ -270,6 +270,7 @@ export function EveryDays2026Viewer() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sketchSource, setSketchSource] = useState<string | null>(null);
+  const [isCollectionLoading, setIsCollectionLoading] = useState(true);
   const [collectionError, setCollectionError] = useState<string | null>(null);
   const [frameState, setFrameState] = useState<FrameState>("idle");
   const [frameError, setFrameError] = useState<string | null>(null);
@@ -298,6 +299,7 @@ export function EveryDays2026Viewer() {
         setCollectionError(
           nextArtworks.length === 0 ? "No 2026 artworks were found." : null
         );
+        setIsCollectionLoading(false);
         setSelectedId((current) => {
           if (
             current !== null &&
@@ -317,6 +319,7 @@ export function EveryDays2026Viewer() {
         console.error("Failed to load 2026 collection:", error);
         setArtworks([]);
         setSelectedId(null);
+        setIsCollectionLoading(false);
         setCollectionError("Unable to load the 2026 collection.");
       }
     }
@@ -331,7 +334,7 @@ export function EveryDays2026Viewer() {
   useEffect(() => {
     if (selectedId === null) {
       setSketchSource(null);
-      setFrameState("idle");
+      setFrameState(isCollectionLoading ? "loading" : "idle");
       setFrameError(null);
       return;
     }
@@ -387,7 +390,7 @@ export function EveryDays2026Viewer() {
     return () => {
       cancelled = true;
     };
-  }, [artworks, selectedId]);
+  }, [artworks, isCollectionLoading, selectedId]);
 
   useEffect(() => {
     function handleMessage(event: MessageEvent<FrameMessage>) {
@@ -481,7 +484,7 @@ export function EveryDays2026Viewer() {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className={styles.placeholder}>Select an artwork to load it.</div>
+          <div className={styles.placeholder} aria-hidden="true" />
         )}
 
         {frameState === "loading" ? (
