@@ -187,27 +187,6 @@ function buildSketchDocument(artwork: Artwork, sketchSource: string): string {
           document.head.appendChild(script);
         }
 
-        function applyPerformanceDefaults() {
-          try {
-            if (typeof window.pixelDensity === "function") {
-              window.pixelDensity(1);
-            }
-          } catch (error) {}
-        }
-
-        function wrapGlobalSetup() {
-          if (window.__aexSetupWrapped || typeof window.setup !== "function") {
-            return;
-          }
-
-          var originalSetup = window.setup;
-          window.setup = function () {
-            applyPerformanceDefaults();
-            return originalSetup.apply(this, arguments);
-          };
-          window.__aexSetupWrapped = true;
-        }
-
         function startOnDemandGlobalMode() {
           if (readySent || window.__aexStarted) {
             return;
@@ -244,7 +223,6 @@ function buildSketchDocument(artwork: Artwork, sketchSource: string): string {
 
         window.__aexPost = post;
         injectSketchSource(sketchSource);
-        wrapGlobalSetup();
 
         window.addEventListener("error", function (event) {
           post("error", event.message || "Unable to load sketch.");
