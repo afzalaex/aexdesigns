@@ -187,6 +187,27 @@ function buildSketchDocument(artwork: Artwork, sketchSource: string): string {
           document.head.appendChild(script);
         }
 
+        function applyPerformanceDefaults() {
+          try {
+            if (typeof window.pixelDensity === "function") {
+              window.pixelDensity(1);
+            }
+          } catch (error) {}
+        }
+
+        function wrapGlobalSetup() {
+          if (window.__aexSetupWrapped || typeof window.setup !== "function") {
+            return;
+          }
+
+          var originalSetup = window.setup;
+          window.setup = function () {
+            applyPerformanceDefaults();
+            return originalSetup.apply(this, arguments);
+          };
+          window.__aexSetupWrapped = true;
+        }
+
         function startOnDemandGlobalMode() {
           if (readySent || window.__aexStarted) {
             return;
@@ -223,6 +244,7 @@ function buildSketchDocument(artwork: Artwork, sketchSource: string): string {
 
         window.__aexPost = post;
         injectSketchSource(sketchSource);
+        wrapGlobalSetup();
 
         window.addEventListener("error", function (event) {
           post("error", event.message || "Unable to load sketch.");
@@ -498,7 +520,6 @@ export function EveryDays2026Viewer() {
       </div>
 
       <div className={styles.selector} ref={selectorRef}>
-        <span className={styles.selectorLabel}>Artwork</span>
         <button
           type="button"
           className={styles.select}
@@ -556,49 +577,38 @@ export function EveryDays2026Viewer() {
       <div className={styles.meta}>
         <div className={styles.metaHeader}>
           <div className={styles.metaMain}>
-            <p className={styles.name}>{artworkName}</p>
-            <p className={`${styles.number} notion-text notion-semantic-string`}>
-              {selectedArtwork ? `Artwork #${selectedArtwork.id}` : "Artwork"}
+            <h2 className={`${styles.name} notion-heading notion-semantic-string`}>
+              {artworkName}
+            </h2>
+            <p
+              className={`${styles.number} notion-text notion-text__content notion-semantic-string`}
+            >
+              {selectedArtwork ? `#${selectedArtwork.id}` : ""}
             </p>
             {description ? (
-              <p className={`${styles.description} notion-text notion-semantic-string`}>
+              <p
+                className={`${styles.description} notion-text notion-text__content notion-semantic-string`}
+              >
                 {description}
               </p>
             ) : null}
-          </div>
-
-          <div className={styles.metaAside}>
-            <p className={`${styles.collectionLink} notion-text notion-semantic-string`}>
+            <p
+              className={`${styles.collectionLink} notion-text notion-text__content notion-semantic-string`}
+            >
               <a
                 className="notion-link link"
                 href="https://networked.art/0x237047f8b97ab581974acaec36e6abba793a29b1/0x0f3f91d3dee2d6172a3c496b392ebeaa26318842"
                 target="_blank"
                 rel="noreferrer"
               >
-                Mint Collection
+                More details
               </a>
             </p>
-            <div className={styles.metaRail}>
-              <p className={`${styles.network} notion-text notion-semantic-string`}>
-                Built on Ethereum
-              </p>
-              <p className={`${styles.protocol} notion-text notion-semantic-string`}>
-                Powered by{" "}
-                <a
-                  className="notion-link link"
-                  href="https://docs.mint.vv.xyz/guide/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Mint Protocol VV
-                </a>
-              </p>
-            </div>
           </div>
         </div>
         {collectionError ? (
           <p
-            className={`${styles.collectionError} notion-text notion-semantic-string`}
+            className={`${styles.collectionError} notion-text notion-text__content notion-semantic-string`}
             role="alert"
           >
             {collectionError}

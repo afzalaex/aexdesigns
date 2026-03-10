@@ -133,60 +133,22 @@
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
 }
 
 .metaHeader {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
-  align-items: start;
+  display: block;
 }
 
 .metaMain {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   min-width: 0;
 }
 
-.metaAside {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 220px;
-  justify-self: end;
-}
-
-.collectionLink {
-  margin: 0;
-  text-align: right;
-}
-
-.metaRail {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: right;
-}
-
 .name {
-  margin: 0;
-  font-size: clamp(1.4rem, 4vw, 2.3rem);
-  line-height: 1.05;
-}
-
-.number,
-.description,
-.collectionError {
-  margin: 0;
-  line-height: 1.5;
-}
-
-.protocol a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  margin-top: 0;
 }
 
 .collectionError {
@@ -201,23 +163,7 @@
   }
 
   .metaHeader {
-    grid-template-columns: 1fr;
-  }
-
-  .metaRail {
-    min-width: 0;
-    width: 100%;
-    text-align: left;
-  }
-
-  .metaAside {
-    min-width: 0;
-    width: 100%;
-    justify-self: stretch;
-  }
-
-  .collectionLink {
-    text-align: left;
+    display: block;
   }
 
   .canvasShell {
