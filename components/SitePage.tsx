@@ -143,7 +143,7 @@ function keepOnlyOnchainCoreItems(items: ExpandableChildRoute[]): ExpandableChil
   };
 
   const orderedMatchers: Array<{
-    key: "every-days" | "collections" | "opepen" | "punkism" | "opensea";
+    key: "every-days" | "opepen" | "punkism" | "opensea";
     matches: (item: ExpandableChildRoute) => boolean;
   }> = [
     {
@@ -152,13 +152,6 @@ function keepOnlyOnchainCoreItems(items: ExpandableChildRoute[]): ExpandableChil
         const label = normalizeMatchText(item.label);
         const href = normalizeMatchText(item.href);
         return item.href === "/every-days" || label.includes("e very days") || label.includes("every days") || href.includes("every days");
-      },
-    },
-    {
-      key: "collections",
-      matches: (item) => {
-        const label = normalizeMatchText(item.label);
-        return item.href === "/collections" || label.includes("collections");
       },
     },
     {
