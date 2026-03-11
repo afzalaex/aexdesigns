@@ -40,6 +40,7 @@
 
 :root {
   --layout-max-width: 900px;
+  --navbar-inline-pad: 10px;
   --padding-right: calc(env(safe-area-inset-right) + 96px);
   --padding-left: calc(env(safe-area-inset-left) + 96px);
   --padding-right-mobile: calc(env(safe-area-inset-right) + 24px);
@@ -48,6 +49,10 @@
   --navbar-shadow: none;
   --page-display: flex;
   --content-right-edge: max(20px, calc((100vw - var(--layout-max-width)) / 2));
+  --navbar-floating-edge: max(
+    var(--navbar-inline-pad),
+    calc(((100vw - var(--layout-max-width)) / 2) + var(--navbar-inline-pad))
+  );
   --font-main: var(--font-space-mono, "Space Mono"), ui-monospace, SFMono-Regular,
     Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --text-weight: 400;
@@ -148,8 +153,8 @@ a {
   display: inline-flex;
   align-items: center;
   line-height: 0;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: var(--navbar-inline-pad);
+  padding-right: var(--navbar-inline-pad);
 }
 
 .site-navbar__logo-image {
@@ -552,7 +557,7 @@ figure.notion-embed {
 .p5nels-top-actions {
   position: fixed;
   z-index: 9999;
-  right: var(--content-right-edge);
+  right: var(--navbar-floating-edge);
   top: 10px;
   display: flex;
   align-items: center;
@@ -569,12 +574,17 @@ figure.notion-embed {
 }
 
 .p5nels-top-actions__release {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
   color: #fff;
   font-size: 0.75rem;
-  line-height: 1.1;
+  line-height: 1;
   opacity: 1;
   white-space: nowrap;
 }
+
 
 .get-button,
 .buy-button {
@@ -601,7 +611,8 @@ figure.notion-embed {
 
 .cc0,
 .mint-link,
-.license-one {
+.license-one,
+.site-top-stat {
   color: #fff;
   text-decoration: none;
   position: relative;

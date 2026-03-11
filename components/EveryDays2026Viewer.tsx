@@ -504,61 +504,6 @@ export function EveryDays2026Viewer() {
 
   return (
     <div className={styles.root}>
-      <div id="sketch" className={styles.canvasShell}>
-        {iframeDocument ? (
-          <iframe
-            key={selectedArtwork?.id}
-            title={`Every Days 2026 artwork ${selectedArtwork?.id}`}
-            className={styles.iframe}
-            srcDoc={iframeDocument}
-            sandbox="allow-scripts"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className={styles.placeholder} aria-hidden="true" />
-        )}
-
-        <div
-          className={styles.poweredByStrip}
-          aria-label="Powered by p5.js, Ethereum, and Mint"
-        >
-          <span className={styles.poweredByLabel}>Powered by</span>
-          {POWERED_BY_LINKS.map((item) => (
-            <a
-              key={item.label}
-              className={styles.poweredByLink}
-              href={item.href}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={item.label}
-              title={item.label}
-            >
-              <svg
-                viewBox={item.viewBox}
-                aria-hidden="true"
-                className={styles.poweredByIcon}
-              >
-                {item.paths.map((path) => (
-                  <path key={path} d={path} />
-                ))}
-              </svg>
-            </a>
-          ))}
-        </div>
-
-        {frameState === "loading" ? (
-          <div className={styles.overlay} aria-live="polite">
-            Loading sketch...
-          </div>
-        ) : null}
-
-        {frameState === "error" && frameError ? (
-          <div className={styles.overlayError} role="alert">
-            {frameError}
-          </div>
-        ) : null}
-      </div>
-
       <div className={styles.selector} ref={selectorRef}>
         <button
           type="button"
@@ -610,6 +555,61 @@ export function EveryDays2026Viewer() {
                 );
               })}
             </div>
+          </div>
+        ) : null}
+      </div>
+
+      <div id="sketch" className={styles.canvasShell}>
+        {iframeDocument ? (
+          <iframe
+            key={selectedArtwork?.id}
+            title={`Every Days 2026 artwork ${selectedArtwork?.id}`}
+            className={styles.iframe}
+            srcDoc={iframeDocument}
+            sandbox="allow-scripts"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className={styles.placeholder} aria-hidden="true" />
+        )}
+
+        <div
+          className={styles.poweredByStrip}
+          aria-label="Powered by p5.js, Ethereum, and Mint"
+        >
+          <span className={styles.poweredByLabel}>Powered by</span>
+          {POWERED_BY_LINKS.map((item) => (
+            <a
+              key={item.label}
+              className={styles.poweredByLink}
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={item.label}
+              title={item.label}
+            >
+              <svg
+                viewBox={item.viewBox}
+                aria-hidden="true"
+                className={styles.poweredByIcon}
+              >
+                {item.paths.map((path) => (
+                  <path key={path} d={path} />
+                ))}
+              </svg>
+            </a>
+          ))}
+        </div>
+
+        {frameState === "loading" ? (
+          <div className={styles.overlay} aria-live="polite">
+            Loading sketch...
+          </div>
+        ) : null}
+
+        {frameState === "error" && frameError ? (
+          <div className={styles.overlayError} role="alert">
+            {frameError}
           </div>
         ) : null}
       </div>

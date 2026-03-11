@@ -1,5 +1,6 @@
 import { EveryDays2026Viewer } from "@/components/EveryDays2026Viewer";
 import { NotionRenderer } from "@/components/NotionRenderer";
+import everyDaysCollection2026 from "@/public/data/collection-2026.json";
 import {
   getPageBySlug,
   getRoutes,
@@ -31,12 +32,39 @@ type ExpandableChildRoute = {
   external?: boolean;
 };
 
+type EveryDaysCollectionRecord = {
+  artworks?: Array<{
+    id?: unknown;
+  }>;
+};
+
 type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
 const everyDaysCanvasMarkers = new Set([
   "insert canvas here",
   "[[every-days-2026-canvas]]",
   "every-days-2026-canvas",
 ]);
+
+function getLatestEveryDaysArtworkId(): number | null {
+  const collection =
+    everyDaysCollection2026 as EveryDaysCollectionRecord;
+  const artworks: Array<{ id?: unknown }> = Array.isArray(collection.artworks)
+    ? collection.artworks
+    : [];
+
+  const latestId = artworks.reduce((currentLatest, artwork) => {
+    const id =
+      typeof artwork?.id === "number" ? artwork.id : Number(artwork?.id);
+
+    if (!Number.isInteger(id) || id <= currentLatest) {
+      return currentLatest;
+    }
+
+    return id;
+  }, 0);
+
+  return latestId > 0 ? latestId : null;
+}
 
 function normalizePageId(raw: string): string {
   return raw.replace(/-/g, "").toLowerCase();
@@ -458,6 +486,8 @@ export async function SitePage({ page }: { page: NotionPageData }) {
     page.slug === "/every-days" && everyDaysCanvasMarkerIndex >= 0;
   const shouldRenderEveryDaysCanvasFallback =
     page.slug === "/every-days" && everyDaysCanvasMarkerIndex < 0;
+  const everyDaysLatestArtworkId =
+    page.slug === "/every-days" ? getLatestEveryDaysArtworkId() : null;
 
   return (
     <main id={`page-${pageClass}`} className={`site-content page__${pageClass}`}>
@@ -474,6 +504,15 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           <a className={topAction.buttonClassName} href={topAction.buttonHref}>
             {topAction.buttonLabel}
           </a>
+        </div>
+      ) : everyDaysLatestArtworkId !== null ? (
+        <div className="p5nels-top-actions">
+          <div className="p5nels-top-actions__meta">
+            <span className="site-top-stat">
+              {`Artworks: ${everyDaysLatestArtworkId}`}
+            </span>
+            <span className="p5nels-top-actions__release">Since 2024</span>
+          </div>
         </div>
       ) : null}
       <div className="notion-header page">
