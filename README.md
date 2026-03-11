@@ -102,6 +102,22 @@ npm run sync:collection-2026 -- 782
 
 That preserves existing metadata and appends blank entries up to the ID you pass.
 
+### Publish A New 2026 Artwork
+1. Add the new sketch in the external sketch repo as `sketches/<id>.js`.
+2. Add or expand the matching entry in `public/data/collection-2026.json`.
+3. Fill:
+   - `id`
+   - `file`
+   - `name`
+   - `description`
+4. Test `/every-days` locally.
+5. Commit and push this repo.
+
+Important:
+- `public/data/collection-2026.json` is deploy-time content.
+- The `/every-days` selector and the top nav `Artworks:` count both update from this file.
+- Revalidation alone will not publish a new 2026 artwork.
+
 ### Notion Marker Placement
 The 2026 viewer renders inside `/every-days` where a top-level Notion paragraph matches one of:
 - `insert canvas here`
@@ -179,6 +195,8 @@ git add .
 git commit -m "Update every-days 2026 viewer"
 git push origin main
 ```
+
+For metadata-only additions such as a new `public/data/collection-2026.json` entry, you can skip `npm run build` if needed, but you still must push `main` so Vercel redeploys.
 
 If you need to force production deploy after push:
 ```bash

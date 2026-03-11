@@ -296,9 +296,15 @@
     },
     {
       "id": 782,
-      "file": "782.js",
       "name": "Lineon",
+      "file": "782.js",
       "description": "Click to evolve"
+    },
+    {
+      "id": 783,
+      "file": "783.js",
+      "name": "Trancelestial",
+      "description": ""
     }
   ]
 }
