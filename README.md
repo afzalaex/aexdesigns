@@ -9,19 +9,6 @@ Production website for `aex.design`, built with Next.js and Notion as the CMS.
 - Hosting: Vercel
 - Source of route truth: `content/route-map.json` and/or Notion database mode
 
-## Key Features
-- Notion block rendering with custom local UI (`components/NotionRenderer.tsx`)
-- Native type tester system (`components/TypeTester.tsx`)
-- Dedicated `/typeplayground` page with interactive font testers
-- Hybrid `/every-days` system:
-  - 2024/2025 remain Notion-rendered
-  - 2026 generative viewer is repo-driven and loaded from external p5 sketches
-- Page-level top actions (license/mint + release year + buy/get)
-- Performance-first delivery:
-  - ISR for route HTML (`revalidate = 3600`)
-  - SSG for mapped slugs via `generateStaticParams`
-  - in-memory Notion TTL cache with stale-while-refresh and request deduping
-
 ## Project Structure
 - `app/page.tsx`: homepage route
 - `app/[...slug]/page.tsx`: mapped content routes
@@ -50,10 +37,25 @@ Optional:
 - `NOTION_CACHE_TTL_SECONDS` (default: `300`)
 - `NOTION_REVALIDATE_SECRET` (required for secure revalidate endpoint usage)
 
-## Content Update Workflow (Important)
+## Core Commands
+```powershell
+npm install
+npm run dev
+npm run typecheck
+npm run build
+npm run start
+npm run sync:collection-2026 -- 783
+```
+
+Local `/every-days` URL:
+```text
+http://localhost:3000/every-days
+```
+
+## Notion Content Workflow
 For normal Notion content edits, do not redeploy. Revalidate cache instead.
 
-Single page refresh:
+Single-page refresh:
 ```powershell
 curl.exe -X POST https://www.aex.design/api/notion-revalidate `
   -H "x-revalidate-secret: YOUR_SECRET" `
@@ -67,111 +69,96 @@ curl.exe -X POST https://www.aex.design/api/notion-revalidate `
   -H "x-revalidate-secret: YOUR_SECRET"
 ```
 
-The endpoint clears runtime Notion cache and triggers ISR path revalidation.
-
-## `/every-days` 2026 Workflow
-The `/every-days` page is split:
-- 2024/2025 content: still rendered from Notion
-- 2026 content: rendered by the local viewer component and metadata JSON
-
-### Where To Edit
-- Sketch source:
-  - external repo `afzalaex/every-days-2026`
-  - path pattern: `sketches/<id>.js`
-- Artwork metadata in this repo:
-  - `public/data/collection-2026.json`
-  - editable fields per artwork:
-    - `name`
-    - `description`
-
-Example:
-```json
-{
-  "id": 781,
-  "name": "Example Artwork",
-  "file": "781.js",
-  "description": "Short description."
-}
-```
-
-### Add More Artwork IDs
-To add blank entries past the current max ID:
-```bash
-npm run sync:collection-2026 -- 782
-```
-
-That preserves existing metadata and appends blank entries up to the ID you pass.
-
-### Publish A New 2026 Artwork
-1. Add the new sketch in the external sketch repo as `sketches/<id>.js`.
-2. Add or expand the matching entry in `public/data/collection-2026.json`.
-3. Fill:
-   - `id`
-   - `file`
-   - `name`
-   - `description`
-4. Test `/every-days` locally.
-5. Commit and push this repo.
-
-Important:
-- `public/data/collection-2026.json` is deploy-time content.
-- The `/every-days` selector and the top nav `Artworks:` count both update from this file.
-- Revalidation alone will not publish a new 2026 artwork.
-
-### Notion Marker Placement
-The 2026 viewer renders inside `/every-days` where a top-level Notion paragraph matches one of:
-- `insert canvas here`
-- `[[every-days-2026-canvas]]`
-- `every-days-2026-canvas`
-
-If the marker is missing, the viewer falls back to rendering above the Notion content.
-
-### When To Redeploy vs Revalidate
-- Notion-only text/layout edits:
-  - use the revalidation endpoint
-  - no redeploy needed
-- Changes to:
-  - `public/data/collection-2026.json`
-  - `components/EveryDays2026Viewer.tsx`
-  - `components/SitePage.tsx`
-  - sketch-loading logic or scripts
-  - redeploy required
-
-### Local Secret Convenience
-Store your revalidate secret in a local ignored file `.secret`:
-```text
-YOUR_SECRET_VALUE
-```
-
-PowerShell usage:
+Optional local secret file:
 ```powershell
 $env:REVALIDATE_SECRET = (Get-Content .secret -Raw).Trim()
 curl.exe -X POST https://www.aex.design/api/notion-revalidate `
   -H "x-revalidate-secret: $env:REVALIDATE_SECRET"
 ```
 
-### Troubleshooting
-- `{"ok":false,"error":"NOTION_REVALIDATE_SECRET is not configured."}`
-  - `NOTION_REVALIDATE_SECRET` is missing in Vercel env or deployment has not been redeployed yet.
-- `{"ok":false,"error":"Unauthorized."}`
-  - Header secret does not match `NOTION_REVALIDATE_SECRET`.
-- Notion pages returning unauthorized/404 after env updates:
-  - Verify `NOTION_TOKEN` is valid and separate from `NOTION_REVALIDATE_SECRET`.
+Important:
+- Revalidation clears runtime Notion cache and triggers ISR path revalidation.
+- Revalidation does not publish `/every-days` 2026 metadata changes.
 
-## Local Development
-```bash
-npm install
-npm run dev
+## `/every-days` 2026 Operating Model
+The `/every-days` page depends on two separate repos.
+
+Sketch source:
+- sibling repo: `..\every-days-2026`
+- GitHub repo: `afzalaex/every-days-2026`
+- file pattern: `sketches/<id>.js`
+- loaded live at runtime from GitHub raw
+
+Metadata and deploy:
+- this repo: `public/data/collection-2026.json`
+- fields used by the site: `id`, `file`, `name`, `description`
+- deployed by Vercel when `aex-site` is pushed
+
+Important mismatch:
+- the selector and the `Artworks:` count come from `public/data/collection-2026.json`
+- the actual sketch code comes from `afzalaex/every-days-2026`
+- if metadata ships before the matching sketch file is pushed, the newest item appears but fails to load
+
+Example metadata entry:
+```json
+{
+  "id": 783,
+  "file": "783.js",
+  "name": "Trancelestial",
+  "description": ""
+}
 ```
 
-Other commands:
-- `npm run typecheck`
-- `npm run build`
-- `npm run start`
-- `npm run sync:collection-2026 -- <id>`
+## Daily `/every-days` Release Flow
+Run these steps in order. The order matters.
 
-Check `/every-days` locally:
-```bash
+### 1. Sync Both Repos First
+```powershell
+Set-Location C:\Users\AMD\projects\every-days-2026
+git pull --ff-only origin main
+git status --short --branch
+
+Set-Location C:\Users\AMD\projects\aex-site
+git pull --ff-only origin main
+git status --short --branch
+```
+
+### 2. Add And Push The New Sketch Repo File First
+From `C:\Users\AMD\projects\every-days-2026`:
+
+```powershell
+Set-Location C:\Users\AMD\projects\every-days-2026
+Copy-Item .\sketches\782.js .\sketches\783.js
+# edit .\sketches\783.js
+
+git add .\sketches\783.js
+git commit -m "add artwork 783"
+git push origin main
+```
+
+Notes:
+- Replace `782` and `783` with the actual previous and next ids.
+- Skip `Copy-Item` if starting the new sketch from scratch.
+- Do not publish metadata in `aex-site` until this push succeeds.
+
+### 3. Add Or Update Site Metadata Second
+From `C:\Users\AMD\projects\aex-site`:
+
+```powershell
+Set-Location C:\Users\AMD\projects\aex-site
+npm run sync:collection-2026 -- 783
+# edit .\public\data\collection-2026.json
+```
+
+Fill the matching entry with:
+- `id`
+- `file`
+- `name`
+- `description`
+
+### 4. Test Locally Before Push
+```powershell
+Set-Location C:\Users\AMD\projects\aex-site
 npm run dev
 ```
 
@@ -180,26 +167,88 @@ Then open:
 http://localhost:3000/every-days
 ```
 
-## Deployment
-- Standard flow: push `main` to GitHub; Vercel auto-deploys.
-- Manual production deploy (CLI):
-```bash
-npx vercel --prod --yes
-```
+Verify:
+- the selector shows the new title
+- the newest sketch loads
+- the description is correct
+- the `Artworks:` count matches the latest id
 
-Recommended release flow for `/every-days` updates:
-```bash
+### 5. Push `aex-site` To Trigger Deploy
+```powershell
+Set-Location C:\Users\AMD\projects\aex-site
 npm run typecheck
 npm run build
-git add .
-git commit -m "Update every-days 2026 viewer"
+git add .\public\data\collection-2026.json
+git commit -m "add every-days 783 metadata"
 git push origin main
 ```
 
-For metadata-only additions such as a new `public/data/collection-2026.json` entry, you can skip `npm run build` if needed, but you still must push `main` so Vercel redeploys.
+Deployment notes:
+- Vercel auto-deploys from GitHub.
+- A change to `public/data/collection-2026.json` requires a deploy.
+- Notion revalidation alone will not publish a new 2026 artwork.
 
-If you need to force production deploy after push:
-```bash
+## Fast Recovery For "Latest Sketch Fails To Load"
+This is the exact failure mode that happens when metadata exists in `aex-site` but the matching sketch file is missing from `afzalaex/every-days-2026`.
+
+### Check The Metadata Entry
+```powershell
+Set-Location C:\Users\AMD\projects\aex-site
+rg -n '"id": 783|"file": "783.js"' .\public\data\collection-2026.json
+```
+
+### Check The Sketch Repo
+```powershell
+Set-Location C:\Users\AMD\projects\every-days-2026
+Test-Path .\sketches\783.js
+git status --short --branch
+git log --oneline --decorate -5
+```
+
+If the file exists locally but is not on GitHub yet:
+```powershell
+git add .\sketches\783.js
+git commit -m "add artwork 783"
+git push origin main
+```
+
+Important:
+- if only the sketch repo was missing the file, pushing `every-days-2026` is enough
+- no `aex-site` redeploy is needed in that case because the site fetches the sketch live from GitHub raw
+- after the push, hard refresh `/every-days`
+
+## Release Checklist
+Before pushing `aex-site`, confirm all of these are true:
+
+- the new `sketches/<id>.js` file exists in `..\every-days-2026`
+- the sketch repo commit is already on `origin/main`
+- `public/data/collection-2026.json` contains the same `<id>` and `file`
+- the metadata entry has the correct `name`
+- the new sketch loads locally at `http://localhost:3000/every-days`
+- there are no unrelated staged files in either repo
+
+## Notion Marker Placement
+The 2026 viewer renders inside `/every-days` where a top-level Notion paragraph matches one of:
+- `insert canvas here`
+- `[[every-days-2026-canvas]]`
+- `every-days-2026-canvas`
+
+If the marker is missing, the viewer renders above the Notion content.
+
+## Route Map Utilities
+- `npm run seed:route-map`
+- `npm run fill:route-map-live`
+- `node scripts/seed-route-map-from-sitemap.mjs <sitemap-url> <output-file>`
+- `node scripts/fill-route-map-from-live-site.mjs <site-url> <route-map-file>`
+
+## Deployment
+Standard production flow:
+```powershell
+git push origin main
+```
+
+Manual production deploy:
+```powershell
 npx vercel --prod --yes
 ```
 
