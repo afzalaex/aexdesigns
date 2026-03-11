@@ -105,6 +105,70 @@
   background: #000;
 }
 
+.poweredByStrip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  justify-items: center;
+  align-items: center;
+  column-gap: 6px;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+}
+
+.poweredByLabel {
+  display: block;
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: center;
+  transform: translateX(2px);
+  color: #fff;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.poweredByLink {
+  display: grid;
+  grid-row: 2;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #fff;
+  text-decoration: none;
+  outline-offset: 2px;
+}
+
+.poweredByIcon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  transition:
+    transform 140ms ease,
+    opacity 140ms ease;
+}
+
+.poweredByIcon path {
+  fill: currentColor;
+}
+
+.poweredByLink:hover .poweredByIcon path,
+.poweredByLink:focus-visible .poweredByIcon path {
+  fill: currentColor;
+}
+
+.poweredByLink:hover .poweredByIcon,
+.poweredByLink:focus-visible .poweredByIcon {
+  transform: translateY(-1px) scale(1.06);
+}
+
 .placeholder,
 .overlay,
 .overlayError {
@@ -122,10 +186,12 @@
 }
 
 .overlay {
+  z-index: 2;
   background: rgba(0, 0, 0, 0.68);
 }
 
 .overlayError {
+  z-index: 2;
   background: rgba(0, 0, 0, 0.84);
   color: #fff;
 }
@@ -168,5 +234,29 @@
 
   .canvasShell {
     min-height: 280px;
+  }
+
+  .poweredByStrip {
+    right: 0;
+    bottom: 0;
+    grid-template-columns: repeat(3, 20px);
+    column-gap: 4px;
+    gap: 3px;
+    padding: 6px 8px;
+  }
+
+  .poweredByLabel {
+    transform: translateX(1px);
+    font-size: 0.52rem;
+  }
+
+  .poweredByLink {
+    width: 20px;
+    height: 20px;
+  }
+
+  .poweredByIcon {
+    width: 13px;
+    height: 13px;
   }
 }

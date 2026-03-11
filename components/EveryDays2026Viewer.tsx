@@ -8,6 +8,36 @@ const P5_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js";
 const SKETCH_BASE_URL =
   "https://raw.githubusercontent.com/afzalaex/every-days-2026/main/sketches";
 
+type PoweredByLink = {
+  href: string;
+  label: string;
+  viewBox: string;
+  paths: readonly string[];
+};
+
+const POWERED_BY_LINKS: readonly PoweredByLink[] = [
+  {
+    href: "https://p5js.org",
+    label: "Powered by p5.js",
+    viewBox: "0 0 24 24",
+    paths: [
+      "M14.7,8.7l7.8-2.4L24,11l-7.8,2.7l4.8,6.8l-4.1,3l-5.1-6.7L7,23.3l-4-3l4.8-6.6L0,10.9l1.5-4.7l7.9,2.5V0.5h5.3L14.7,8.7L14.7,8.7z",
+    ],
+  },
+  {
+    href: "https://ethereum.org",
+    label: "Powered by Ethereum",
+    viewBox: "0 0 24 24",
+    paths: ["M6,9.8h12v4.5H6V9.8z", "M3,0h18v4.5H3V0z", "M3,19.5h18V24H3V19.5z"],
+  },
+  {
+    href: "https://docs.mint.vv.xyz/",
+    label: "Powered by Mint",
+    viewBox: "0 0 24 24",
+    paths: ["M14.2,6v12H9.8V6H14.2z", "M24,3v18h-4.5V3H24z", "M4.5,3v18H0V3H4.5z"],
+  },
+] as const;
+
 type Artwork = {
   id: number;
   name: string;
@@ -456,6 +486,7 @@ export function EveryDays2026Viewer() {
     selectedId === null
       ? null
       : artworks.find((artwork) => artwork.id === selectedId) ?? null;
+  const selectorArtworks = artworks.slice().reverse();
   const iframeDocument =
     selectedArtwork !== null && sketchSource !== null
       ? buildSketchDocument(selectedArtwork, sketchSource)
@@ -486,6 +517,34 @@ export function EveryDays2026Viewer() {
         ) : (
           <div className={styles.placeholder} aria-hidden="true" />
         )}
+
+        <div
+          className={styles.poweredByStrip}
+          aria-label="Powered by p5.js, Ethereum, and Mint"
+        >
+          <span className={styles.poweredByLabel}>Powered by</span>
+          {POWERED_BY_LINKS.map((item) => (
+            <a
+              key={item.label}
+              className={styles.poweredByLink}
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={item.label}
+              title={item.label}
+            >
+              <svg
+                viewBox={item.viewBox}
+                aria-hidden="true"
+                className={styles.poweredByIcon}
+              >
+                {item.paths.map((path) => (
+                  <path key={path} d={path} />
+                ))}
+              </svg>
+            </a>
+          ))}
+        </div>
 
         {frameState === "loading" ? (
           <div className={styles.overlay} aria-live="polite">
@@ -531,7 +590,7 @@ export function EveryDays2026Viewer() {
               role="listbox"
               aria-label="Artwork selector"
             >
-              {artworks.map((artwork) => {
+              {selectorArtworks.map((artwork) => {
                 const isSelected = artwork.id === selectedId;
 
                 return (
