@@ -498,6 +498,61 @@ export function EveryDays2026Viewer() {
 
   return (
     <div className={styles.root}>
+      <div className={styles.selector} ref={selectorRef}>
+        <button
+          type="button"
+          className={styles.select}
+          aria-haspopup="listbox"
+          aria-expanded={isSelectorOpen}
+          aria-controls={selectorId}
+          onClick={() => {
+            if (artworks.length === 0) {
+              return;
+            }
+
+            setIsSelectorOpen((current) => !current);
+          }}
+          disabled={artworks.length === 0}
+        >
+          <span>
+            {selectedArtwork ? formatArtworkLabel(selectedArtwork) : "No artworks available"}
+          </span>
+          <span className={styles.selectChevron} aria-hidden="true">
+            {isSelectorOpen ? "-" : "+"}
+          </span>
+        </button>
+        {isSelectorOpen ? (
+          <div className={styles.selectorMenuShell}>
+            <div
+              id={selectorId}
+              className={styles.selectorMenu}
+              role="listbox"
+              aria-label="Artwork selector"
+            >
+              {selectorArtworks.map((artwork) => {
+                const isSelected = artwork.id === selectedId;
+
+                return (
+                  <button
+                    key={artwork.id}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`${styles.selectorOption}${isSelected ? ` ${styles.selectorOptionActive}` : ""}`}
+                    onClick={() => {
+                      setSelectedId(artwork.id);
+                      setIsSelectorOpen(false);
+                    }}
+                  >
+                    {formatArtworkLabel(artwork)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+      </div>
+
       <div className={styles.canvasFrame}>
         <div id="sketch" className={styles.canvasShell}>
           {iframeDocument ? (
@@ -561,61 +616,6 @@ export function EveryDays2026Viewer() {
             ))}
           </div>
         </div>
-      </div>
-
-      <div className={styles.selector} ref={selectorRef}>
-        <button
-          type="button"
-          className={styles.select}
-          aria-haspopup="listbox"
-          aria-expanded={isSelectorOpen}
-          aria-controls={selectorId}
-          onClick={() => {
-            if (artworks.length === 0) {
-              return;
-            }
-
-            setIsSelectorOpen((current) => !current);
-          }}
-          disabled={artworks.length === 0}
-        >
-          <span>
-            {selectedArtwork ? formatArtworkLabel(selectedArtwork) : "No artworks available"}
-          </span>
-          <span className={styles.selectChevron} aria-hidden="true">
-            {isSelectorOpen ? "-" : "+"}
-          </span>
-        </button>
-        {isSelectorOpen ? (
-          <div className={styles.selectorMenuShell}>
-            <div
-              id={selectorId}
-              className={styles.selectorMenu}
-              role="listbox"
-              aria-label="Artwork selector"
-            >
-              {selectorArtworks.map((artwork) => {
-                const isSelected = artwork.id === selectedId;
-
-                return (
-                  <button
-                    key={artwork.id}
-                    type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    className={`${styles.selectorOption}${isSelected ? ` ${styles.selectorOptionActive}` : ""}`}
-                    onClick={() => {
-                      setSelectedId(artwork.id);
-                      setIsSelectorOpen(false);
-                    }}
-                  >
-                    {formatArtworkLabel(artwork)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
       </div>
 
       <div className={styles.meta}>
