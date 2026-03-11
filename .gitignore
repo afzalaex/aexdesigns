@@ -33,6 +33,4 @@ pnpm-debug.log*
 .secret
 
 # Local process docs (not for public repo)
-MIGRATION_HANDOFF.md
-MIGRATION_RULES.md
 instructions.md
