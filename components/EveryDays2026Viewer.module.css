@@ -8,6 +8,25 @@
   padding-bottom: 0;
 }
 
+.canvasFrame {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  --plate-pad-y: 8px;
+  --plate-pad-x: 10px;
+  --plate-label-height: 0.6rem;
+  --plate-icon-cell: 28px;
+  --plate-gap: 4px;
+  --plate-width-offset: 132px;
+  --description-max-width: 340px;
+  --plate-min-height: calc(
+    (var(--plate-pad-y) * 2) +
+    var(--plate-label-height) +
+    var(--plate-gap) +
+    var(--plate-icon-cell)
+  );
+}
+
 .selector {
   display: flex;
   flex-direction: column;
@@ -16,7 +35,7 @@
 }
 
 .selectorLabel {
-  font-size: 0.8rem;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -105,20 +124,52 @@
   background: #000;
 }
 
+.canvasPlates {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: -1px;
+}
+
+.descriptionStrip {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  max-width: min(var(--description-max-width), calc(100% - var(--plate-width-offset)));
+  min-height: var(--plate-min-height);
+  margin: 0;
+  padding: var(--plate-pad-y) var(--plate-pad-x);
+  border: 1px solid var(--color-border-default);
+  border-top: 0;
+  background: #000;
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.plateSpacer {
+  flex: 1 1 auto;
+}
+
 .poweredByStrip {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(3, 28px);
   justify-items: center;
   align-items: center;
   column-gap: 6px;
   gap: 4px;
-  padding: 8px 10px;
-  border: 0;
-  background: transparent;
+  min-height: var(--plate-min-height);
+  padding: var(--plate-pad-y) var(--plate-pad-x);
+  border: 1px solid var(--color-border-default);
+  border-top: 0;
+  background: #000;
+  align-content: center;
 }
 
 .poweredByLabel {
@@ -228,6 +279,16 @@
     padding-bottom: 0;
   }
 
+  .canvasFrame {
+    --plate-pad-y: 6px;
+    --plate-pad-x: 8px;
+    --plate-label-height: 0.52rem;
+    --plate-icon-cell: 20px;
+    --plate-gap: 3px;
+    --plate-width-offset: 96px;
+    --description-max-width: 240px;
+  }
+
   .metaHeader {
     display: block;
   }
@@ -236,9 +297,11 @@
     min-height: 280px;
   }
 
+  .canvasPlates {
+    gap: 8px;
+  }
+
   .poweredByStrip {
-    right: 0;
-    bottom: 0;
     grid-template-columns: repeat(3, 20px);
     column-gap: 4px;
     gap: 3px;
@@ -248,6 +311,11 @@
   .poweredByLabel {
     transform: translateX(1px);
     font-size: 0.52rem;
+  }
+
+  .descriptionStrip {
+    font-size: 0.9rem;
+    line-height: 1.35;
   }
 
   .poweredByLink {
