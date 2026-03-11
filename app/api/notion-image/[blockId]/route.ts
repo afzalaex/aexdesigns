@@ -23,8 +23,55 @@ function getNotionClient(): Client {
   return new Client({ auth: token });
 }
 
+function normalizeUpstreamImageUrl(raw: string | null): string | null {
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "https:") {
+      return null;
+    }
+
+    const hostname = parsed.hostname.toLowerCase();
+    const allowedHosts = [
+      "secure.notion-static.com",
+      "prod-files-secure.s3.us-west-2.amazonaws.com",
+    ];
+
+    if (
+      allowedHosts.includes(hostname) ||
+      hostname.endsWith(".notion-static.com")
+    ) {
+      return parsed.toString();
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchUpstreamImage(imageUrl: string): Promise<Response | null> {
+  try {
+    const upstream = await fetch(imageUrl, {
+      headers: { "user-agent": "aex-site-notion-image-proxy/1.0" },
+    });
+
+    if (!upstream.ok || !upstream.body) {
+      return null;
+    }
+
+    return upstream;
+  } catch (error) {
+    console.error("Failed to fetch Notion image file:", error);
+    return null;
+  }
+}
+
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<Params> }
 ) {
   const { blockId: rawBlockId } = await context.params;
@@ -34,39 +81,41 @@ export async function GET(
     return new Response("Missing block id", { status: 400 });
   }
 
-  let imageUrl = "";
+  const requestUrl = new URL(request.url);
+  const hintedSourceUrl = normalizeUpstreamImageUrl(
+    requestUrl.searchParams.get("source")
+  );
 
-  try {
-    const notion = getNotionClient();
-    const blockResponse = await notion.blocks.retrieve({ block_id: blockId });
+  let upstream = hintedSourceUrl
+    ? await fetchUpstreamImage(hintedSourceUrl)
+    : null;
 
-    if (
-      !isFullBlock(blockResponse) ||
-      blockResponse.object !== "block" ||
-      blockResponse.type !== "image" ||
-      blockResponse.image.type !== "file"
-    ) {
-      return new Response("Not a Notion hosted image block", { status: 404 });
+  if (!upstream) {
+    let imageUrl = "";
+
+    try {
+      const notion = getNotionClient();
+      const blockResponse = await notion.blocks.retrieve({ block_id: blockId });
+
+      if (
+        !isFullBlock(blockResponse) ||
+        blockResponse.object !== "block" ||
+        blockResponse.type !== "image" ||
+        blockResponse.image.type !== "file"
+      ) {
+        return new Response("Not a Notion hosted image block", { status: 404 });
+      }
+
+      imageUrl = blockResponse.image.file.url;
+    } catch (error) {
+      console.error("Failed to resolve Notion image block:", error);
+      return new Response("Failed to resolve image source", { status: 502 });
     }
 
-    imageUrl = blockResponse.image.file.url;
-  } catch (error) {
-    console.error("Failed to resolve Notion image block:", error);
-    return new Response("Failed to resolve image source", { status: 502 });
+    upstream = await fetchUpstreamImage(imageUrl);
   }
 
-  let upstream: Response;
-
-  try {
-    upstream = await fetch(imageUrl, {
-      headers: { "user-agent": "aex-site-notion-image-proxy/1.0" },
-    });
-  } catch (error) {
-    console.error("Failed to fetch Notion image file:", error);
-    return new Response("Failed to fetch image", { status: 502 });
-  }
-
-  if (!upstream.ok || !upstream.body) {
+  if (!upstream) {
     return new Response("Image fetch failed", { status: 502 });
   }
 

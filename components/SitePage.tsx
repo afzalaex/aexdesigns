@@ -1,3 +1,4 @@
+import { preconnect, prefetchDNS, preload } from "react-dom";
 import { EveryDays2026Viewer } from "@/components/EveryDays2026Viewer";
 import { NotionRenderer } from "@/components/NotionRenderer";
 import everyDaysCollection2026 from "@/public/data/collection-2026.json";
@@ -96,6 +97,76 @@ function findEveryDaysCanvasMarkerIndex(blocks: NotionBlock[]): number {
 
     return everyDaysCanvasMarkers.has(text);
   });
+}
+
+function collectPriorityImageIds(
+  blocks: NotionBlock[],
+  limit: number
+): Set<string> {
+  const ids = new Set<string>();
+
+  function walk(currentBlocks: NotionBlock[]): void {
+    for (const block of currentBlocks) {
+      if (ids.size >= limit) {
+        return;
+      }
+
+      if (block.type === "image") {
+        ids.add(block.id);
+      }
+
+      if (block.children?.length) {
+        walk(block.children);
+      }
+    }
+  }
+
+  if (limit > 0) {
+    walk(blocks);
+  }
+
+  return ids;
+}
+
+function collectPriorityImageSources(
+  blocks: NotionBlock[],
+  limit: number
+): string[] {
+  const sources: string[] = [];
+
+  function pushIfPresent(value: string | undefined): void {
+    if (!value || sources.length >= limit) {
+      return;
+    }
+
+    sources.push(value);
+  }
+
+  function walk(currentBlocks: NotionBlock[]): void {
+    for (const block of currentBlocks) {
+      if (sources.length >= limit) {
+        return;
+      }
+
+      if (block.type === "image") {
+        if (block.image.type === "external") {
+          pushIfPresent(block.image.external.url);
+        } else {
+          pushIfPresent(block.image.file.url);
+        }
+      }
+
+      if (block.children?.length) {
+        walk(block.children);
+      }
+    }
+  }
+
+  if (limit > 0) {
+    walk(blocks);
+  }
+
+  return sources;
 }
 
 function isInternalHref(href: string): boolean {
@@ -479,8 +550,26 @@ export async function SitePage({ page }: { page: NotionPageData }) {
     page.slug === "/every-days" && everyDaysCanvasMarkerIndex >= 0;
   const shouldRenderEveryDaysCanvasFallback =
     page.slug === "/every-days" && everyDaysCanvasMarkerIndex < 0;
+  const priorityImageIds = collectPriorityImageIds(page.blocks, 2);
+  const priorityImageSources = collectPriorityImageSources(page.blocks, 2);
   const everyDaysLatestArtworkId =
     page.slug === "/every-days" ? getLatestEveryDaysArtworkId() : null;
+
+  for (const source of priorityImageSources) {
+    preload(source, {
+      as: "image",
+      fetchPriority: "high",
+      referrerPolicy: "no-referrer",
+    });
+
+    try {
+      const origin = new URL(source).origin;
+      preconnect(origin);
+      prefetchDNS(origin);
+    } catch {
+      // Ignore invalid upstream URLs from Notion content.
+    }
+  }
 
   return (
     <main id={`page-${pageClass}`} className={`site-content page__${pageClass}`}>
@@ -532,6 +621,7 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           pageSlug={page.slug}
           routeEntries={routeEntries}
           expandableRouteGroups={expandableRouteGroups}
+          priorityImageIds={priorityImageIds}
         />
         {shouldRenderEveryDaysCanvasAtMarker ? <EveryDays2026Viewer /> : null}
         {blocksAfterEveryDaysCanvas.length > 0 ? (
@@ -540,6 +630,7 @@ export async function SitePage({ page }: { page: NotionPageData }) {
             pageSlug={page.slug}
             routeEntries={routeEntries}
             expandableRouteGroups={expandableRouteGroups}
+            priorityImageIds={priorityImageIds}
           />
         ) : null}
       </article>

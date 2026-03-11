@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { RichTextItemResponse } from "@notionhq/client/build/src/api-endpoints";
 import routeMap from "@/content/route-map.json";
 import type { NotionBlock } from "@/lib/notion";
+import { NotionImage } from "@/components/NotionImage";
 import { TypeTester } from "@/components/TypeTester";
 
 type TesterConfig = {
@@ -16,6 +17,11 @@ type TesterConfig = {
 type TesterMarker = {
   alias?: string;
   caption?: string;
+};
+
+type ImageCaptionDirectives = {
+  eager: boolean;
+  captionText: string;
 };
 
 type RouteMapEntry = {
@@ -39,6 +45,7 @@ type ExpandableChildRoute = {
 type RouteRenderContextValue = {
   slugByPageId: Map<string, string>;
   childRoutesByParentSlug: Map<string, ExpandableChildRoute[]>;
+  priorityImageIds: Set<string>;
 };
 
 type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
@@ -182,7 +189,8 @@ function resolveRouteEntries(
 
 function buildRouteRenderContext(
   routeEntries?: RouteInputEntry[],
-  expandableRouteGroups?: ExpandableRouteGroups
+  expandableRouteGroups?: ExpandableRouteGroups,
+  priorityImageIds?: Set<string>
 ): RouteRenderContextValue {
   const slugByPageId = new Map<string, string>();
   const childRoutesByParentSlug = new Map<string, ExpandableChildRoute[]>();
@@ -259,7 +267,11 @@ function buildRouteRenderContext(
     }
   }
 
-  return { slugByPageId, childRoutesByParentSlug };
+  return {
+    slugByPageId,
+    childRoutesByParentSlug,
+    priorityImageIds: priorityImageIds ?? new Set<string>(),
+  };
 }
 
 function blockDomId(id: string): string {
@@ -382,6 +394,27 @@ function parseTesterMarker(text: string): TesterMarker | null {
   }
 
   return null;
+}
+
+function parseImageCaptionDirectives(text: string): ImageCaptionDirectives {
+  if (!text.trim()) {
+    return {
+      eager: false,
+      captionText: "",
+    };
+  }
+
+  const eagerPattern = /(?:super\s*:?\s*)?\{\{\s*eager\s*\}\}/gi;
+  const eager = eagerPattern.test(text);
+  const captionText = text
+    .replace(eagerPattern, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return {
+    eager,
+    captionText,
+  };
 }
 
 function testerConfigFromAlias(alias: string): TesterConfig | null {
@@ -719,20 +752,39 @@ function Block({
       );
 
     case "image": {
-      const src =
+      const primarySrc =
         block.image.type === "external"
           ? block.image.external.url
+          : block.image.file.url
+            ? block.image.file.url
+            : `/api/notion-image/${encodeURIComponent(block.id)}`;
+      const fallbackSrc =
+        block.image.type === "external"
+          ? undefined
           : `/api/notion-image/${encodeURIComponent(block.id)}`;
-      const captionText = joinRichText(block.image.caption).trim();
+      const rawCaptionText = joinRichText(block.image.caption).trim();
+      const { captionText, eager } = parseImageCaptionDirectives(rawCaptionText);
+      const shouldPrioritize =
+        eager || routeContext.priorityImageIds.has(block.id);
+      const captionNode = captionText
+        ? captionText === rawCaptionText
+          ? <RichText items={block.image.caption} />
+          : textWithLineBreaks(captionText, `image-caption-${block.id}`)
+        : null;
 
       return (
         <figure id={blockDomId(block.id)} className="notion-image page-width">
           <span style={{ display: "contents" }}>
-            <img src={src} alt={captionText || "image"} loading="lazy" />
+            <NotionImage
+              primarySrc={primarySrc}
+              fallbackSrc={fallbackSrc}
+              alt={captionText || "image"}
+              eager={shouldPrioritize}
+            />
           </span>
-          {captionText ? (
+          {captionNode ? (
             <figcaption className="notion-caption notion-semantic-string">
-              <RichText items={block.image.caption} />
+              {captionNode}
             </figcaption>
           ) : null}
         </figure>
@@ -927,13 +979,19 @@ export function NotionRenderer({
   pageSlug,
   routeEntries,
   expandableRouteGroups,
+  priorityImageIds,
 }: {
   blocks: NotionBlock[];
   pageSlug?: string;
   routeEntries?: RouteInputEntry[];
   expandableRouteGroups?: ExpandableRouteGroups;
+  priorityImageIds?: Set<string>;
 }) {
-  const routeContext = buildRouteRenderContext(routeEntries, expandableRouteGroups);
+  const routeContext = buildRouteRenderContext(
+    routeEntries,
+    expandableRouteGroups,
+    priorityImageIds
+  );
 
   return (
     <>
