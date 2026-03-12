@@ -2,6 +2,7 @@ import { preconnect, prefetchDNS, preload } from "react-dom";
 import { EveryDays2026Viewer } from "@/components/EveryDays2026Viewer";
 import { NotionRenderer } from "@/components/NotionRenderer";
 import everyDaysCollection2026 from "@/public/data/collection-2026.json";
+import { resolveNotionImagePrimarySrc } from "@/lib/notion-images";
 import {
   getPageBySlug,
   getRoutes,
@@ -149,11 +150,7 @@ function collectPriorityImageSources(
       }
 
       if (block.type === "image") {
-        if (block.image.type === "external") {
-          pushIfPresent(block.image.external.url);
-        } else {
-          pushIfPresent(block.image.file.url);
-        }
+        pushIfPresent(resolveNotionImagePrimarySrc(block) ?? undefined);
       }
 
       if (block.children?.length) {

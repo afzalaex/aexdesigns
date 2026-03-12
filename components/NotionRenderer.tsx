@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import type { RichTextItemResponse } from "@notionhq/client/build/src/api-endpoints";
 import routeMap from "@/content/route-map.json";
+import { resolveNotionImageFallbackSrc, resolveNotionImagePrimarySrc } from "@/lib/notion-images";
 import type { NotionBlock } from "@/lib/notion";
 import { NotionImage } from "@/components/NotionImage";
 import { TypeTester } from "@/components/TypeTester";
@@ -752,16 +753,8 @@ function Block({
       );
 
     case "image": {
-      const primarySrc =
-        block.image.type === "external"
-          ? block.image.external.url
-          : block.image.file.url
-            ? block.image.file.url
-            : `/api/notion-image/${encodeURIComponent(block.id)}`;
-      const fallbackSrc =
-        block.image.type === "external"
-          ? undefined
-          : `/api/notion-image/${encodeURIComponent(block.id)}`;
+      const primarySrc = resolveNotionImagePrimarySrc(block);
+      const fallbackSrc = resolveNotionImageFallbackSrc(block);
       const rawCaptionText = joinRichText(block.image.caption).trim();
       const { captionText, eager } = parseImageCaptionDirectives(rawCaptionText);
       const shouldPrioritize =
@@ -776,7 +769,7 @@ function Block({
         <figure id={blockDomId(block.id)} className="notion-image page-width">
           <span style={{ display: "contents" }}>
             <NotionImage
-              primarySrc={primarySrc}
+              primarySrc={primarySrc ?? ""}
               fallbackSrc={fallbackSrc}
               alt={captionText || "image"}
               eager={shouldPrioritize}
