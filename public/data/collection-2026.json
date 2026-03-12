@@ -302,9 +302,15 @@
     },
     {
       "id": 783,
-      "file": "783.js",
       "name": "Trancelestial",
+      "file": "783.js",
       "description": ""
+    },
+    {
+      "id": 784,
+      "file": "784.js",
+      "name": "Fractory",
+      "description": "Click to evolve"
     }
   ]
 }
