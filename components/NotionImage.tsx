@@ -26,7 +26,7 @@ export function NotionImage({
       src={src}
       alt={alt}
       loading={eager ? "eager" : "lazy"}
-      fetchPriority={eager ? "high" : "auto"}
+      fetchPriority={eager ? "high" : "low"}
       decoding="async"
       onError={() => {
         if (fallbackSrc && src !== fallbackSrc) {

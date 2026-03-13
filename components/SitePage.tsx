@@ -46,6 +46,8 @@ const everyDaysCanvasMarkers = new Set([
   "[[every-days-2026-canvas]]",
   "every-days-2026-canvas",
 ]);
+const priorityImageLoadLimit = 6;
+const priorityImagePreloadLimit = 3;
 
 function getLatestEveryDaysArtworkId(): number | null {
   const collection =
@@ -547,8 +549,14 @@ export async function SitePage({ page }: { page: NotionPageData }) {
     page.slug === "/every-days" && everyDaysCanvasMarkerIndex >= 0;
   const shouldRenderEveryDaysCanvasFallback =
     page.slug === "/every-days" && everyDaysCanvasMarkerIndex < 0;
-  const priorityImageIds = collectPriorityImageIds(page.blocks, 2);
-  const priorityImageSources = collectPriorityImageSources(page.blocks, 2);
+  const priorityImageIds = collectPriorityImageIds(
+    page.blocks,
+    priorityImageLoadLimit
+  );
+  const priorityImageSources = collectPriorityImageSources(
+    page.blocks,
+    priorityImagePreloadLimit
+  );
   const everyDaysLatestArtworkId =
     page.slug === "/every-days" ? getLatestEveryDaysArtworkId() : null;
 
