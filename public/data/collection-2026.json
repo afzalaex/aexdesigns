@@ -326,9 +326,15 @@
     },
     {
       "id": 787,
-      "file": "787.js",
       "name": "Mondilost",
+      "file": "787.js",
       "description": "Click to evolve"
+    },
+    {
+      "id": 788,
+      "file": "788.js",
+      "name": "Vecluster",
+      "description": "Hover over to bother"
     }
   ]
 }
