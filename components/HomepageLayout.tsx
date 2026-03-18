@@ -215,8 +215,8 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
               experiments, wip, released works, writings and more. Currently
               devoted to art mostly generative but not limited, publishing an artwork
               every day, but that&apos;s not all I keep experimenting and releasing new
-              art/design works. You can also explore my previous works, use the design
-              assets I&apos;ve created, or read my writings aka letters.
+              art/design works. Explore my works, use the design assets I&apos;ve
+              created, or read my writings aka letters.
             </p>
           </section>
         </div>
