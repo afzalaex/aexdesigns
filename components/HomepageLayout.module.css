@@ -5,57 +5,84 @@
   display: flex;
   align-items: stretch;
   justify-content: center;
+  overflow-x: hidden;
 }
 
 .homeWrap {
-  --frame-max: 820px;
-  --frame-inline-pad: clamp(8px, 2vw, 24px);
-  --frame-block-pad: clamp(8px, 2.2svh, 18px);
+  --frame-block-pad: 40px;
+  --frame-inline-pad: clamp(16px, 4vw, 32px);
   --usable-height: max(
     220px,
     calc(100svh - var(--navbar-height) - (var(--frame-block-pad) * 2))
   );
-  width: min(100%, var(--layout-max-width));
+  width: 100%;
+  max-width: var(--layout-max-width);
   min-height: calc(100svh - var(--navbar-height));
   margin-left: auto;
   margin-right: auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 0;
-  padding-left: max(var(--frame-inline-pad), env(safe-area-inset-left));
-  padding-right: max(var(--frame-inline-pad), env(safe-area-inset-right));
+  padding-left: var(--frame-inline-pad);
+  padding-right: var(--frame-inline-pad);
   padding-top: var(--frame-block-pad);
-  padding-bottom: var(--frame-block-pad);
+  padding-bottom: 20px;
+}
+
+.heroStack {
+  width: min(100%, 540px);
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
 
 .heroTitle {
   margin: 0;
-  width: min(84%, 560px);
+  width: auto;
+  max-width: 100%;
   text-align: center;
-  font-size: clamp(0.72rem, 2vw, 1.35rem);
-  letter-spacing: 0.01em;
-  line-height: 1.1;
+  color: #fff;
+  font-size: clamp(1rem, 2.8cqi, 1.6rem);
+  letter-spacing: 0.015em;
+  line-height: 1.14;
   font-weight: 700;
-  position: absolute;
-  left: 50%;
-  top: 93%;
-  transform: translate(-50%, -50%);
   z-index: 2;
   pointer-events: none;
 }
 
 .board {
   --stroke-width: clamp(1px, 0.25vw, 2.5px);
-  width: min(100%, var(--frame-max), var(--usable-height));
+  width: 100%;
+  flex: 0 0 auto;
   aspect-ratio: 1 / 1;
-  margin-left: auto;
-  margin-right: auto;
   position: relative;
   z-index: 1;
   background: #000;
   overflow: hidden;
+}
+
+.about {
+  width: 100%;
+  padding-top: 0;
+}
+
+.aboutText {
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  font-size: clamp(0.9rem, 1.5cqi, 1rem);
+  line-height: 1.58;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.aboutText s {
+  opacity: 0.56;
+  text-decoration-thickness: 0.08em;
+  text-decoration-skip-ink: none;
 }
 
 .group {
@@ -95,14 +122,17 @@
   color: currentColor;
   pointer-events: none;
   user-select: none;
-  font-size: clamp(0.5rem, 2.15vw, 1.35rem);
-  line-height: 1.16;
+  font-size: clamp(0.92rem, 3.25cqi, 1.72rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
 }
 
 .titleCell .blockLabel,
 .titleLabel {
-  font-size: clamp(0.9rem, 3.9vw, 2.55rem);
-  letter-spacing: 0.01em;
+  font-size: clamp(1.28rem, 5.2cqi, 2.96rem);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 .multiline {
@@ -152,42 +182,104 @@
 
 @media (max-width: 900px) {
   .homeMain {
-    height: calc(100dvh - var(--navbar-height));
     min-height: calc(100dvh - var(--navbar-height));
-    display: block;
-    overflow: hidden;
+    display: flex;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding-bottom: 0;
   }
 
   .homeWrap {
-    --frame-max: 760px;
-    --frame-inline-pad: clamp(8px, 3.2vw, 20px);
-    --frame-block-pad: clamp(2px, 1svh, 6px);
-    height: 100%;
-    min-height: 100%;
+    --frame-block-pad: 40px;
+    --frame-inline-pad: clamp(18px, 5vw, 28px);
     justify-content: flex-start;
     gap: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    overflow: hidden;
+    padding-top: var(--frame-block-pad);
+    padding-bottom: 20px;
   }
 
-  .board {
-    width: min(100%, var(--frame-max));
-    max-width: min(100%, var(--frame-max), calc(100dvh - var(--navbar-height) - (var(--frame-block-pad) * 2)));
+  .heroStack {
+    width: min(100%, 500px);
+    gap: 20px;
   }
 
   .heroTitle {
-    width: min(90%, 520px);
-    top: 93.2%;
-    font-size: clamp(0.84rem, 3.9vw, 1.2rem);
-    line-height: 1.12;
+    font-size: clamp(1rem, 3.2cqi, 1.28rem);
+    line-height: 1.16;
     overflow-wrap: anywhere;
+  }
+
+  .about {
+    padding-top: 0;
+  }
+
+  .aboutText {
+    font-size: clamp(0.88rem, 1.96cqi, 0.96rem);
+    line-height: 1.56;
   }
 }
 
 @media (max-width: 680px) {
   .homeWrap {
-    --frame-inline-pad: clamp(8px, 3.8vw, 14px);
+    --frame-inline-pad: 40px;
+  }
+
+  .heroStack {
+    width: min(100%, 420px);
+  }
+
+  .heroTitle {
+    font-size: clamp(0.9rem, 3.95vw, 1.02rem);
+  }
+
+  .blockLabel {
+    font-size: clamp(0.66rem, 2.5cqi, 0.96rem);
+    line-height: 1.04;
+  }
+
+  .titleCell .blockLabel,
+  .titleLabel {
+    font-size: clamp(0.9rem, 3.8cqi, 1.54rem);
+  }
+
+  .multiline,
+  .builderLabel {
+    gap: 1px;
+  }
+
+  .aboutText {
+    font-size: clamp(0.76rem, 2.7vw, 0.86rem);
+  }
+}
+
+@media (max-width: 560px) {
+  .heroStack {
+    width: 100%;
+  }
+
+  .blockLabel {
+    font-size: clamp(0.58rem, 2.2cqi, 0.84rem);
+    line-height: 1.02;
+  }
+
+  .titleCell .blockLabel,
+  .titleLabel {
+    font-size: clamp(0.8rem, 3.25cqi, 1.3rem);
+  }
+
+  .multiline,
+  .builderLabel {
+    gap: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .blockLabel {
+    font-size: clamp(0.54rem, 2.05cqi, 0.76rem);
+  }
+
+  .titleCell .blockLabel,
+  .titleLabel {
+    font-size: clamp(0.72rem, 3cqi, 1.12rem);
   }
 }

@@ -15,6 +15,10 @@ export type HomepageLinks = {
 
 const BOARD_SIZE = 1000;
 const BOARD_CONTENT_X_OFFSET = -9;
+const BOARD_CONTENT_MIN_X = 101;
+const BOARD_CONTENT_MIN_Y = 110;
+const BOARD_CONTENT_WIDTH = 798;
+const BOARD_CONTENT_HEIGHT = 750;
 const WORKS_GROUP_WIDTH = 475;
 const WORKS_GROUP_HEIGHT = 370;
 const WORDS_GROUP_WIDTH = 475;
@@ -27,10 +31,10 @@ function toPercent(value: number, base = BOARD_SIZE): string {
 
 function boardStyle(x: number, y: number, width: number, height: number): CSSProperties {
   return {
-    left: toPercent(x + BOARD_CONTENT_X_OFFSET),
-    top: toPercent(y),
-    width: toPercent(width),
-    height: toPercent(height),
+    left: toPercent(x + BOARD_CONTENT_X_OFFSET - BOARD_CONTENT_MIN_X, BOARD_CONTENT_WIDTH),
+    top: toPercent(y - BOARD_CONTENT_MIN_Y, BOARD_CONTENT_HEIGHT),
+    width: toPercent(width, BOARD_CONTENT_WIDTH),
+    height: toPercent(height, BOARD_CONTENT_HEIGHT),
   };
 }
 
@@ -121,86 +125,100 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
   return (
     <main id="page-index" className={`site-content page__index ${styles.homeMain}`}>
       <section className={styles.homeWrap}>
-        <div className={styles.board}>
-          <div className={styles.group} style={boardStyle(110, 110, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}>
+        <div className={styles.heroStack}>
+          <div className={styles.board}>
+            <div className={styles.group} style={boardStyle(110, 110, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}>
+              <Cell
+                className={`${styles.groupMember} ${styles.groupTitle} ${styles.titleCell}`}
+                labelClassName={styles.titleLabel}
+                label="WORKS"
+                style={localStyle(0, 0, 475, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
+              />
+              <Cell
+                className={`${styles.groupMember} ${styles.groupChild}`}
+                label="Onchain"
+                href={links.onchain}
+                style={localStyle(0, 190, 152, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
+              />
+              <Cell
+                className={`${styles.groupMember} ${styles.groupChild}`}
+                label="Offchain"
+                href={links.offchain}
+                style={localStyle(162, 190, 151, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
+              />
+              <Cell
+                className={`${styles.groupMember} ${styles.groupChild}`}
+                label={
+                  <span className={styles.multiline}>
+                    <span>Digital</span>
+                    <span>Design</span>
+                    <span>Assets</span>
+                  </span>
+                }
+                ariaLabel="Digital Design Assets"
+                href={links.digitalAssets}
+                style={localStyle(323, 190, 152, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
+              />
+            </div>
+
+            <div className={styles.group} style={boardStyle(433, 490, WORDS_GROUP_WIDTH, WORDS_GROUP_HEIGHT)}>
+              <Cell
+                className={`${styles.groupMember} ${styles.groupTitle} ${styles.titleCell}`}
+                labelClassName={styles.titleLabel}
+                label="WORDS"
+                style={localStyle(0, 0, 475, 180, WORDS_GROUP_WIDTH, WORDS_GROUP_HEIGHT)}
+              />
+              <Cell
+                className={`${styles.groupMember} ${styles.groupChild}`}
+                label="Newsletter"
+                href={links.newsletter}
+                style={localStyle(0, 190, 232.5, 180, WORDS_GROUP_WIDTH, WORDS_GROUP_HEIGHT)}
+              />
+              <Cell
+                className={`${styles.groupMember} ${styles.groupChild}`}
+                label="Archive"
+                href={links.archive}
+                style={localStyle(242.5, 190, 232.5, 180, WORDS_GROUP_WIDTH, WORDS_GROUP_HEIGHT)}
+              />
+            </div>
+
             <Cell
-              className={`${styles.groupMember} ${styles.groupTitle} ${styles.titleCell}`}
-              labelClassName={styles.titleLabel}
-              label="WORKS"
-              style={localStyle(0, 0, 475, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
-            />
-            <Cell
-              className={`${styles.groupMember} ${styles.groupChild}`}
-              label="Onchain"
-              href={links.onchain}
-              style={localStyle(0, 190, 152, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
-            />
-            <Cell
-              className={`${styles.groupMember} ${styles.groupChild}`}
-              label="Offchain"
-              href={links.offchain}
-              style={localStyle(162, 190, 151, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
-            />
-            <Cell
-              className={`${styles.groupMember} ${styles.groupChild}`}
+              className={styles.builderBlock}
               label={
-                <span className={styles.multiline}>
-                  <span>Digital</span>
-                  <span>Design</span>
-                  <span>Assets</span>
+                <span className={styles.builderLabel}>
+                  <span>Built</span>
+                  <span>by</span>
+                  <span>Afzal</span>
                 </span>
               }
-              ariaLabel="Digital Design Assets"
-              href={links.digitalAssets}
-              style={localStyle(323, 190, 152, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
+              href={BUILDER_X_HREF}
+              ariaLabel="Built by Afzal on X"
+              style={boardStyle(754.7, 110, 153.3, 180)}
             />
+            <Cell className={styles.empty} style={boardStyle(110, 490, 313, 180)} />
+
+            <Cell className={styles.empty} style={boardStyle(236.2, 680, 116.2, 180)} />
+            <Cell className={styles.empty} style={boardStyle(362.4, 680, 60.6, 180)} />
+
+            <Cell className={styles.empty} style={boardStyle(595, 110, 149.7, 370)} />
+            <Cell className={styles.empty} style={boardStyle(754.7, 300, 153.3, 180)} />
+
+            <Cell label="X" href={links.x} style={boardStyle(110, 680, 116.2, 85)} />
+            <Cell label="IG" href={links.ig} style={boardStyle(110, 775, 116.2, 85)} />
           </div>
 
-          <div className={styles.group} style={boardStyle(433, 490, WORDS_GROUP_WIDTH, WORDS_GROUP_HEIGHT)}>
-            <Cell
-              className={`${styles.groupMember} ${styles.groupTitle} ${styles.titleCell}`}
-              labelClassName={styles.titleLabel}
-              label="WORDS"
-              style={localStyle(0, 0, 475, 180, WORDS_GROUP_WIDTH, WORDS_GROUP_HEIGHT)}
-            />
-            <Cell
-              className={`${styles.groupMember} ${styles.groupChild}`}
-              label="Newsletter"
-              href={links.newsletter}
-              style={localStyle(0, 190, 232.5, 180, WORDS_GROUP_WIDTH, WORDS_GROUP_HEIGHT)}
-            />
-            <Cell
-              className={`${styles.groupMember} ${styles.groupChild}`}
-              label="Archive"
-              href={links.archive}
-              style={localStyle(242.5, 190, 232.5, 180, WORDS_GROUP_WIDTH, WORDS_GROUP_HEIGHT)}
-            />
-          </div>
-
-          <Cell
-            className={styles.builderBlock}
-            label={
-              <span className={styles.builderLabel}>
-                <span>Built</span>
-                <span>by</span>
-                <span>Afzal</span>
-              </span>
-            }
-            href={BUILDER_X_HREF}
-            ariaLabel="Built by Afzal on X"
-            style={boardStyle(754.7, 110, 153.3, 180)}
-          />
-          <Cell className={styles.empty} style={boardStyle(110, 490, 313, 180)} />
-
-          <Cell className={styles.empty} style={boardStyle(236.2, 680, 116.2, 180)} />
-          <Cell className={styles.empty} style={boardStyle(362.4, 680, 60.6, 180)} />
-
-          <Cell className={styles.empty} style={boardStyle(595, 110, 149.7, 370)} />
-          <Cell className={styles.empty} style={boardStyle(754.7, 300, 153.3, 180)} />
-
-          <Cell label="X" href={links.x} style={boardStyle(110, 680, 116.2, 85)} />
-          <Cell label="IG" href={links.ig} style={boardStyle(110, 775, 116.2, 85)} />
-          <h1 className={styles.heroTitle}>Intangible internet things.</h1>
+          <h1 className={styles.heroTitle}>Intangible internet things</h1>
+          <section className={styles.about}>
+            <p className={styles.aboutText}>
+              I&apos;m Afzal <s>Designer</s> <s>Artist</s> an Internet Craftsman. Aex
+              Designs is my digital playground, archive and canvas. Here I share
+              experiments, wip, released works, writings and more. Currently
+              devoted to art mostly generative but not limited, publishing an artwork
+              every day, but that&apos;s not all I keep experimenting and releasing new
+              art/design works. You can also explore my previous works, use the design
+              assets I&apos;ve created, or read my writings aka letters.
+            </p>
+          </section>
         </div>
       </section>
     </main>
