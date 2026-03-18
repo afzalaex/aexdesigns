@@ -89,6 +89,8 @@ async function main() {
     });
   }
 
+  nextArtworks.reverse();
+
   await writeFile(
     collectionPath,
     `${JSON.stringify({ artworks: nextArtworks }, null, 2)}\n`,
