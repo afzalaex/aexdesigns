@@ -47,8 +47,26 @@ const notionCacheTtlSeconds =
   Number.isFinite(rawCacheTtlSeconds) && rawCacheTtlSeconds >= 0
     ? rawCacheTtlSeconds
     : 300;
+const rawNotionMaxRetries = Number(process.env.NOTION_MAX_RETRIES ?? "4");
+const notionMaxRetries =
+  Number.isFinite(rawNotionMaxRetries) && rawNotionMaxRetries >= 1
+    ? Math.floor(rawNotionMaxRetries)
+    : 4;
+const rawNotionRetryBaseDelayMs = Number(
+  process.env.NOTION_RETRY_BASE_DELAY_MS ?? "750"
+);
+const notionRetryBaseDelayMs =
+  Number.isFinite(rawNotionRetryBaseDelayMs) && rawNotionRetryBaseDelayMs >= 0
+    ? rawNotionRetryBaseDelayMs
+    : 750;
 const notionCacheTtlMs = notionCacheTtlSeconds * 1000;
-const childBlockFetchConcurrency = 6;
+const rawChildBlockFetchConcurrency = Number(
+  process.env.NOTION_CHILD_BLOCK_FETCH_CONCURRENCY ?? "3"
+);
+const childBlockFetchConcurrency =
+  Number.isFinite(rawChildBlockFetchConcurrency) && rawChildBlockFetchConcurrency >= 1
+    ? Math.floor(rawChildBlockFetchConcurrency)
+    : 3;
 let routesCache: TimedCacheEntry<RouteEntry[]> | undefined;
 const pageCache = new Map<string, TimedCacheEntry<NotionPageData | null>>();
 let routesRefreshPromise: Promise<RouteEntry[]> | undefined;
@@ -95,6 +113,128 @@ function createTimedCacheEntry<T>(value: T): TimedCacheEntry<T> {
     value,
     expiresAt: Date.now() + notionCacheTtlMs,
   };
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function getHeaderValue(
+  headers: Headers | Record<string, string> | undefined,
+  name: string
+): string | undefined {
+  if (!headers) {
+    return undefined;
+  }
+
+  if (typeof (headers as Headers).get === "function") {
+    return (headers as Headers).get(name) ?? undefined;
+  }
+
+  const record = headers as Record<string, string>;
+  const matchedKey = Object.keys(record).find(
+    (key) => key.toLowerCase() === name.toLowerCase()
+  );
+
+  return matchedKey ? record[matchedKey] : undefined;
+}
+
+function getRetryAfterDelayMs(error: unknown): number | undefined {
+  if (!error || typeof error !== "object") {
+    return undefined;
+  }
+
+  const retryAfter = getHeaderValue(
+    (error as { headers?: Headers | Record<string, string> }).headers,
+    "retry-after"
+  );
+  if (!retryAfter) {
+    return undefined;
+  }
+
+  const seconds = Number(retryAfter);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return seconds * 1000;
+  }
+
+  const parsedDate = Date.parse(retryAfter);
+  if (Number.isNaN(parsedDate)) {
+    return undefined;
+  }
+
+  return Math.max(parsedDate - Date.now(), 0);
+}
+
+function isRetriableNotionError(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const status =
+    typeof (error as { status?: unknown }).status === "number"
+      ? ((error as { status: number }).status)
+      : undefined;
+  const code =
+    typeof (error as { code?: unknown }).code === "string"
+      ? (error as { code: string }).code
+      : undefined;
+
+  if (code === "rate_limited") {
+    return true;
+  }
+
+  if (status === 408 || status === 409 || status === 425 || status === 429) {
+    return true;
+  }
+
+  return typeof status === "number" && status >= 500;
+}
+
+function getRetryDelayMs(error: unknown, attempt: number): number {
+  const retryAfterDelay = getRetryAfterDelayMs(error);
+  if (retryAfterDelay !== undefined) {
+    return retryAfterDelay;
+  }
+
+  const exponentialDelay = notionRetryBaseDelayMs * 2 ** Math.max(attempt - 1, 0);
+  return Math.min(exponentialDelay, 10_000);
+}
+
+async function withNotionRetry<T>(
+  label: string,
+  operation: () => Promise<T>
+): Promise<T> {
+  let attempt = 1;
+
+  while (true) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (!isRetriableNotionError(error) || attempt >= notionMaxRetries) {
+        throw error;
+      }
+
+      const status =
+        typeof (error as { status?: unknown }).status === "number"
+          ? (error as { status: number }).status
+          : undefined;
+      const code =
+        typeof (error as { code?: unknown }).code === "string"
+          ? (error as { code: string }).code
+          : undefined;
+      const delayMs = getRetryDelayMs(error, attempt);
+
+      console.warn(
+        `Transient Notion error during ${label}; retrying in ${delayMs}ms (attempt ${attempt}/${notionMaxRetries - 1} retries).`,
+        { status, code }
+      );
+
+      await wait(delayMs);
+      attempt += 1;
+    }
+  }
 }
 
 function normalizeSlug(raw: string): string {
@@ -309,11 +449,13 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
   let cursor: string | undefined;
 
   do {
-    const response = await client.databases.query({
-      database_id: normalizePageId(databaseId),
-      start_cursor: cursor,
-      page_size: 100,
-    });
+    const response = await withNotionRetry("database route query", () =>
+      client.databases.query({
+        database_id: normalizePageId(databaseId),
+        start_cursor: cursor,
+        page_size: 100,
+      })
+    );
 
     for (const result of response.results) {
       if (!isFullPage(result) || result.object !== "page") {
@@ -458,11 +600,13 @@ async function loadBlocks(blockId: string): Promise<NotionBlock[]> {
   let cursor: string | undefined;
 
   do {
-    const response = await client.blocks.children.list({
-      block_id: blockId,
-      start_cursor: cursor,
-      page_size: 100,
-    });
+    const response = await withNotionRetry(`block children fetch (${blockId})`, () =>
+      client.blocks.children.list({
+        block_id: blockId,
+        start_cursor: cursor,
+        page_size: 100,
+      })
+    );
 
     const currentPageBlocks: NotionBlock[] = [];
 
@@ -510,7 +654,9 @@ async function refreshPage(slug: string): Promise<NotionPageData | null> {
     const client = getNotionClient();
 
     if (stalePage && stalePage.id === route.pageId) {
-      const pageResponse = await client.pages.retrieve({ page_id: route.pageId });
+      const pageResponse = await withNotionRetry(`page fetch (${slug})`, () =>
+        client.pages.retrieve({ page_id: route.pageId })
+      );
 
       if (!isFullPage(pageResponse) || pageResponse.object !== "page") {
         pageCache.set(slug, createTimedCacheEntry(null));
@@ -534,7 +680,9 @@ async function refreshPage(slug: string): Promise<NotionPageData | null> {
     }
 
     const [pageResponse, blocks] = await Promise.all([
-      client.pages.retrieve({ page_id: route.pageId }),
+      withNotionRetry(`page fetch (${slug})`, () =>
+        client.pages.retrieve({ page_id: route.pageId })
+      ),
       loadBlocks(route.pageId),
     ]);
 
