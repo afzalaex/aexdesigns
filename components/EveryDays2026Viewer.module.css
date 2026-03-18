@@ -124,6 +124,10 @@
   background: #000;
 }
 
+.iframeLoading {
+  opacity: 0;
+}
+
 .canvasPlates {
   display: flex;
   align-items: stretch;
@@ -239,6 +243,64 @@
 .overlay {
   z-index: 2;
   background: rgba(0, 0, 0, 0.68);
+}
+
+.loaderIcon {
+  position: relative;
+  display: block;
+  width: clamp(132px, 34%, 220px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.08));
+}
+
+.loaderBarBase {
+  position: absolute;
+  left: 8.333%;
+  width: 83.333%;
+  height: 16.667%;
+  background: #fff;
+  opacity: 0.18;
+}
+
+.loaderBarBase:nth-child(1) {
+  top: 8.333%;
+}
+
+.loaderBarBase:nth-child(2) {
+  top: 41.667%;
+}
+
+.loaderBarBase:nth-child(3) {
+  top: 75%;
+}
+
+.loaderBarPulse {
+  animation: loader-bar-wave 0.48s steps(1, end) infinite;
+}
+
+@keyframes loader-bar-wave {
+  0%,
+  15% {
+    opacity: 1;
+  }
+
+  16%,
+  100% {
+    opacity: 0.18;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .overlayError {

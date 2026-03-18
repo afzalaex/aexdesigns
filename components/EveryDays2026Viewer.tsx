@@ -7,6 +7,7 @@ const COLLECTION_URL = "/data/collection-2026.json";
 const P5_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js";
 const SKETCH_BASE_URL =
   "https://raw.githubusercontent.com/afzalaex/every-days-2026/main/sketches";
+const LOADER_MIN_VISIBLE_MS = 180;
 
 type PoweredByLink = {
   href: string;
@@ -58,6 +59,18 @@ type FrameMessage = {
   message?: unknown;
 };
 
+type LoadingBar = {
+  key: string;
+  y: number;
+  begin: string;
+};
+
+const LOADING_BARS: readonly LoadingBar[] = [
+  { key: "top", y: 50, begin: "0s" },
+  { key: "middle", y: 250, begin: "0.08s" },
+  { key: "bottom", y: 450, begin: "0.16s" },
+] as const;
+
 function escapeInlineScriptContent(value: string): string {
   return JSON.stringify(value).replace(/<\//g, "<\\/");
 }
@@ -97,6 +110,26 @@ function normalizeCollection(data: unknown): Artwork[] {
 function formatArtworkLabel(artwork: Artwork): string {
   const name = artwork.name.trim().length > 0 ? artwork.name.trim() : "Untitled";
   return `${name} #${artwork.id}`;
+}
+
+function EveryDaysLoadingIcon() {
+  return (
+    <div
+      role="img"
+      aria-label="Loading sketch"
+      className={styles.loaderIcon}
+    >
+      {LOADING_BARS.map((bar) => {
+        return (
+          <span
+            key={bar.key}
+            className={`${styles.loaderBarBase} ${styles.loaderBarPulse}`}
+            style={{ animationDelay: bar.begin }}
+          />
+        );
+      })}
+    </div>
+  );
 }
 
 function buildSketchDocument(artwork: Artwork, sketchSource: string): string {
@@ -307,6 +340,44 @@ export function EveryDays2026Viewer() {
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const selectorId = useId();
   const selectorRef = useRef<HTMLDivElement | null>(null);
+  const loadingStartedAtRef = useRef<number | null>(null);
+  const frameTransitionTimerRef = useRef<number | null>(null);
+
+  function clearPendingFrameTransition() {
+    if (frameTransitionTimerRef.current !== null) {
+      window.clearTimeout(frameTransitionTimerRef.current);
+      frameTransitionTimerRef.current = null;
+    }
+  }
+
+  function beginFrameLoading() {
+    clearPendingFrameTransition();
+    loadingStartedAtRef.current = window.performance.now();
+    setFrameState("loading");
+    setFrameError(null);
+  }
+
+  function settleFrame(nextState: Exclude<FrameState, "loading">, nextError: string | null) {
+    clearPendingFrameTransition();
+
+    const startedAt = loadingStartedAtRef.current;
+    const elapsed = startedAt === null ? LOADER_MIN_VISIBLE_MS : window.performance.now() - startedAt;
+    const remaining = LOADER_MIN_VISIBLE_MS - elapsed;
+
+    if (remaining <= 0) {
+      loadingStartedAtRef.current = null;
+      setFrameState(nextState);
+      setFrameError(nextError);
+      return;
+    }
+
+    frameTransitionTimerRef.current = window.setTimeout(() => {
+      frameTransitionTimerRef.current = null;
+      loadingStartedAtRef.current = null;
+      setFrameState(nextState);
+      setFrameError(nextError);
+    }, remaining);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -364,13 +435,21 @@ export function EveryDays2026Viewer() {
   useEffect(() => {
     if (selectedId === null) {
       setSketchSource(null);
-      setFrameState(isCollectionLoading ? "loading" : "idle");
-      setFrameError(null);
+      if (isCollectionLoading) {
+        beginFrameLoading();
+      } else {
+        clearPendingFrameTransition();
+        loadingStartedAtRef.current = null;
+        setFrameState("idle");
+        setFrameError(null);
+      }
       return;
     }
 
     const selectedArtwork = artworks.find((artwork) => artwork.id === selectedId);
     if (!selectedArtwork) {
+      clearPendingFrameTransition();
+      loadingStartedAtRef.current = null;
       setSketchSource(null);
       setFrameState("error");
       setFrameError("Selected artwork metadata is missing.");
@@ -380,8 +459,7 @@ export function EveryDays2026Viewer() {
     let cancelled = false;
     const selectedFile = selectedArtwork.file;
     setSketchSource(null);
-    setFrameState("loading");
-    setFrameError(null);
+    beginFrameLoading();
 
     async function loadSketchSource() {
       try {
@@ -406,8 +484,8 @@ export function EveryDays2026Viewer() {
         }
 
         console.error("Failed to load sketch source:", error);
-        setFrameState("error");
-        setFrameError(
+        settleFrame(
+          "error",
           error instanceof Error && error.message
             ? error.message
             : "Failed to load sketch source."
@@ -435,14 +513,13 @@ export function EveryDays2026Viewer() {
       }
 
       if (data.type === "ready") {
-        setFrameState("ready");
-        setFrameError(null);
+        settleFrame("ready", null);
         return;
       }
 
       if (data.type === "error") {
-        setFrameState("error");
-        setFrameError(
+        settleFrame(
+          "error",
           typeof data.message === "string" && data.message.trim().length > 0
             ? data.message
             : "Unable to load sketch."
@@ -455,6 +532,12 @@ export function EveryDays2026Viewer() {
       window.removeEventListener("message", handleMessage);
     };
   }, [selectedId]);
+
+  useEffect(() => {
+    return () => {
+      clearPendingFrameTransition();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isSelectorOpen) {
@@ -559,7 +642,7 @@ export function EveryDays2026Viewer() {
             <iframe
               key={selectedArtwork?.id}
               title={`Every Days 2026 artwork ${selectedArtwork?.id}`}
-              className={styles.iframe}
+              className={`${styles.iframe}${frameState === "loading" ? ` ${styles.iframeLoading}` : ""}`}
               srcDoc={iframeDocument}
               sandbox="allow-scripts"
               referrerPolicy="no-referrer"
@@ -570,7 +653,8 @@ export function EveryDays2026Viewer() {
 
           {frameState === "loading" ? (
             <div className={styles.overlay} aria-live="polite">
-              Loading sketch...
+              <EveryDaysLoadingIcon />
+              <span className={styles.srOnly}>Loading sketch...</span>
             </div>
           ) : null}
 
