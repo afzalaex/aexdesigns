@@ -55,7 +55,7 @@
 }
 
 .board {
-  --stroke-width: clamp(1px, 0.25vw, 2.5px);
+  --stroke-width: clamp(0.8px, 0.22vw, 2px);
   width: 100%;
   flex: 0 0 auto;
   aspect-ratio: 1 / 1;
@@ -233,18 +233,18 @@
   }
 
   .blockLabel {
-    font-size: clamp(0.66rem, 2.5cqi, 0.96rem);
-    line-height: 1.04;
+    font-size: clamp(0.72rem, 2.9vw, 0.96rem);
+    line-height: 1.08;
   }
 
   .titleCell .blockLabel,
   .titleLabel {
-    font-size: clamp(0.9rem, 3.8cqi, 1.54rem);
+    font-size: clamp(0.98rem, 4.4vw, 1.6rem);
   }
 
   .multiline,
   .builderLabel {
-    gap: 1px;
+    gap: 2px;
   }
 
   .aboutText {
@@ -258,28 +258,28 @@
   }
 
   .blockLabel {
-    font-size: clamp(0.58rem, 2.2cqi, 0.84rem);
-    line-height: 1.02;
+    font-size: clamp(0.64rem, 2.5vw, 0.82rem);
+    line-height: 1.08;
   }
 
   .titleCell .blockLabel,
   .titleLabel {
-    font-size: clamp(0.8rem, 3.25cqi, 1.3rem);
+    font-size: clamp(0.86rem, 3.7vw, 1.28rem);
   }
 
   .multiline,
   .builderLabel {
-    gap: 0;
+    gap: 1px;
   }
 }
 
 @media (max-width: 420px) {
   .blockLabel {
-    font-size: clamp(0.54rem, 2.05cqi, 0.76rem);
+    font-size: clamp(0.6rem, 2.3vw, 0.74rem);
   }
 
   .titleCell .blockLabel,
   .titleLabel {
-    font-size: clamp(0.72rem, 3cqi, 1.12rem);
+    font-size: clamp(0.78rem, 3.2vw, 1.1rem);
   }
 }
