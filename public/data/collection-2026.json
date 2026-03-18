@@ -332,9 +332,15 @@
     },
     {
       "id": 788,
-      "file": "788.js",
       "name": "Vecluster",
+      "file": "788.js",
       "description": "Hover over to bother"
+    },
+    {
+      "id": 789,
+      "file": "789.js",
+      "name": "Stripool",
+      "description": "Hover over to interact"
     }
   ]
 }
