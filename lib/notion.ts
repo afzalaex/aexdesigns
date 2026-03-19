@@ -43,11 +43,11 @@ const slugPropertyName = process.env.NOTION_SLUG_PROPERTY ?? "Slug";
 const publishedPropertyName = process.env.NOTION_PUBLISHED_PROPERTY ?? "Published";
 const descriptionPropertyName =
   process.env.NOTION_DESCRIPTION_PROPERTY ?? "Description";
-const rawCacheTtlSeconds = Number(process.env.NOTION_CACHE_TTL_SECONDS ?? "300");
+const rawCacheTtlSeconds = Number(process.env.NOTION_CACHE_TTL_SECONDS ?? "900");
 const notionCacheTtlSeconds =
   Number.isFinite(rawCacheTtlSeconds) && rawCacheTtlSeconds >= 0
     ? rawCacheTtlSeconds
-    : 300;
+    : 900;
 const rawNotionMaxRetries = Number(process.env.NOTION_MAX_RETRIES ?? "4");
 const notionMaxRetries =
   Number.isFinite(rawNotionMaxRetries) && rawNotionMaxRetries >= 1
@@ -62,12 +62,12 @@ const notionRetryBaseDelayMs =
     : 750;
 const notionCacheTtlMs = notionCacheTtlSeconds * 1000;
 const rawChildBlockFetchConcurrency = Number(
-  process.env.NOTION_CHILD_BLOCK_FETCH_CONCURRENCY ?? "3"
+  process.env.NOTION_CHILD_BLOCK_FETCH_CONCURRENCY ?? "4"
 );
 const childBlockFetchConcurrency =
   Number.isFinite(rawChildBlockFetchConcurrency) && rawChildBlockFetchConcurrency >= 1
     ? Math.floor(rawChildBlockFetchConcurrency)
-    : 3;
+    : 4;
 export const NOTION_ROUTES_TAG = "notion-routes";
 export const NOTION_PAGES_TAG = "notion-pages";
 let routesCache: TimedCacheEntry<RouteEntry[]> | undefined;
