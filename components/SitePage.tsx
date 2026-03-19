@@ -3,12 +3,7 @@ import { EveryDays2026Viewer } from "@/components/EveryDays2026Viewer";
 import { NotionRenderer } from "@/components/NotionRenderer";
 import everyDaysCollection2026 from "@/public/data/collection-2026.json";
 import { resolveNotionImagePrimarySrc } from "@/lib/notion-images";
-import {
-  getPageBySlug,
-  getRoutes,
-  type NotionBlock,
-  type NotionPageData,
-} from "@/lib/notion";
+import { getRoutes, type NotionBlock, type NotionPageData } from "@/lib/notion";
 
 function toPageClass(slug: string): string {
   if (slug === "/") {
@@ -28,19 +23,12 @@ type TopActionConfig = {
   buttonLabel: string;
 };
 
-type ExpandableChildRoute = {
-  href: string;
-  label: string;
-  external?: boolean;
-};
-
 type EveryDaysCollectionRecord = {
   artworks?: Array<{
     id?: unknown;
   }>;
 };
 
-type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
 const everyDaysCanvasMarkers = new Set([
   "insert canvas here",
   "[[every-days-2026-canvas]]",
@@ -69,11 +57,6 @@ function getLatestEveryDaysArtworkId(): number | null {
 
   return latestId > 0 ? latestId : null;
 }
-
-function normalizePageId(raw: string): string {
-  return raw.replace(/-/g, "").toLowerCase();
-}
-
 function joinRichTextPlainText(
   items: Array<{ plain_text?: string }> | undefined
 ): string {
@@ -100,6 +83,20 @@ function findEveryDaysCanvasMarkerIndex(blocks: NotionBlock[]): number {
 
     return everyDaysCanvasMarkers.has(text);
   });
+}
+
+function hasChildPageBlocks(blocks: NotionBlock[]): boolean {
+  for (const block of blocks) {
+    if (block.type === "child_page") {
+      return true;
+    }
+
+    if (block.children?.length && hasChildPageBlocks(block.children)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function collectPriorityImageIds(
@@ -166,238 +163,6 @@ function collectPriorityImageSources(
   }
 
   return sources;
-}
-
-function isInternalHref(href: string): boolean {
-  if (href.startsWith("/")) {
-    return true;
-  }
-
-  try {
-    const parsed = new URL(href);
-    return ["aex.design", "www.aex.design"].includes(parsed.hostname);
-  } catch {
-    return false;
-  }
-}
-
-function toInternalHref(href: string): string {
-  if (href.startsWith("/")) {
-    return href;
-  }
-
-  try {
-    const parsed = new URL(href);
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
-    return href;
-  }
-}
-
-function normalizeMatchText(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
-
-function keepOnlyOnchainCoreItems(items: ExpandableChildRoute[]): ExpandableChildRoute[] {
-  const fixedByKey: Record<string, ExpandableChildRoute> = {
-    opepen: {
-      href: "https://www.opepen.art",
-      label: "Opepen",
-      external: true,
-    },
-    opensea: {
-      href: "https://www.opensea.io",
-      label: "Opensea",
-      external: true,
-    },
-  };
-
-  const orderedMatchers: Array<{
-    key: "every-days" | "opepen" | "punkism" | "opensea";
-    matches: (item: ExpandableChildRoute) => boolean;
-  }> = [
-    {
-      key: "every-days",
-      matches: (item) => {
-        const label = normalizeMatchText(item.label);
-        const href = normalizeMatchText(item.href);
-        return item.href === "/every-days" || label.includes("e very days") || label.includes("every days") || href.includes("every days");
-      },
-    },
-    {
-      key: "opepen",
-      matches: (item) => {
-        const label = normalizeMatchText(item.label);
-        const href = normalizeMatchText(item.href);
-        return label.includes("opepen") || href.includes("opepen");
-      },
-    },
-    {
-      key: "punkism",
-      matches: (item) => {
-        const label = normalizeMatchText(item.label);
-        const href = normalizeMatchText(item.href);
-        return label.includes("punkism") || href.includes("punkism");
-      },
-    },
-    {
-      key: "opensea",
-      matches: (item) => {
-        const label = normalizeMatchText(item.label);
-        const href = normalizeMatchText(item.href);
-        return label.includes("opensea") || href.includes("opensea");
-      },
-    },
-  ];
-
-  const picked: ExpandableChildRoute[] = [];
-  const used = new Set<string>();
-
-  for (const matcher of orderedMatchers) {
-    const fixedItem = fixedByKey[matcher.key];
-    if (fixedItem) {
-      const fixedKey = `${fixedItem.external ? "external" : "internal"}::${fixedItem.href}`;
-      if (!used.has(fixedKey)) {
-        used.add(fixedKey);
-        picked.push(fixedItem);
-      }
-      continue;
-    }
-
-    const match = items.find((item) => {
-      const key = `${item.external ? "external" : "internal"}::${item.href}`;
-      return !used.has(key) && matcher.matches(item);
-    });
-
-    if (!match) {
-      continue;
-    }
-
-    const key = `${match.external ? "external" : "internal"}::${match.href}`;
-    used.add(key);
-    picked.push(match);
-  }
-
-  return picked;
-}
-
-function isDigitalAssetsParentSlug(slug: string): boolean {
-  return slug === "/dda" || slug === "/digital-design-assets" || slug === "/digitaldesignassets";
-}
-
-function appendDigitalAssetsTailItems(
-  items: ExpandableChildRoute[]
-): ExpandableChildRoute[] {
-  const extras: ExpandableChildRoute[] = [
-    {
-      href: "/typeplayground",
-      label: "Type Playground",
-    },
-    {
-      href: "https://store.aex.design",
-      label: "Store",
-      external: true,
-    },
-  ];
-
-  function normalizeMatch(value: string): string {
-    return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
-  }
-
-  function isTypePlayground(item: ExpandableChildRoute): boolean {
-    const href = normalizeMatch(item.href);
-    const label = normalizeMatch(item.label);
-    return (
-      href === "typeplayground" ||
-      href === "type-playground".replace(/[^a-z0-9]+/g, "") ||
-      label === "typeplayground"
-    );
-  }
-
-  function isStore(item: ExpandableChildRoute): boolean {
-    const href = normalizeMatch(item.href);
-    const label = normalizeMatch(item.label);
-    return href.includes("storeaexdesign") || label === "store";
-  }
-
-  const baseItems = items.filter((item) => !isTypePlayground(item) && !isStore(item));
-  return [...baseItems, ...extras];
-}
-
-function collectExpandableItems(
-  blocks: NotionBlock[] | undefined,
-  slugById: Map<string, string>,
-  includeParagraphLinks: boolean
-): ExpandableChildRoute[] {
-  if (!blocks || blocks.length === 0) {
-    return [];
-  }
-
-  const items: ExpandableChildRoute[] = [];
-  const seen = new Set<string>();
-
-  function pushUnique(item: ExpandableChildRoute): void {
-    const key = `${item.external ? "external" : "internal"}::${item.href}`;
-    if (seen.has(key)) {
-      return;
-    }
-
-    seen.add(key);
-    items.push(item);
-  }
-
-  function walk(currentBlocks: NotionBlock[]): void {
-    for (const block of currentBlocks) {
-      if (block.type === "child_page") {
-        const slug = slugById.get(normalizePageId(block.id));
-        if (slug && !/-type-tester$/i.test(slug)) {
-          pushUnique({
-            href: slug,
-            label: block.child_page.title,
-          });
-        }
-      }
-
-      if (includeParagraphLinks && block.type === "paragraph") {
-        for (const richItem of block.paragraph.rich_text) {
-          if (!richItem.href) {
-            continue;
-          }
-
-          const label = richItem.plain_text.trim() || richItem.href;
-          const internal = isInternalHref(richItem.href);
-
-          pushUnique({
-            href: internal ? toInternalHref(richItem.href) : richItem.href,
-            label,
-            external: !internal,
-          });
-        }
-      }
-
-      if (block.children?.length) {
-        walk(block.children);
-      }
-    }
-  }
-
-  walk(blocks);
-
-  return items;
-}
-
-function childSlugByPageId(routeEntries: Array<{ slug: string; pageId?: string }>): Map<string, string> {
-  const byPageId = new Map<string, string>();
-
-  for (const route of routeEntries) {
-    if (typeof route.pageId !== "string" || route.pageId.trim().length === 0) {
-      continue;
-    }
-
-    byPageId.set(normalizePageId(route.pageId), route.slug);
-  }
-
-  return byPageId;
 }
 
 const topActionBySlug: Record<string, TopActionConfig> = {
@@ -476,62 +241,9 @@ const topActionBySlug: Record<string, TopActionConfig> = {
 };
 
 export async function SitePage({ page }: { page: NotionPageData }) {
-  const routeEntries = await getRoutes().catch(() => []);
-  let expandableRouteGroups: ExpandableRouteGroups | undefined;
-
-  if (page.slug === "/") {
-    const parentSlugs = [
-      "/onchain",
-      "/offchain",
-      "/dda",
-      "/digital-design-assets",
-      "/digitaldesignassets",
-      "/archive",
-    ];
-    const slugById = childSlugByPageId(routeEntries);
-    const groups: ExpandableRouteGroups = {};
-
-    for (const parentSlug of parentSlugs) {
-      try {
-        const parentPage = await getPageBySlug(parentSlug);
-        if (!parentPage) {
-          continue;
-        }
-
-        const includeParagraphLinks = parentSlug === "/onchain";
-        const children = collectExpandableItems(
-          parentPage.blocks,
-          slugById,
-          includeParagraphLinks
-        );
-
-        const finalChildren =
-          parentSlug === "/onchain"
-            ? keepOnlyOnchainCoreItems(children)
-            : isDigitalAssetsParentSlug(parentSlug)
-              ? appendDigitalAssetsTailItems(children)
-              : children;
-
-        if (finalChildren.length > 0) {
-          groups[parentSlug] = Array.from(
-            new Map(
-              finalChildren.map((child) => [
-                `${child.external ? "external" : "internal"}::${child.href}`,
-                child,
-              ])
-            ).values()
-          );
-        }
-      } catch (error) {
-        console.error("Failed to resolve expandable child pages for:", parentSlug, error);
-      }
-    }
-
-    if (Object.keys(groups).length > 0) {
-      expandableRouteGroups = groups;
-    }
-  }
-
+  const routeEntries = hasChildPageBlocks(page.blocks)
+    ? await getRoutes().catch(() => [])
+    : undefined;
   const pageClass = toPageClass(page.slug);
   const articleId = `block-${page.id.replace(/-/g, "")}`;
   const topAction = topActionBySlug[page.slug];
@@ -625,7 +337,6 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           blocks={blocksBeforeEveryDaysCanvas}
           pageSlug={page.slug}
           routeEntries={routeEntries}
-          expandableRouteGroups={expandableRouteGroups}
           priorityImageIds={priorityImageIds}
         />
         {shouldRenderEveryDaysCanvasAtMarker ? <EveryDays2026Viewer /> : null}
@@ -634,7 +345,6 @@ export async function SitePage({ page }: { page: NotionPageData }) {
             blocks={blocksAfterEveryDaysCanvas}
             pageSlug={page.slug}
             routeEntries={routeEntries}
-            expandableRouteGroups={expandableRouteGroups}
             priorityImageIds={priorityImageIds}
           />
         ) : null}
