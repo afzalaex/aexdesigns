@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { Client, isFullBlock, isFullPage } from "@notionhq/client";
 import type {
   BlockObjectResponse,
@@ -67,6 +68,8 @@ const childBlockFetchConcurrency =
   Number.isFinite(rawChildBlockFetchConcurrency) && rawChildBlockFetchConcurrency >= 1
     ? Math.floor(rawChildBlockFetchConcurrency)
     : 3;
+export const NOTION_ROUTES_TAG = "notion-routes";
+export const NOTION_PAGES_TAG = "notion-pages";
 let routesCache: TimedCacheEntry<RouteEntry[]> | undefined;
 const pageCache = new Map<string, TimedCacheEntry<NotionPageData | null>>();
 let routesRefreshPromise: Promise<RouteEntry[]> | undefined;
@@ -246,6 +249,10 @@ function normalizeSlug(raw: string): string {
 
   const cleaned = withLeadingSlash.replace(/\/+/g, "/").replace(/\/$/, "");
   return cleaned || "/";
+}
+
+export function notionPageTag(slugInput: string): string {
+  return `notion-page:${normalizeSlug(slugInput)}`;
 }
 
 function isHiddenRouteSlug(slug: string): boolean {
@@ -506,7 +513,7 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
   return dedupeRoutes(routes);
 }
 
-export async function getRoutes(): Promise<RouteEntry[]> {
+async function getRoutesWithProcessCache(): Promise<RouteEntry[]> {
   const cachedRoutes = readTimedCache(routesCache);
   if (cachedRoutes !== undefined) {
     return cachedRoutes;
@@ -530,6 +537,19 @@ export async function getRoutes(): Promise<RouteEntry[]> {
   }
 
   return routesRefreshPromise;
+}
+
+const getPersistentRoutes = unstable_cache(
+  async (): Promise<RouteEntry[]> => getRoutesWithProcessCache(),
+  [NOTION_ROUTES_TAG],
+  {
+    revalidate: notionCacheTtlSeconds,
+    tags: [NOTION_ROUTES_TAG],
+  }
+);
+
+export async function getRoutes(): Promise<RouteEntry[]> {
+  return getPersistentRoutes();
 }
 
 async function refreshRoutes(): Promise<RouteEntry[]> {
@@ -712,8 +732,9 @@ async function refreshPage(slug: string): Promise<NotionPageData | null> {
   }
 }
 
-export async function getPageBySlug(slugInput: string): Promise<NotionPageData | null> {
-  const slug = normalizeSlug(slugInput);
+async function getPageBySlugWithProcessCache(
+  slug: string
+): Promise<NotionPageData | null> {
   const pageCacheEntry = pageCache.get(slug);
   const cachedPage = readTimedCache(pageCacheEntry);
   if (cachedPage !== undefined) {
@@ -743,6 +764,19 @@ export async function getPageBySlug(slugInput: string): Promise<NotionPageData |
   }
 
   return pageRefreshPromises.get(slug) as Promise<NotionPageData | null>;
+}
+
+export async function getPageBySlug(slugInput: string): Promise<NotionPageData | null> {
+  const slug = normalizeSlug(slugInput);
+
+  return unstable_cache(
+    async () => getPageBySlugWithProcessCache(slug),
+    ["notion-page", slug],
+    {
+      revalidate: notionCacheTtlSeconds,
+      tags: [NOTION_PAGES_TAG, notionPageTag(slug)],
+    }
+  )();
 }
 
 export async function getAllSlugs(): Promise<string[]> {

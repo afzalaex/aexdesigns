@@ -1,11 +1,15 @@
 import type { MetadataRoute } from "next";
-import { getAllSlugs, getSiteUrl } from "@/lib/notion";
+import routeMap from "@/content/route-map.json";
+import { getSiteUrl } from "@/lib/notion";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+const routeMapSlugs = (Array.isArray(routeMap) ? routeMap : [])
+  .map((entry: any) => (typeof entry?.slug === "string" ? entry.slug.trim() : ""))
+  .filter((slug) => slug.length > 0);
+
+export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl();
-  const slugs = await getAllSlugs();
   const staticSlugs = ["/typeplayground"];
-  const allSlugs = Array.from(new Set([...slugs, ...staticSlugs]));
+  const allSlugs = Array.from(new Set([...routeMapSlugs, ...staticSlugs]));
 
   return allSlugs.map((slug) => ({
     url: new URL(slug, siteUrl).toString(),

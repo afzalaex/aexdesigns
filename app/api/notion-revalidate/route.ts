@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
-import { invalidateNotionCache } from "@/lib/notion";
+import { revalidatePath, revalidateTag } from "next/cache";
+import {
+  invalidateNotionCache,
+  NOTION_PAGES_TAG,
+  NOTION_ROUTES_TAG,
+  notionPageTag,
+} from "@/lib/notion";
 
 type RevalidateBody = {
   slug?: string;
@@ -35,9 +40,12 @@ export async function POST(request: NextRequest) {
   }
 
   invalidateNotionCache(slug);
+  revalidateTag(NOTION_ROUTES_TAG);
   if (slug) {
+    revalidateTag(notionPageTag(slug));
     revalidatePath(slug);
   } else {
+    revalidateTag(NOTION_PAGES_TAG);
     revalidatePath("/", "layout");
   }
 
