@@ -210,7 +210,7 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
           <h1 className={styles.heroTitle}>Intangible internet things</h1>
           <section className={styles.about}>
             <p className={styles.aboutText}>
-              I&apos;m Afzal <s>Designer</s> <s>Artist</s> an Internet Craftsman. Aex
+              <strong>About:</strong> I&apos;m Afzal <s>Designer</s> <s>Artist</s> an Internet Craftsman. Aex
               Designs is my digital playground, archive and canvas. Here I share
               experiments, wip, released works, writings and more. Currently
               devoted to art mostly generative but not limited, publishing an artwork

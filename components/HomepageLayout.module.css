@@ -55,7 +55,7 @@
 }
 
 .board {
-  --stroke-width: clamp(0.8px, 0.22vw, 2px);
+  --stroke-width: clamp(0.95px, 0.228vw, 2.09px);
   width: 100%;
   flex: 0 0 auto;
   aspect-ratio: 1 / 1;
