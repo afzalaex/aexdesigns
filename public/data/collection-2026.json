@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 794,
+      "file": "794.js",
+      "name": "Monodrian",
+      "description": "Click to evolve"
+    },
+    {
       "id": 793,
-      "file": "793.js",
       "name": "Flowhere",
+      "file": "793.js",
       "description": "Hover over to flow"
     },
     {
