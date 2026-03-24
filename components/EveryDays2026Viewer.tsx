@@ -705,18 +705,7 @@ export function EveryDays2026Viewer() {
       <div className={styles.meta}>
         <div className={styles.metaHeader}>
           <div className={styles.metaMain}>
-            <p
-              className={`${styles.collectionLink} notion-text notion-text__content notion-semantic-string`}
-            >
-              <a
-                className="notion-link link"
-                href="https://networked.art/0x237047f8b97ab581974acaec36e6abba793a29b1/0x0f3f91d3dee2d6172a3c496b392ebeaa26318842"
-                target="_blank"
-                rel="noreferrer"
-              >
-                More details
-              </a>
-            </p>
+
           </div>
         </div>
         {collectionError ? (
