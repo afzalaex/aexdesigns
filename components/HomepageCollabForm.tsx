@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./HomepageLayout.module.css";
@@ -7,7 +8,21 @@ import styles from "./HomepageLayout.module.css";
 const CONTACT_EMAIL = "afzalaex@gmail.com";
 const FORM_ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
 
-export function HomepageCollabForm() {
+type HomepageCollabFormProps = {
+  ariaLabel?: string;
+  className?: string;
+  children?: ReactNode;
+  dialogTitle?: string;
+  style?: CSSProperties;
+};
+
+export function HomepageCollabForm({
+  ariaLabel,
+  className,
+  children,
+  dialogTitle = "Contact",
+  style,
+}: HomepageCollabFormProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -16,6 +31,8 @@ export function HomepageCollabForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<"success" | "error" | null>(null);
+  const buttonClassName = className ?? styles.contactButton;
+  const buttonLabel = children ?? "Contact";
 
   useEffect(() => {
     if (!isOpen) {
@@ -102,8 +119,14 @@ export function HomepageCollabForm() {
 
   return (
     <>
-      <button className={styles.contactButton} type="button" onClick={handleOpen}>
-        Contact
+      <button
+        aria-label={ariaLabel}
+        className={buttonClassName}
+        style={style}
+        type="button"
+        onClick={handleOpen}
+      >
+        {buttonLabel}
       </button>
 
       {isOpen
@@ -119,7 +142,7 @@ export function HomepageCollabForm() {
                 <div className={styles.contactModalHeader}>
                   <div className={styles.contactModalCopy}>
                     <p id="homepage-contact-title" className={styles.mailBoxTitle}>
-                      Contact
+                      {dialogTitle}
                     </p>
                   </div>
                   <button

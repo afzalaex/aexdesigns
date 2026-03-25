@@ -348,6 +348,12 @@
   cursor: pointer;
 }
 
+.blockButton {
+  appearance: none;
+  font: inherit;
+  padding: 0;
+}
+
 .blockLabel {
   color: currentColor;
   pointer-events: none;

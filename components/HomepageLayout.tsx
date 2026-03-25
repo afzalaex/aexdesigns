@@ -202,7 +202,18 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
             <Cell className={styles.empty} style={boardStyle(362.4, 680, 60.6, 180)} />
 
             <Cell className={styles.empty} style={boardStyle(595, 110, 149.7, 370)} />
-            <Cell className={styles.empty} style={boardStyle(754.7, 300, 153.3, 180)} />
+            <HomepageCollabForm
+              ariaLabel="Work with Me"
+              className={`${styles.block} ${styles.blockButton} ${styles.interactive} ${styles.builderBlock}`}
+              dialogTitle="Let me help you bring your ideas to life"
+              style={boardStyle(754.7, 300, 153.3, 180)}
+            >
+              <span className={`${styles.blockLabel} ${styles.builderLabel}`}>
+                <span>Work</span>
+                <span>with</span>
+                <span>Me</span>
+              </span>
+            </HomepageCollabForm>
 
             <Cell label="X" href={links.x} style={boardStyle(110, 680, 116.2, 85)} />
             <Cell label="IG" href={links.ig} style={boardStyle(110, 775, 116.2, 85)} />
@@ -210,15 +221,25 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
 
           <h1 className={styles.heroTitle}>Intangible internet things</h1>
           <section className={styles.about}>
-            <p className={styles.aboutText}>
-              <strong>About:</strong> I&apos;m Afzal <s>Designer</s> <s>Artist</s> an Internet Craftsman. Aex
-              Designs is my digital playground, archive and canvas. Here I share
-              experiments, wip, released works, writings and more. Currently
-              devoted to art mostly generative but not limited, publishing an artwork
-              every day, but that&apos;s not all I keep experimenting and releasing new
-              art/design works. Explore my works, use the design assets I&apos;ve
-              created, or read my writings aka letters. Open to collab{" "}
-              <HomepageCollabForm />
+            <p className={`${styles.aboutText} notion-semantic-string`}>
+              <strong>About:</strong>{" "}I&apos;m Afzal, an internet artist/designer/craftsman. Aex Designs is my
+              digital playground/archive/canvas, where I share experiments, wip,
+              releases, writings, and more. I&apos;m currently focused on art,
+              publishing a new artwork every day. My work is primarily generative,
+              rooted in abstraction and geometric forms, while continuously
+              exploring new directions and mediums. Explore my work, use creative
+              assets like fonts, or read my writings. All works are released under{" "}
+              <a
+                href="https://creativecommons.org/public-domain/cc0/"
+                className="notion-link link"
+                data-server-link={false}
+                data-link-uri="https://creativecommons.org/public-domain/cc0/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                CC0
+              </a>
+              . No rights reserved. Use, remix, and build freely.
             </p>
           </section>
         </div>
