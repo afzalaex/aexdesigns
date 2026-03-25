@@ -205,7 +205,7 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
             <HomepageCollabForm
               ariaLabel="Work with Me"
               className={`${styles.block} ${styles.blockButton} ${styles.interactive} ${styles.builderBlock}`}
-              dialogTitle="Let me help you bring your ideas to life"
+              dialogTitle="LET ME HELP YOU BRING YOUR IDEAS TO LIFE"
               style={boardStyle(754.7, 300, 153.3, 180)}
             >
               <span className={`${styles.blockLabel} ${styles.builderLabel}`}>
