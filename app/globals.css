@@ -554,7 +554,7 @@ figure.notion-embed {
   flex-direction: column;
 }
 
-.p5nels-top-actions {
+.site-top-actions {
   position: fixed;
   z-index: 9999;
   right: var(--navbar-floating-edge);
@@ -564,7 +564,7 @@ figure.notion-embed {
   gap: 10px;
 }
 
-.p5nels-top-actions__meta {
+.site-top-actions__meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -573,7 +573,7 @@ figure.notion-embed {
   text-align: right;
 }
 
-.p5nels-top-actions__release {
+.site-top-actions__release {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
@@ -902,7 +902,7 @@ figure.notion-embed {
 }
 
 @media (max-width: 300px) {
-  .p5nels-top-actions {
+  .site-top-actions {
     display: none;
   }
 }

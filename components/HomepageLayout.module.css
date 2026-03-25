@@ -68,6 +68,9 @@
 .about {
   width: 100%;
   padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .aboutText {
@@ -83,6 +86,233 @@
   opacity: 0.56;
   text-decoration-thickness: 0.08em;
   text-decoration-skip-ink: none;
+}
+
+.contactButton {
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  font: inherit;
+  font-weight: 400;
+  margin: 1px 0;
+  line-height: 1.58;
+  padding: 0 2px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  opacity: 0.7;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in;
+}
+
+.contactButton:hover,
+.contactButton:focus-visible {
+  opacity: 1;
+  border-color: #fff;
+}
+
+.contactButton:focus-visible {
+  outline: none;
+}
+
+.contactOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.contactModal {
+  width: min(100%, 560px);
+  max-height: min(100dvh - 48px, 760px);
+  overflow-y: auto;
+  border: 1px solid #fff;
+  background: #000;
+  padding: 20px;
+}
+
+.contactModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.contactModalCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contactClose {
+  border: 1px solid #fff;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 120ms ease, color 120ms ease, opacity 120ms ease;
+}
+
+.contactClose::before,
+.contactClose::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 1px;
+  background: currentColor;
+  transform-origin: center;
+}
+
+.contactClose::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.contactClose::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.contactClose:hover,
+.contactClose:focus-visible {
+  background: #fff;
+  color: #000;
+}
+
+.contactClose:focus-visible {
+  outline: none;
+}
+
+.mailBox {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.honeypotField {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mailBoxTitle {
+  margin: 0;
+  font-size: 0.96rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #fff;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.fieldInput {
+  width: 100%;
+  border: 1px solid #fff;
+  border-radius: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  padding: 12px 14px;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.fieldInput:hover {
+  background: #000;
+}
+
+.fieldInput:focus-visible {
+  outline: none;
+  border-color: #fff;
+  background: #000;
+}
+
+.fieldTextarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.mailBoxButton {
+  align-self: flex-start;
+  border: 1px solid #fff;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-weight: 400;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, opacity 120ms ease;
+}
+
+.mailBoxButton:hover,
+.mailBoxButton:focus-visible {
+  background: #fff;
+  color: #000;
+}
+
+.mailBoxButton:focus-visible {
+  outline: none;
+}
+
+.mailBoxButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.mailBoxFooter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.formStatus {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.formStatusSuccess {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.formStatusError {
+  color: #ff8c8c;
 }
 
 .group {
@@ -217,6 +447,12 @@
     font-size: clamp(0.88rem, 1.96cqi, 0.96rem);
     line-height: 1.56;
   }
+
+  .contactButton {
+    font-size: clamp(0.88rem, 1.96cqi, 0.96rem);
+    line-height: 1.56;
+  }
+
 }
 
 @media (max-width: 680px) {
@@ -250,6 +486,19 @@
   .aboutText {
     font-size: clamp(0.76rem, 2.7vw, 0.86rem);
   }
+
+  .contactButton {
+    font-size: clamp(0.76rem, 2.7vw, 0.86rem);
+  }
+
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .contactModal {
+    padding: 16px;
+  }
+
 }
 
 @media (max-width: 560px) {

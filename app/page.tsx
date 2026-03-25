@@ -58,5 +58,15 @@ export function generateMetadata(): Metadata {
 }
 
 export default function HomePage() {
-  return <HomepageLayout links={homepageLinks} />;
+  return (
+    <>
+      <div className="site-top-actions">
+        <div className="site-top-actions__meta">
+          <span className="site-top-stat">Aex Designs</span>
+          <span className="site-top-actions__release">Since 2019</span>
+        </div>
+      </div>
+      <HomepageLayout links={homepageLinks} />
+    </>
+  );
 }

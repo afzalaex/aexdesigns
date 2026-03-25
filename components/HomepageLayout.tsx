@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
+import { HomepageCollabForm } from "./HomepageCollabForm";
 import styles from "./HomepageLayout.module.css";
 
 export type HomepageLinks = {
@@ -216,7 +217,8 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
               devoted to art mostly generative but not limited, publishing an artwork
               every day, but that&apos;s not all I keep experimenting and releasing new
               art/design works. Explore my works, use the design assets I&apos;ve
-              created, or read my writings aka letters.
+              created, or read my writings aka letters. Open to collab{" "}
+              <HomepageCollabForm />
             </p>
           </section>
         </div>

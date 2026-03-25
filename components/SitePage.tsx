@@ -291,12 +291,12 @@ export async function SitePage({ page }: { page: NotionPageData }) {
   return (
     <main id={`page-${pageClass}`} className={`site-content page__${pageClass}`}>
       {topAction ? (
-        <div className="p5nels-top-actions">
-          <div className="p5nels-top-actions__meta">
+        <div className="site-top-actions">
+          <div className="site-top-actions__meta">
             <a className={topAction.metaClassName} href={topAction.metaHref}>
               {topAction.metaLabel}
             </a>
-            <span className="p5nels-top-actions__release">
+            <span className="site-top-actions__release">
               Released: {topAction.releaseYear}
             </span>
           </div>
@@ -305,12 +305,12 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           </a>
         </div>
       ) : everyDaysLatestArtworkId !== null ? (
-        <div className="p5nels-top-actions">
-          <div className="p5nels-top-actions__meta">
+        <div className="site-top-actions">
+          <div className="site-top-actions__meta">
             <span className="site-top-stat">
               {`Artworks: ${everyDaysLatestArtworkId}`}
             </span>
-            <span className="p5nels-top-actions__release">Since 2024</span>
+            <span className="site-top-actions__release">Since 2024</span>
           </div>
         </div>
       ) : null}
