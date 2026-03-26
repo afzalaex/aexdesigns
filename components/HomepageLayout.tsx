@@ -220,7 +220,7 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
               releases, writings, and more. I&apos;m currently focused on art,
               publishing a new artwork every day. My work is primarily generative,
               rooted in abstraction and geometric forms, while continuously
-              exploring new directions and mediums. Explore my work, use creative
+              exploring new directions and mediums. Explore my work, use
               assets like fonts, or read my writings. All works are released under{" "}
               <a
                 href="https://creativecommons.org/public-domain/cc0/"
