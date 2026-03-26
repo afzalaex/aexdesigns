@@ -52,8 +52,7 @@ type RouteRenderContextValue = {
 type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
 
 const expandableParentKeys = new Set([
-  "onchain",
-  "offchain",
+  "da",
   "dda",
   "digitaldesignassets",
   "archive",

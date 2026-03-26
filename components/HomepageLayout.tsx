@@ -4,8 +4,7 @@ import { HomepageCollabForm } from "./HomepageCollabForm";
 import styles from "./HomepageLayout.module.css";
 
 export type HomepageLinks = {
-  onchain: string;
-  offchain: string;
+  designArt: string;
   digitalAssets: string;
   newsletter: string;
   archive: string;
@@ -137,15 +136,9 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
               />
               <Cell
                 className={`${styles.groupMember} ${styles.groupChild}`}
-                label="Onchain"
-                href={links.onchain}
-                style={localStyle(0, 190, 152, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
-              />
-              <Cell
-                className={`${styles.groupMember} ${styles.groupChild}`}
-                label="Offchain"
-                href={links.offchain}
-                style={localStyle(162, 190, 151, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
+                label="Design/Art"
+                href={links.designArt}
+                style={localStyle(0, 190, 232.5, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
               />
               <Cell
                 className={`${styles.groupMember} ${styles.groupChild}`}
@@ -158,7 +151,7 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
                 }
                 ariaLabel="Digital Design Assets"
                 href={links.digitalAssets}
-                style={localStyle(323, 190, 152, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
+                style={localStyle(242.5, 190, 232.5, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
               />
             </div>
 

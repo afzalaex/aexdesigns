@@ -6,8 +6,7 @@ import { HomepageLayout, type HomepageLinks } from "@/components/HomepageLayout"
 export const revalidate = 3600;
 
 const internalLinkCandidates = {
-  onchain: ["/onchain"],
-  offchain: ["/offchain"],
+  designArt: ["/da", "/design-art", "/designart", "/onchain"],
   digitalAssets: ["/dda", "/digital-design-assets", "/digitaldesignassets"],
   archive: ["/archive"],
 } as const;
@@ -39,8 +38,7 @@ function resolveInternalLink(key: InternalHomepageLinkKey): string {
 }
 
 const homepageLinks: HomepageLinks = {
-  onchain: resolveInternalLink("onchain"),
-  offchain: resolveInternalLink("offchain"),
+  designArt: resolveInternalLink("designArt"),
   digitalAssets: resolveInternalLink("digitalAssets"),
   archive: resolveInternalLink("archive"),
   newsletter: externalLinkFallbacks.newsletter,

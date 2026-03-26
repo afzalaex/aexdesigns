@@ -314,18 +314,6 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           </div>
         </div>
       ) : null}
-      <div className="notion-header page">
-        <div className="notion-header__cover no-cover no-icon" />
-        <div className="notion-header__content max-width no-cover no-icon">
-          <div className="notion-header__title-wrapper">
-            <h1 className="notion-header__title">{page.title}</h1>
-          </div>
-          {page.description ? (
-            <p className="notion-header__description">{page.description}</p>
-          ) : null}
-        </div>
-      </div>
-
       {shouldRenderEveryDaysCanvasFallback ? (
         <section className="notion-root max-width">
           <EveryDays2026Viewer />
