@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 799,
+      "file": "799.js",
+      "name": "Unstill",
+      "description": "Click & holde to make it move"
+    },
+    {
       "id": 798,
-      "file": "798.js",
       "name": "Unfraction",
+      "file": "798.js",
       "description": "Click to evolve"
     },
     {
@@ -16,7 +22,7 @@
       "id": 796,
       "name": "Perspectack",
       "file": "796.js",
-      "description": "Hover and it follows"
+      "description": "Hover & it follows"
     },
     {
       "id": 795,
