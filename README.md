@@ -7,49 +7,97 @@ Production website for `aex.design`, built with Next.js and Notion as the CMS.
 - Runtime baseline: Node `>=20.19.0`
 - CMS: Notion (`@notionhq/client`)
 - Hosting: Vercel
-- Source of route truth: `content/route-map.json` and/or Notion database mode
+- Primary route source: `content/route-map.json`
+- Optional live route source: Notion database mode via `NOTION_DATABASE_ID`
 
-## Project Structure
+## Quick Start
+```powershell
+npm install
+Copy-Item .env.example .env.local
+npm run dev
+```
+
+Local URLs:
+```text
+http://localhost:3000
+http://localhost:3000/every-days
+```
+
+## Repo Guide
 - `app/page.tsx`: homepage route
-- `app/[...slug]/page.tsx`: mapped content routes
-- `app/typeplayground/page.tsx`: static type playground route
+- `app/[...slug]/page.tsx`: catch-all content route for mapped Notion pages
+- `app/typeplayground/page.tsx`: static type playground page
+- `app/api/notion-image/[blockId]/route.ts`: Notion file image proxy
 - `app/api/notion-revalidate/route.ts`: on-demand cache invalidation endpoint
-- `lib/notion.ts`: Notion routing/page/block data layer
+- `lib/notion.ts`: route discovery, page fetch, block fetch, cache, retry logic
+- `lib/notion-images.ts`: image source resolution for Notion blocks
 - `components/NotionRenderer.tsx`: Notion block renderer
-- `components/TypeTester.tsx`: native tester component
-- `components/SitePage.tsx`: page shell + top action UI
+- `components/SitePage.tsx`: page shell and page-specific UI
 - `components/EveryDays2026Viewer.tsx`: `/every-days` 2026 generative viewer
-- `public/data/collection-2026.json`: 2026 artwork metadata registry
-- `scripts/sync-collection-2026.mjs`: registry expansion utility
-- `app/globals.css`: global and component styles
+- `public/data/collection-2026.json`: `/every-days` metadata registry
+- `content/route-map.json`: static route map used for prerendered content slugs
+- `scripts/`: local maintenance utilities
+
+## How It Works
+### Routing
+- The homepage lives at `app/page.tsx`.
+- Content pages are served by `app/[...slug]/page.tsx`.
+- During build, the catch-all route prebuilds slugs from `content/route-map.json`.
+- If `NOTION_DATABASE_ID` is set, runtime route discovery can also read from a Notion database.
+
+### Content And Cache
+- `lib/notion.ts` fetches route entries, page metadata, and recursive block trees from Notion.
+- The app uses Next cache tags plus an in-process timed cache to avoid repeated Notion work.
+- `app/api/notion-revalidate/route.ts` clears those caches when you want content updates without a redeploy.
+
+### Images
+- Notion-hosted file images are served through `app/api/notion-image/[blockId]/route.ts`.
+- External image URLs already stored in Notion are rendered directly.
+- There is no active R2 or Cloudflare image migration path in the repo anymore.
+
+### `/every-days`
+- The `/every-days` page combines local metadata from `public/data/collection-2026.json` with sketch files fetched live from the sibling `every-days-2026` repo / GitHub raw.
+- Metadata deploys with this repo.
+- Sketch code is fetched at runtime from the sketch repo.
 
 ## Environment Variables
+Copy `.env.example` to `.env.local` and fill in the values you actually use.
+
 Required:
-- `NOTION_TOKEN`
-- `SITE_URL`
+- `NOTION_TOKEN`: Notion integration token used for page and block fetches
+- `SITE_URL`: canonical site URL such as `https://www.aex.design`
 
-Optional:
-- `NOTION_DATABASE_ID`
-- `NOTION_HOME_PAGE_ID`
-- `NOTION_SLUG_PROPERTY` (default: `Slug`)
-- `NOTION_PUBLISHED_PROPERTY` (default: `Published`)
-- `NOTION_DESCRIPTION_PROPERTY` (default: `Description`)
-- `NOTION_CACHE_TTL_SECONDS` (default: `300`)
-- `NOTION_REVALIDATE_SECRET` (required for secure revalidate endpoint usage)
+Optional routing:
+- `NOTION_DATABASE_ID`: enables live route discovery from a Notion database
+- `NOTION_HOME_PAGE_ID`: explicit page id to use for `/` when needed
+- `NOTION_SLUG_PROPERTY`: route slug property name, default `Slug`
+- `NOTION_PUBLISHED_PROPERTY`: publish flag property name, default `Published`
+- `NOTION_DESCRIPTION_PROPERTY`: description property name, default `Description`
 
-## Core Commands
+Optional cache and retry tuning:
+- `NOTION_CACHE_TTL_SECONDS`: cache TTL for Notion routes/pages, default `900`
+- `NOTION_MAX_RETRIES`: max retriable Notion request attempts, default `4`
+- `NOTION_RETRY_BASE_DELAY_MS`: retry backoff base delay, default `750`
+- `NOTION_CHILD_BLOCK_FETCH_CONCURRENCY`: recursive child-block fetch concurrency, default `4`
+
+Optional admin:
+- `NOTION_REVALIDATE_SECRET`: required if you want to use the secure revalidation endpoint
+
+## Commands
+Core runtime:
 ```powershell
 npm install
 npm run dev
 npm run typecheck
 npm run build
 npm run start
-npm run sync:collection-2026 -- 783
 ```
 
-Local `/every-days` URL:
-```text
-http://localhost:3000/every-days
+Content utilities:
+```powershell
+npm run sync:collection-2026 -- 783
+npm run seed:route-map
+npm run fill:route-map-live
 ```
 
 ## Notion Content Workflow

@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
-import Link from "next/link";
 import { HomepageCollabForm } from "./HomepageCollabForm";
+import { IntentPrefetchLink } from "./IntentPrefetchLink";
 import styles from "./HomepageLayout.module.css";
 
 export type HomepageLinks = {
@@ -109,15 +109,14 @@ function Cell({
   }
 
   return (
-    <Link
+    <IntentPrefetchLink
       className={blockClassName}
       style={style}
       href={href}
-      prefetch={false}
       aria-label={ariaLabel ?? (typeof label === "string" ? label : undefined)}
     >
       {content}
-    </Link>
+    </IntentPrefetchLink>
   );
 }
 

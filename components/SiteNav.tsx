@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { IntentPrefetchLink } from "./IntentPrefetchLink";
 
 const LOGO_SRC = "/assets/logo.svg";
 export function SiteNav() {
@@ -15,7 +15,12 @@ export function SiteNav() {
       }}
     >
       <div className="site-navbar__content">
-        <Link href="/" className="notion-link site-navbar__logo" data-server-link={true} data-link-uri="/" prefetch={false}>
+        <IntentPrefetchLink
+          href="/"
+          className="notion-link site-navbar__logo"
+          data-server-link={true}
+          data-link-uri="/"
+        >
           <div className="site-navbar__logo-image">
             <span style={{ display: "contents" }}>
               <img
@@ -30,7 +35,7 @@ export function SiteNav() {
               />
             </span>
           </div>
-        </Link>
+        </IntentPrefetchLink>
         <div style={{ position: "relative" }}>
           <ul data-orientation="horizontal" className="site-navbar__item-list" dir="ltr" />
         </div>

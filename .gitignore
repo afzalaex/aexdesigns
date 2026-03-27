@@ -5,6 +5,7 @@ coverage
 
 # Environment files
 .env*
+!.env.example
 
 # Local tool state
 .vercel

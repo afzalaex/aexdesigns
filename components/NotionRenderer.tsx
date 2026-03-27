@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import type { RichTextItemResponse } from "@notionhq/client/build/src/api-endpoints";
 import routeMap from "@/content/route-map.json";
 import { resolveNotionImageFallbackSrc, resolveNotionImagePrimarySrc } from "@/lib/notion-images";
 import type { NotionBlock } from "@/lib/notion";
+import { IntentPrefetchLink } from "@/components/IntentPrefetchLink";
 import { NotionImage } from "@/components/NotionImage";
 import { TypeTester } from "@/components/TypeTester";
 
@@ -470,15 +470,14 @@ function RichText({ items }: { items: RichTextItemResponse[] }) {
           const href = internal ? toInternalHref(item.href) : item.href;
 
           node = internal ? (
-            <Link
+            <IntentPrefetchLink
               href={href}
               className="notion-link link"
               data-server-link={true}
               data-link-uri={href}
-              prefetch={false}
             >
               {node}
-            </Link>
+            </IntentPrefetchLink>
           ) : (
             <a
               href={href}
@@ -864,12 +863,11 @@ function Block({
       if (pageSlug === "/" && expandableChildren && expandableChildren.length > 0) {
         return (
           <div id={childPageBlockId(slug)} className="notion-page-group">
-            <Link
+            <IntentPrefetchLink
               href={slug}
               className="notion-page notion-page-group__parent"
               data-server-link={true}
               data-link-uri={slug}
-              prefetch={false}
             >
               <span className="notion-page__icon">
                 <PageIcon />
@@ -877,7 +875,7 @@ function Block({
               <span className="notion-page__title notion-semantic-string">
                 {block.child_page.title}
               </span>
-            </Link>
+            </IntentPrefetchLink>
             <div className="notion-page-group__children">
               {expandableChildren.map((child) => (
                 child.external ? (
@@ -895,18 +893,17 @@ function Block({
                     </span>
                   </a>
                 ) : (
-                  <Link
+                  <IntentPrefetchLink
                     key={child.href}
                     href={child.href}
                     className="notion-page notion-page-group__child"
                     data-server-link={true}
                     data-link-uri={child.href}
-                    prefetch={false}
                   >
                     <span className="notion-page__title notion-semantic-string">
                       {child.label}
                     </span>
-                  </Link>
+                  </IntentPrefetchLink>
                 )
               ))}
             </div>
@@ -915,13 +912,12 @@ function Block({
       }
 
       return (
-        <Link
+        <IntentPrefetchLink
           id={childPageBlockId(slug)}
           href={slug}
           className="notion-page"
           data-server-link={true}
           data-link-uri={slug}
-          prefetch={false}
         >
           <span className="notion-page__icon">
             <PageIcon />
@@ -929,7 +925,7 @@ function Block({
           <span className="notion-page__title notion-semantic-string">
             {block.child_page.title}
           </span>
-        </Link>
+        </IntentPrefetchLink>
       );
     }
 
