@@ -3,7 +3,15 @@ import { EveryDays2026Viewer } from "@/components/EveryDays2026Viewer";
 import { NotionRenderer } from "@/components/NotionRenderer";
 import everyDaysCollection2026 from "@/public/data/collection-2026.json";
 import { resolveNotionImagePrimarySrc } from "@/lib/notion-images";
-import { getRoutes, type NotionBlock, type NotionPageData } from "@/lib/notion";
+import {
+  getChildPageCards,
+  getPageBySlug,
+  getRoutes,
+  type ChildPageCardSeed,
+  type NotionBlock,
+  type NotionPageData,
+  type RouteEntry,
+} from "@/lib/notion";
 
 function toPageClass(slug: string): string {
   if (slug === "/") {
@@ -34,6 +42,7 @@ const everyDaysCanvasMarkers = new Set([
   "[[every-days-2026-canvas]]",
   "every-days-2026-canvas",
 ]);
+const childPageCardParentSlugs = new Set(["/da", "/dda", "/archive"]);
 const priorityImageLoadLimit = 6;
 const priorityImagePreloadLimit = 3;
 
@@ -71,6 +80,34 @@ function normalizeCanvasMarker(value: string): string {
   return value.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+function normalizePageId(value: string): string {
+  return value.replace(/-/g, "").trim().toLowerCase();
+}
+
+function normalizeSlug(value: string): string {
+  const withoutDomain = value.trim().replace(/^https?:\/\/[^/]+/i, "");
+  const withoutQuery = withoutDomain.split(/[?#]/)[0] ?? "";
+  const withLeadingSlash = withoutQuery.startsWith("/")
+    ? withoutQuery
+    : `/${withoutQuery}`;
+  const cleaned = withLeadingSlash.replace(/\/+/g, "/").replace(/\/$/, "");
+
+  return cleaned || "/";
+}
+
+function slugFromTitle(title: string): string {
+  const normalized = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return normalizeSlug(normalized ? `/${normalized}` : "/");
+}
+
+function shouldRenderChildPageCards(pageSlug: string): boolean {
+  return childPageCardParentSlugs.has(normalizeSlug(pageSlug));
+}
+
 function findEveryDaysCanvasMarkerIndex(blocks: NotionBlock[]): number {
   return blocks.findIndex((block) => {
     if (block.type !== "paragraph") {
@@ -92,6 +129,111 @@ function hasChildPageBlocks(blocks: NotionBlock[]): boolean {
     }
 
     if (block.children?.length && hasChildPageBlocks(block.children)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function collectChildPageCardSeeds(
+  blocks: NotionBlock[],
+  routeEntries: RouteEntry[]
+): ChildPageCardSeed[] {
+  const routeByPageId = new Map(
+    routeEntries.map((route) => [normalizePageId(route.pageId), route])
+  );
+  const seeds: ChildPageCardSeed[] = [];
+
+  function walk(currentBlocks: NotionBlock[]): void {
+    for (const block of currentBlocks) {
+      if (block.type === "child_page") {
+        const route = routeByPageId.get(normalizePageId(block.id));
+        const slug = route?.slug ?? slugFromTitle(block.child_page.title);
+
+        if (!/-type-tester$/i.test(slug)) {
+          seeds.push({
+            pageId: block.id,
+            slug,
+            title: route?.title ?? block.child_page.title,
+            description: route?.description,
+            thumbnailUrl: route?.thumbnailUrl,
+            source: route?.source,
+          });
+        }
+      }
+
+      if (block.children?.length) {
+        walk(block.children);
+      }
+    }
+  }
+
+  walk(blocks);
+  return seeds;
+}
+
+function collectChildPageIds(blocks: NotionBlock[]): Set<string> {
+  const ids = new Set<string>();
+
+  function walk(currentBlocks: NotionBlock[]): void {
+    for (const block of currentBlocks) {
+      if (block.type === "child_page") {
+        ids.add(normalizePageId(block.id));
+      }
+
+      if (block.children?.length) {
+        walk(block.children);
+      }
+    }
+  }
+
+  walk(blocks);
+  return ids;
+}
+
+function collectCardPreviewHiddenBlockIds(blocks: NotionBlock[]): Set<string> {
+  const hiddenBlockIds = new Set<string>();
+  let firstParagraphHidden = false;
+  let firstImageHidden = false;
+
+  for (const block of blocks) {
+    if (!firstParagraphHidden && block.type === "paragraph") {
+      const text = joinRichTextPlainText(block.paragraph.rich_text).trim();
+      if (text.length > 0) {
+        hiddenBlockIds.add(block.id);
+        firstParagraphHidden = true;
+        continue;
+      }
+    }
+
+    if (!firstImageHidden && block.type === "image") {
+      hiddenBlockIds.add(block.id);
+      firstImageHidden = true;
+    }
+
+    if (firstParagraphHidden && firstImageHidden) {
+      break;
+    }
+  }
+
+  return hiddenBlockIds;
+}
+
+async function isChildPageCardSourcePage(pageId: string): Promise<boolean> {
+  const parentPages = await Promise.all(
+    Array.from(childPageCardParentSlugs, (slug) =>
+      getPageBySlug(slug).catch(() => null)
+    )
+  );
+  const normalizedPageId = normalizePageId(pageId);
+
+  for (const parentPage of parentPages) {
+    if (!parentPage) {
+      continue;
+    }
+
+    if (collectChildPageIds(parentPage.blocks).has(normalizedPageId)) {
       return true;
     }
   }
@@ -244,6 +386,14 @@ export async function SitePage({ page }: { page: NotionPageData }) {
   const routeEntries = hasChildPageBlocks(page.blocks)
     ? await getRoutes().catch(() => [])
     : undefined;
+  const childPageCards =
+    routeEntries && shouldRenderChildPageCards(page.slug)
+      ? await getChildPageCards(collectChildPageCardSeeds(page.blocks, routeEntries))
+      : undefined;
+  const hiddenBlockIds =
+    !shouldRenderChildPageCards(page.slug) && await isChildPageCardSourcePage(page.id)
+      ? collectCardPreviewHiddenBlockIds(page.blocks)
+      : undefined;
   const pageClass = toPageClass(page.slug);
   const articleId = `block-${page.id.replace(/-/g, "")}`;
   const topAction = topActionBySlug[page.slug];
@@ -325,6 +475,8 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           blocks={blocksBeforeEveryDaysCanvas}
           pageSlug={page.slug}
           routeEntries={routeEntries}
+          childPageCards={childPageCards}
+          hiddenBlockIds={hiddenBlockIds}
           priorityImageIds={priorityImageIds}
         />
         {shouldRenderEveryDaysCanvasAtMarker ? <EveryDays2026Viewer /> : null}
@@ -333,6 +485,8 @@ export async function SitePage({ page }: { page: NotionPageData }) {
             blocks={blocksAfterEveryDaysCanvas}
             pageSlug={page.slug}
             routeEntries={routeEntries}
+            childPageCards={childPageCards}
+            hiddenBlockIds={hiddenBlockIds}
             priorityImageIds={priorityImageIds}
           />
         ) : null}

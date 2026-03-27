@@ -316,6 +316,93 @@ h3.notion-heading {
   background: transparent !important;
 }
 
+.notion-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  width: 100%;
+  margin: 18px 0 28px;
+}
+
+.notion-page-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  color: inherit;
+  text-decoration: none;
+  opacity: 1;
+  border: 1px solid #fff;
+  background: transparent;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.notion-page-card:hover,
+.notion-page-card:focus-visible {
+  transform: translate(-4px, -4px);
+  border-color: #fff;
+  background: transparent;
+  box-shadow: 4px 4px 0 #fff;
+}
+
+.notion-page-card__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  padding: 0;
+  border-bottom: 1px solid #fff;
+  background: transparent;
+}
+
+.notion-page-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.notion-page-card__media--empty .notion-icon {
+  width: 32px !important;
+  height: 32px !important;
+  opacity: 0.68;
+}
+
+.notion-page-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 14px 16px;
+}
+
+.notion-page-card__title {
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.notion-page-card__title.notion-semantic-string,
+.notion-page-card__description.notion-semantic-string {
+  white-space: normal;
+}
+
+.notion-page-card__description {
+  color: #fff;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  opacity: 1;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 .notion-page-group {
   display: flex;
   flex-direction: column;
@@ -890,6 +977,11 @@ figure.notion-embed {
   .notion-root {
     padding-left: var(--padding-left-mobile);
     padding-right: var(--padding-right-mobile);
+  }
+
+  .notion-card-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .aex-type-tester__input {

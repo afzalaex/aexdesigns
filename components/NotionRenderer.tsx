@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { RichTextItemResponse } from "@notionhq/client/build/src/api-endpoints";
 import routeMap from "@/content/route-map.json";
 import { resolveNotionImageFallbackSrc, resolveNotionImagePrimarySrc } from "@/lib/notion-images";
-import type { NotionBlock } from "@/lib/notion";
+import type { ChildPageCard, NotionBlock } from "@/lib/notion";
 import { IntentPrefetchLink } from "@/components/IntentPrefetchLink";
 import { NotionImage } from "@/components/NotionImage";
 import { TypeTester } from "@/components/TypeTester";
@@ -46,6 +46,8 @@ type ExpandableChildRoute = {
 type RouteRenderContextValue = {
   slugByPageId: Map<string, string>;
   childRoutesByParentSlug: Map<string, ExpandableChildRoute[]>;
+  childPageCardByPageId: Map<string, ChildPageCard>;
+  hiddenBlockIds: Set<string>;
   priorityImageIds: Set<string>;
 };
 
@@ -57,6 +59,7 @@ const expandableParentKeys = new Set([
   "digitaldesignassets",
   "archive",
 ]);
+const cardLayoutParentKeys = new Set(["da", "dda", "archive"]);
 
 const testerConfigs: Record<string, TesterConfig> = {
   "/typecheck-type-tester": {
@@ -190,10 +193,13 @@ function resolveRouteEntries(
 function buildRouteRenderContext(
   routeEntries?: RouteInputEntry[],
   expandableRouteGroups?: ExpandableRouteGroups,
-  priorityImageIds?: Set<string>
+  priorityImageIds?: Set<string>,
+  childPageCards?: ChildPageCard[],
+  hiddenBlockIds?: Set<string>
 ): RouteRenderContextValue {
   const slugByPageId = new Map<string, string>();
   const childRoutesByParentSlug = new Map<string, ExpandableChildRoute[]>();
+  const childPageCardByPageId = new Map<string, ChildPageCard>();
   const entries = resolveRouteEntries(routeEntries);
 
   for (const entry of entries) {
@@ -267,9 +273,22 @@ function buildRouteRenderContext(
     }
   }
 
+  for (const card of childPageCards ?? []) {
+    if (!card || typeof card.pageId !== "string") {
+      continue;
+    }
+
+    childPageCardByPageId.set(normalizePageId(card.pageId), {
+      ...card,
+      slug: normalizeSlug(card.slug),
+    });
+  }
+
   return {
     slugByPageId,
     childRoutesByParentSlug,
+    childPageCardByPageId,
+    hiddenBlockIds: hiddenBlockIds ?? new Set<string>(),
     priorityImageIds: priorityImageIds ?? new Set<string>(),
   };
 }
@@ -289,6 +308,76 @@ function childPageBlockId(slug: string): string {
 
 function joinRichText(items: RichTextItemResponse[]): string {
   return items.map((item) => item.plain_text).join("");
+}
+
+function shouldRenderChildPageCards(pageSlug?: string): boolean {
+  if (!pageSlug) {
+    return false;
+  }
+
+  return cardLayoutParentKeys.has(slugKey(normalizeSlug(pageSlug)));
+}
+
+function renderBlocks({
+  blocks,
+  pageSlug,
+  routeContext,
+}: {
+  blocks?: NotionBlock[];
+  pageSlug?: string;
+  routeContext: RouteRenderContextValue;
+}): ReactNode {
+  if (!blocks || blocks.length === 0) {
+    return null;
+  }
+
+  const renderedBlocks: ReactNode[] = [];
+  const renderChildPageCards = shouldRenderChildPageCards(pageSlug);
+
+  for (let index = 0; index < blocks.length; index += 1) {
+    const block = blocks[index];
+
+    if (routeContext.hiddenBlockIds.has(block.id)) {
+      continue;
+    }
+
+    if (renderChildPageCards && block.type === "child_page") {
+      const childPageBlocks: NotionBlock[] = [block];
+
+      while (index + 1 < blocks.length && blocks[index + 1]?.type === "child_page") {
+        childPageBlocks.push(blocks[index + 1]);
+        index += 1;
+      }
+
+      renderedBlocks.push(
+        <section
+          key={`child-page-cards-${childPageBlocks[0]?.id ?? index}`}
+          className="notion-card-grid"
+        >
+          {childPageBlocks.map((childPageBlock) => (
+            <Block
+              key={childPageBlock.id}
+              block={childPageBlock}
+              pageSlug={pageSlug}
+              routeContext={routeContext}
+            />
+          ))}
+        </section>
+      );
+      continue;
+    }
+
+    renderedBlocks.push(
+      <Block
+        key={block.id}
+        block={block}
+        pageSlug={pageSlug}
+        routeContext={routeContext}
+      />
+    );
+  }
+
+  return renderedBlocks;
 }
 
 function isInternalHref(href: string): boolean {
@@ -523,22 +612,7 @@ function BlockChildren({
   pageSlug?: string;
   routeContext: RouteRenderContextValue;
 }) {
-  if (!blocks || blocks.length === 0) {
-    return null;
-  }
-
-  return (
-    <>
-      {blocks.map((block) => (
-        <Block
-          key={block.id}
-          block={block}
-          pageSlug={pageSlug}
-          routeContext={routeContext}
-        />
-      ))}
-    </>
-  );
+  return <>{renderBlocks({ blocks, pageSlug, routeContext })}</>;
 }
 
 function PageIcon() {
@@ -557,6 +631,58 @@ function PageIcon() {
     >
       <path d={PAGE_ICON_PATH} />
     </svg>
+  );
+}
+
+function ChildPageCardLink({
+  id,
+  href,
+  title,
+  description,
+  thumbnailUrl,
+  thumbnailFallbackUrl,
+}: {
+  id: string;
+  href: string;
+  title: string;
+  description?: string;
+  thumbnailUrl?: string;
+  thumbnailFallbackUrl?: string;
+}) {
+  const hasThumbnail = typeof thumbnailUrl === "string" && thumbnailUrl.trim().length > 0;
+
+  return (
+    <IntentPrefetchLink
+      id={id}
+      href={href}
+      className="notion-page-card"
+      data-server-link={true}
+      data-link-uri={href}
+    >
+      <span
+        className={`notion-page-card__media${hasThumbnail ? "" : " notion-page-card__media--empty"}`}
+      >
+        {hasThumbnail ? (
+          <NotionImage
+            primarySrc={thumbnailUrl}
+            fallbackSrc={thumbnailFallbackUrl}
+            alt=""
+          />
+        ) : (
+          <PageIcon />
+        )}
+      </span>
+      <span className="notion-page-card__body">
+        <span className="notion-page-card__title notion-semantic-string">
+          {title}
+        </span>
+        {description ? (
+          <span className="notion-page-card__description notion-semantic-string">
+            {description}
+          </span>
+        ) : null}
+      </span>
+    </IntentPrefetchLink>
   );
 }
 
@@ -851,11 +977,26 @@ function Block({
     }
 
     case "child_page": {
-      const mappedSlug = routeContext.slugByPageId.get(normalizePageId(block.id));
-      const slug = mappedSlug ?? slugFromTitle(block.child_page.title);
+      const pageId = normalizePageId(block.id);
+      const mappedSlug = routeContext.slugByPageId.get(pageId);
+      const card = routeContext.childPageCardByPageId.get(pageId);
+      const slug = card?.slug ?? mappedSlug ?? slugFromTitle(block.child_page.title);
 
       if (/-type-tester$/i.test(slug)) {
         return null;
+      }
+
+      if (shouldRenderChildPageCards(pageSlug)) {
+        return (
+          <ChildPageCardLink
+            id={childPageBlockId(slug)}
+            href={slug}
+            title={card?.title ?? block.child_page.title}
+            description={card?.description}
+            thumbnailUrl={card?.thumbnailUrl}
+            thumbnailFallbackUrl={card?.thumbnailFallbackUrl}
+          />
+        );
       }
 
       const expandableChildren = routeContext.childRoutesByParentSlug.get(slug);
@@ -967,32 +1108,27 @@ export function NotionRenderer({
   pageSlug,
   routeEntries,
   expandableRouteGroups,
+  childPageCards,
+  hiddenBlockIds,
   priorityImageIds,
 }: {
   blocks: NotionBlock[];
   pageSlug?: string;
   routeEntries?: RouteInputEntry[];
   expandableRouteGroups?: ExpandableRouteGroups;
+  childPageCards?: ChildPageCard[];
+  hiddenBlockIds?: Set<string>;
   priorityImageIds?: Set<string>;
 }) {
   const routeContext = buildRouteRenderContext(
     routeEntries,
     expandableRouteGroups,
-    priorityImageIds
+    priorityImageIds,
+    childPageCards,
+    hiddenBlockIds
   );
 
-  return (
-    <>
-      {blocks.map((block) => (
-        <Block
-          key={block.id}
-          block={block}
-          pageSlug={pageSlug}
-          routeContext={routeContext}
-        />
-      ))}
-    </>
-  );
+  return <>{renderBlocks({ blocks, pageSlug, routeContext })}</>;
 }
 
 

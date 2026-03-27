@@ -14,7 +14,26 @@ export type RouteEntry = {
   pageId: string;
   title?: string;
   description?: string;
+  thumbnailUrl?: string;
   source: "database" | "map";
+};
+
+export type ChildPageCardSeed = {
+  pageId: string;
+  slug: string;
+  title?: string;
+  description?: string;
+  thumbnailUrl?: string;
+  source?: RouteEntry["source"];
+};
+
+export type ChildPageCard = {
+  pageId: string;
+  slug: string;
+  title: string;
+  description?: string;
+  thumbnailUrl?: string;
+  thumbnailFallbackUrl?: string;
 };
 
 export type NotionBlock = BlockObjectResponse & {
@@ -43,6 +62,8 @@ const slugPropertyName = process.env.NOTION_SLUG_PROPERTY ?? "Slug";
 const publishedPropertyName = process.env.NOTION_PUBLISHED_PROPERTY ?? "Published";
 const descriptionPropertyName =
   process.env.NOTION_DESCRIPTION_PROPERTY ?? "Description";
+const thumbnailPropertyName =
+  process.env.NOTION_THUMBNAIL_PROPERTY ?? "Thumbnail";
 const rawCacheTtlSeconds = Number(process.env.NOTION_CACHE_TTL_SECONDS ?? "900");
 const notionCacheTtlSeconds =
   Number.isFinite(rawCacheTtlSeconds) && rawCacheTtlSeconds >= 0
@@ -74,6 +95,8 @@ let routesCache: TimedCacheEntry<RouteEntry[]> | undefined;
 const pageCache = new Map<string, TimedCacheEntry<NotionPageData | null>>();
 let routesRefreshPromise: Promise<RouteEntry[]> | undefined;
 const pageRefreshPromises = new Map<string, Promise<NotionPageData | null>>();
+const childPageCardCache = new Map<string, TimedCacheEntry<ChildPageCard>>();
+const childPageCardRefreshPromises = new Map<string, Promise<ChildPageCard>>();
 
 function getNotionClient(): Client {
   if (!notion) {
@@ -280,6 +303,7 @@ export function getSiteUrl(): string {
 
 export function invalidateNotionCache(slugInput?: string): void {
   routesCache = undefined;
+  childPageCardCache.clear();
 
   if (typeof slugInput === "string" && slugInput.trim().length > 0) {
     const slug = normalizeSlug(slugInput);
@@ -351,6 +375,85 @@ function getPropertyText(property: any): string | undefined {
   }
 }
 
+function getPropertyFileUrl(property: any): string | undefined {
+  if (!property) {
+    return undefined;
+  }
+
+  if (property.type === "files") {
+    const [firstFile] = Array.isArray(property.files) ? property.files : [];
+    if (!firstFile) {
+      return undefined;
+    }
+
+    if (firstFile.type === "external") {
+      return firstFile.external?.url ?? undefined;
+    }
+
+    if (firstFile.type === "file") {
+      return firstFile.file?.url ?? undefined;
+    }
+
+    return undefined;
+  }
+
+  if (property.type === "url") {
+    return property.url ?? undefined;
+  }
+
+  return undefined;
+}
+
+function getFirstFilesPropertyUrl(
+  properties: Record<string, any>
+): string | undefined {
+  for (const value of Object.values(properties)) {
+    if (value?.type !== "files") {
+      continue;
+    }
+
+    const propertyUrl = getPropertyFileUrl(value);
+    if (propertyUrl) {
+      return propertyUrl;
+    }
+  }
+
+  return undefined;
+}
+
+function buildNotionImageProxyUrl(
+  blockId: string,
+  sourceUrl?: string | null
+): string {
+  const proxyPath = `/api/notion-image/${encodeURIComponent(blockId)}`;
+  if (!sourceUrl) {
+    return proxyPath;
+  }
+
+  const searchParams = new URLSearchParams({ source: sourceUrl });
+  return `${proxyPath}?${searchParams.toString()}`;
+}
+
+function resolveCardImagePrimarySrc(block: NotionBlock): string | undefined {
+  if (block.type !== "image") {
+    return undefined;
+  }
+
+  if (block.image.type === "external") {
+    return block.image.external.url;
+  }
+
+  return buildNotionImageProxyUrl(block.id, block.image.file.url);
+}
+
+function resolveCardImageFallbackSrc(block: NotionBlock): string | undefined {
+  if (block.type !== "image" || block.image.type === "external") {
+    return undefined;
+  }
+
+  return buildNotionImageProxyUrl(block.id);
+}
+
 function getPropertyCheckbox(property: any, fallback = true): boolean {
   if (!property) {
     return fallback;
@@ -396,6 +499,120 @@ function extractDescription(page: PageObjectResponse): string | undefined {
   return getPropertyText(descriptionProperty);
 }
 
+function extractThumbnailUrl(page: PageObjectResponse): string | undefined {
+  const properties = page.properties as Record<string, any>;
+  const thumbnailProperty = findProperty(
+    properties,
+    thumbnailPropertyName,
+    ["thumbnail", "Thumbnail", "Card Thumbnail", "Preview", "Image"]
+  );
+  const propertyUrl = getPropertyFileUrl(thumbnailProperty);
+
+  if (propertyUrl) {
+    return propertyUrl;
+  }
+
+  const firstFilesPropertyUrl = getFirstFilesPropertyUrl(properties);
+  if (firstFilesPropertyUrl) {
+    return firstFilesPropertyUrl;
+  }
+
+  if (page.cover?.type === "external") {
+    return page.cover.external.url;
+  }
+
+  if (page.cover?.type === "file") {
+    return page.cover.file.url;
+  }
+
+  return undefined;
+}
+
+function buildChildPageCard(seed: ChildPageCardSeed): ChildPageCard {
+  const normalizedTitle = seed.title?.trim();
+  const normalizedDescription = seed.description?.trim();
+  const normalizedThumbnailUrl = seed.thumbnailUrl?.trim();
+
+  return {
+    pageId: normalizePageId(seed.pageId),
+    slug: normalizeSlug(seed.slug),
+    title: normalizedTitle && normalizedTitle.length > 0 ? normalizedTitle : "Untitled",
+    description:
+      normalizedDescription && normalizedDescription.length > 0
+        ? normalizedDescription
+        : undefined,
+    thumbnailUrl:
+      normalizedThumbnailUrl && normalizedThumbnailUrl.length > 0
+        ? normalizedThumbnailUrl
+        : undefined,
+  };
+}
+
+function mergeChildPageCard(
+  card: ChildPageCard,
+  seed: ChildPageCardSeed
+): ChildPageCard {
+  const normalizedSeedTitle = seed.title?.trim();
+  const normalizedSeedDescription = seed.description?.trim();
+  const normalizedSeedThumbnailUrl = seed.thumbnailUrl?.trim();
+
+  return {
+    pageId: normalizePageId(seed.pageId),
+    slug: normalizeSlug(seed.slug),
+    title:
+      card.title ||
+      (normalizedSeedTitle && normalizedSeedTitle.length > 0
+        ? normalizedSeedTitle
+        : "Untitled"),
+    description:
+      card.description ??
+      (normalizedSeedDescription && normalizedSeedDescription.length > 0
+        ? normalizedSeedDescription
+        : undefined),
+    thumbnailUrl:
+      card.thumbnailUrl ??
+      (normalizedSeedThumbnailUrl && normalizedSeedThumbnailUrl.length > 0
+        ? normalizedSeedThumbnailUrl
+        : undefined),
+    thumbnailFallbackUrl: card.thumbnailFallbackUrl,
+  };
+}
+
+function extractCardDescriptionFromBlocks(
+  blocks: NotionBlock[]
+): string | undefined {
+  for (const block of blocks) {
+    if (block.type !== "paragraph") {
+      continue;
+    }
+
+    const text = plainText(block.paragraph.rich_text).trim();
+    if (text.length > 0) {
+      return text;
+    }
+  }
+
+  return undefined;
+}
+
+function extractCardThumbnailFromBlocks(blocks: NotionBlock[]): {
+  thumbnailUrl?: string;
+  thumbnailFallbackUrl?: string;
+} {
+  for (const block of blocks) {
+    if (block.type !== "image") {
+      continue;
+    }
+
+    return {
+      thumbnailUrl: resolveCardImagePrimarySrc(block),
+      thumbnailFallbackUrl: resolveCardImageFallbackSrc(block),
+    };
+  }
+
+  return {};
+}
+
 function dedupeRoutes(routes: RouteEntry[]): RouteEntry[] {
   const bySlug = new Map<string, RouteEntry>();
 
@@ -428,6 +645,12 @@ function loadStaticRoutes(): RouteEntry[] {
         title: typeof entry.title === "string" ? entry.title : undefined,
         description:
           typeof entry.description === "string" ? entry.description : undefined,
+        thumbnailUrl:
+          typeof entry.thumbnailUrl === "string"
+            ? entry.thumbnailUrl
+            : typeof entry.thumbnail === "string"
+              ? entry.thumbnail
+              : undefined,
         source: "map" as const,
       };
     })
@@ -503,6 +726,7 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
         pageId: normalizePageId(result.id),
         title: extractTitle(result),
         description: getPropertyText(descriptionProperty),
+        thumbnailUrl: extractThumbnailUrl(result),
         source: "database",
       });
     }
@@ -550,6 +774,120 @@ const getPersistentRoutes = unstable_cache(
 
 export async function getRoutes(): Promise<RouteEntry[]> {
   return getPersistentRoutes();
+}
+
+async function refreshChildPageCard(seed: ChildPageCardSeed): Promise<ChildPageCard> {
+  const pageId = normalizePageId(seed.pageId);
+  const staleCard = readStaleTimedCache(childPageCardCache.get(pageId));
+  const fallbackCard = staleCard ?? buildChildPageCard(seed);
+
+  try {
+    const page = await getPageBySlug(seed.slug);
+
+    if (!page) {
+      childPageCardCache.set(pageId, createTimedCacheEntry(fallbackCard));
+      return fallbackCard;
+    }
+
+    const { thumbnailUrl, thumbnailFallbackUrl } =
+      extractCardThumbnailFromBlocks(page.blocks);
+    const card: ChildPageCard = {
+      pageId,
+      slug: normalizeSlug(page.slug),
+      title: page.title.trim() || fallbackCard.title,
+      description:
+        extractCardDescriptionFromBlocks(page.blocks) ??
+        page.description ??
+        fallbackCard.description,
+      thumbnailUrl: thumbnailUrl ?? fallbackCard.thumbnailUrl,
+      thumbnailFallbackUrl:
+        thumbnailFallbackUrl ?? fallbackCard.thumbnailFallbackUrl,
+    };
+
+    childPageCardCache.set(pageId, createTimedCacheEntry(card));
+    return card;
+  } catch (error) {
+    console.error("Failed to load child page card metadata:", seed.slug, error);
+    childPageCardCache.set(pageId, createTimedCacheEntry(fallbackCard));
+    return fallbackCard;
+  }
+}
+
+async function getChildPageCard(seed: ChildPageCardSeed): Promise<ChildPageCard> {
+  const pageId = normalizePageId(seed.pageId);
+  const cachedCard = readTimedCache(childPageCardCache.get(pageId));
+  if (cachedCard !== undefined) {
+    return mergeChildPageCard(cachedCard, seed);
+  }
+
+  const staleCard = readStaleTimedCache(childPageCardCache.get(pageId));
+  if (staleCard !== undefined) {
+    if (!childPageCardRefreshPromises.has(pageId)) {
+      childPageCardRefreshPromises.set(
+        pageId,
+        refreshChildPageCard(seed).finally(() => {
+          childPageCardRefreshPromises.delete(pageId);
+        })
+      );
+    }
+
+    return mergeChildPageCard(staleCard, seed);
+  }
+
+  if (!childPageCardRefreshPromises.has(pageId)) {
+    childPageCardRefreshPromises.set(
+      pageId,
+      refreshChildPageCard(seed).finally(() => {
+        childPageCardRefreshPromises.delete(pageId);
+      })
+    );
+  }
+
+  const card = await (childPageCardRefreshPromises.get(pageId) as Promise<ChildPageCard>);
+  return mergeChildPageCard(card, seed);
+}
+
+export async function getChildPageCards(
+  seeds: ChildPageCardSeed[]
+): Promise<ChildPageCard[]> {
+  const dedupedSeeds = Array.from(
+    new Map(
+      seeds
+        .filter(
+          (seed) =>
+            seed &&
+            typeof seed.pageId === "string" &&
+            seed.pageId.trim().length > 0 &&
+            typeof seed.slug === "string" &&
+            seed.slug.trim().length > 0
+        )
+        .map((seed) => [normalizePageId(seed.pageId), seed])
+    ).values()
+  );
+
+  if (dedupedSeeds.length === 0) {
+    return [];
+  }
+
+  const results = new Array<ChildPageCard>(dedupedSeeds.length);
+  let cursor = 0;
+  const workerCount = Math.min(childBlockFetchConcurrency, dedupedSeeds.length);
+
+  async function worker() {
+    while (true) {
+      const index = cursor;
+      cursor += 1;
+
+      if (index >= dedupedSeeds.length) {
+        return;
+      }
+
+      results[index] = await getChildPageCard(dedupedSeeds[index]);
+    }
+  }
+
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  return results;
 }
 
 async function refreshRoutes(): Promise<RouteEntry[]> {
