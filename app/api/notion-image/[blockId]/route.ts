@@ -1,8 +1,11 @@
-import { Client, isFullBlock } from "@notionhq/client";
+import { Client, isFullBlock, isFullPage } from "@notionhq/client";
 
 type Params = {
   blockId: string;
 };
+
+const thumbnailPropertyName =
+  process.env.NOTION_THUMBNAIL_PROPERTY?.trim() || "Thumbnail";
 
 function normalizeBlockId(raw: string): string {
   const trimmed = raw.trim();
@@ -70,6 +73,107 @@ async function fetchUpstreamImage(imageUrl: string): Promise<Response | null> {
   }
 }
 
+function findProperty(
+  properties: Record<string, any>,
+  preferredName: string,
+  fallbacks: string[]
+): any {
+  const names = [preferredName, ...fallbacks].filter(Boolean);
+
+  for (const name of names) {
+    if (name in properties) {
+      return properties[name];
+    }
+
+    const foundKey = Object.keys(properties).find(
+      (key) => key.toLowerCase() === name.toLowerCase()
+    );
+
+    if (foundKey) {
+      return properties[foundKey];
+    }
+  }
+
+  return undefined;
+}
+
+function getPropertyHostedImageUrl(property: any): string | null {
+  if (!property) {
+    return null;
+  }
+
+  if (property.type === "files") {
+    const [firstFile] = Array.isArray(property.files) ? property.files : [];
+    if (!firstFile) {
+      return null;
+    }
+
+    if (firstFile.type === "file") {
+      return normalizeUpstreamImageUrl(firstFile.file?.url ?? null);
+    }
+
+    if (firstFile.type === "external") {
+      return normalizeUpstreamImageUrl(firstFile.external?.url ?? null);
+    }
+  }
+
+  if (property.type === "url") {
+    return normalizeUpstreamImageUrl(property.url ?? null);
+  }
+
+  return null;
+}
+
+function getFirstFilesPropertyHostedImageUrl(
+  properties: Record<string, any>
+): string | null {
+  for (const value of Object.values(properties)) {
+    if (value?.type !== "files") {
+      continue;
+    }
+
+    const propertyUrl = getPropertyHostedImageUrl(value);
+    if (propertyUrl) {
+      return propertyUrl;
+    }
+  }
+
+  return null;
+}
+
+function resolvePageHostedImageUrl(pageResponse: any): string | null {
+  if (!isFullPage(pageResponse) || pageResponse.object !== "page") {
+    return null;
+  }
+
+  const properties = pageResponse.properties as Record<string, any>;
+  const thumbnailProperty = findProperty(
+    properties,
+    thumbnailPropertyName,
+    ["thumbnail", "Thumbnail", "Card Thumbnail", "Preview", "Image"]
+  );
+  const propertyUrl = getPropertyHostedImageUrl(thumbnailProperty);
+
+  if (propertyUrl) {
+    return propertyUrl;
+  }
+
+  const firstFilesPropertyUrl = getFirstFilesPropertyHostedImageUrl(properties);
+  if (firstFilesPropertyUrl) {
+    return firstFilesPropertyUrl;
+  }
+
+  if (pageResponse.cover?.type === "file") {
+    return normalizeUpstreamImageUrl(pageResponse.cover.file.url);
+  }
+
+  if (pageResponse.cover?.type === "external") {
+    return normalizeUpstreamImageUrl(pageResponse.cover.external.url);
+  }
+
+  return null;
+}
+
 export async function GET(
   request: Request,
   context: { params: Promise<Params> }
@@ -91,25 +195,53 @@ export async function GET(
     : null;
 
   if (!upstream) {
-    let imageUrl = "";
+    let imageUrl: string | null = null;
 
     try {
       const notion = getNotionClient();
-      const blockResponse = await notion.blocks.retrieve({ block_id: blockId });
+      let blockLookupError: unknown;
 
-      if (
-        !isFullBlock(blockResponse) ||
-        blockResponse.object !== "block" ||
-        blockResponse.type !== "image" ||
-        blockResponse.image.type !== "file"
-      ) {
-        return new Response("Not a Notion hosted image block", { status: 404 });
+      try {
+        const blockResponse = await notion.blocks.retrieve({ block_id: blockId });
+
+        if (
+          isFullBlock(blockResponse) &&
+          blockResponse.object === "block" &&
+          blockResponse.type === "image" &&
+          blockResponse.image.type === "file"
+        ) {
+          imageUrl = normalizeUpstreamImageUrl(blockResponse.image.file.url);
+        }
+      } catch (error) {
+        blockLookupError = error;
       }
 
-      imageUrl = blockResponse.image.file.url;
+      if (!imageUrl) {
+        try {
+          const pageResponse = await notion.pages.retrieve({ page_id: blockId });
+          imageUrl = resolvePageHostedImageUrl(pageResponse);
+        } catch (error) {
+          if (blockLookupError) {
+            console.error("Failed to resolve Notion image block or page:", {
+              blockId,
+              blockLookupError,
+              pageLookupError: error,
+            });
+          } else {
+            console.error("Failed to resolve Notion image page:", {
+              blockId,
+              pageLookupError: error,
+            });
+          }
+        }
+      }
     } catch (error) {
-      console.error("Failed to resolve Notion image block:", error);
+      console.error("Failed to create Notion image proxy client:", error);
       return new Response("Failed to resolve image source", { status: 502 });
+    }
+
+    if (!imageUrl) {
+      return new Response("Failed to resolve image source", { status: 404 });
     }
 
     upstream = await fetchUpstreamImage(imageUrl);
@@ -130,7 +262,10 @@ export async function GET(
     headers.set("Content-Length", upstreamLength);
   }
 
-  headers.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+  headers.set(
+    "Cache-Control",
+    "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
+  );
   headers.set("X-Image-Proxy", "notion-block");
 
   return new Response(upstream.body, {

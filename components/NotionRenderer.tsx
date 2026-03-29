@@ -4,7 +4,7 @@ import routeMap from "@/content/route-map.json";
 import { resolveNotionImageFallbackSrc, resolveNotionImagePrimarySrc } from "@/lib/notion-images";
 import type { ChildPageCard, NotionBlock } from "@/lib/notion";
 import { IntentPrefetchLink } from "@/components/IntentPrefetchLink";
-import { NotionImage } from "@/components/NotionImage";
+import { NotionCardImage, NotionImage } from "@/components/NotionImage";
 import { TypeTester } from "@/components/TypeTester";
 
 type TesterConfig = {
@@ -354,12 +354,13 @@ function renderBlocks({
           key={`child-page-cards-${childPageBlocks[0]?.id ?? index}`}
           className="notion-card-grid"
         >
-          {childPageBlocks.map((childPageBlock) => (
+          {childPageBlocks.map((childPageBlock, childPageIndex) => (
             <Block
               key={childPageBlock.id}
               block={childPageBlock}
               pageSlug={pageSlug}
               routeContext={routeContext}
+              cardIndex={childPageIndex}
             />
           ))}
         </section>
@@ -641,6 +642,7 @@ function ChildPageCardLink({
   description,
   thumbnailUrl,
   thumbnailFallbackUrl,
+  eager,
 }: {
   id: string;
   href: string;
@@ -648,6 +650,7 @@ function ChildPageCardLink({
   description?: string;
   thumbnailUrl?: string;
   thumbnailFallbackUrl?: string;
+  eager?: boolean;
 }) {
   const hasThumbnail = typeof thumbnailUrl === "string" && thumbnailUrl.trim().length > 0;
 
@@ -663,10 +666,11 @@ function ChildPageCardLink({
         className={`notion-page-card__media${hasThumbnail ? "" : " notion-page-card__media--empty"}`}
       >
         {hasThumbnail ? (
-          <NotionImage
+          <NotionCardImage
             primarySrc={thumbnailUrl}
             fallbackSrc={thumbnailFallbackUrl}
             alt=""
+            eager={eager}
           />
         ) : (
           <PageIcon />
@@ -690,10 +694,12 @@ function Block({
   block,
   pageSlug,
   routeContext,
+  cardIndex,
 }: {
   block: NotionBlock;
   pageSlug?: string;
   routeContext: RouteRenderContextValue;
+  cardIndex?: number;
 }) {
   switch (block.type) {
     case "heading_1":
@@ -995,6 +1001,7 @@ function Block({
             description={card?.description}
             thumbnailUrl={card?.thumbnailUrl}
             thumbnailFallbackUrl={card?.thumbnailFallbackUrl}
+            eager={typeof cardIndex === "number" && cardIndex < 4}
           />
         );
       }

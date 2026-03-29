@@ -434,6 +434,24 @@ function buildNotionImageProxyUrl(
   return `${proxyPath}?${searchParams.toString()}`;
 }
 
+function proxyCardThumbnailUrl(pageId: string, sourceUrl: string): string {
+  try {
+    const parsed = new URL(sourceUrl);
+    const hostname = parsed.hostname.toLowerCase();
+    const isNotionHosted =
+      parsed.protocol === "https:" &&
+      (hostname === "secure.notion-static.com" ||
+        hostname === "prod-files-secure.s3.us-west-2.amazonaws.com" ||
+        hostname.endsWith(".notion-static.com"));
+
+    return isNotionHosted
+      ? buildNotionImageProxyUrl(pageId, parsed.toString())
+      : sourceUrl;
+  } catch {
+    return sourceUrl;
+  }
+}
+
 function resolveCardImagePrimarySrc(block: NotionBlock): string | undefined {
   if (block.type !== "image") {
     return undefined;
@@ -509,20 +527,20 @@ function extractThumbnailUrl(page: PageObjectResponse): string | undefined {
   const propertyUrl = getPropertyFileUrl(thumbnailProperty);
 
   if (propertyUrl) {
-    return propertyUrl;
+    return proxyCardThumbnailUrl(page.id, propertyUrl);
   }
 
   const firstFilesPropertyUrl = getFirstFilesPropertyUrl(properties);
   if (firstFilesPropertyUrl) {
-    return firstFilesPropertyUrl;
+    return proxyCardThumbnailUrl(page.id, firstFilesPropertyUrl);
   }
 
   if (page.cover?.type === "external") {
-    return page.cover.external.url;
+    return proxyCardThumbnailUrl(page.id, page.cover.external.url);
   }
 
   if (page.cover?.type === "file") {
-    return page.cover.file.url;
+    return proxyCardThumbnailUrl(page.id, page.cover.file.url);
   }
 
   return undefined;
