@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 802,
+      "file": "802.js",
+      "name": "Centrix",
+      "description": "Hover over to interact"
+    },
+    {
       "id": 801,
-      "file": "801.js",
       "name": "Velorb",
+      "file": "801.js",
       "description": ""
     },
     {
