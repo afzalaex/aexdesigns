@@ -188,12 +188,6 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
               ariaLabel="Built by Afzal on X"
               style={boardStyle(754.7, 110, 153.3, 180)}
             />
-            <Cell className={styles.empty} style={boardStyle(110, 490, 313, 180)} />
-
-            <Cell className={styles.empty} style={boardStyle(236.2, 680, 116.2, 180)} />
-            <Cell className={styles.empty} style={boardStyle(362.4, 680, 60.6, 180)} />
-
-            <Cell className={styles.empty} style={boardStyle(595, 110, 149.7, 370)} />
             <HomepageCollabForm
               ariaLabel="Work with Me"
               className={`${styles.block} ${styles.blockButton} ${styles.interactive} ${styles.builderBlock}`}
@@ -207,33 +201,20 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
               </span>
             </HomepageCollabForm>
 
-            <Cell label="X" href={links.x} style={boardStyle(110, 680, 116.2, 85)} />
+            <Cell className={styles.empty} style={boardStyle(110, 490, 313, 180)} />
+
+            <Cell className={styles.empty} style={boardStyle(362.4, 680, 60.6, 180)} />
+
+            <Cell className={styles.empty} style={boardStyle(595, 110, 149.7, 370)} />
+
+            {/* Bottom-left 2×2: About | X  /  IG | GH */}
+            <Cell label="About" href="/about" style={boardStyle(110, 680, 116.2, 85)} />
+            <Cell label="X" href={links.x} style={boardStyle(236.2, 680, 116.2, 85)} />
             <Cell label="IG" href={links.ig} style={boardStyle(110, 775, 116.2, 85)} />
+            <Cell label="GH" href={links.gh} style={boardStyle(236.2, 775, 116.2, 85)} />
           </div>
 
           <h1 className={styles.heroTitle}>Intangible internet things</h1>
-          <section className={styles.about}>
-            <p className={`${styles.aboutText} notion-semantic-string`}>
-              <strong>About:</strong>{" "}I&apos;m Afzal, an internet artist/designer/craftsman. Aex Designs is my
-              digital playground/archive/canvas, where I share experiments, wip,
-              releases, writings, and more. I&apos;m currently focused on art,
-              publishing a new artwork every day. My work is primarily generative,
-              rooted in abstraction and geometric forms, while continuously
-              exploring new directions and mediums. Explore my work, use
-              assets like fonts, or read my writings. All works are released under{" "}
-              <a
-                href="https://creativecommons.org/public-domain/cc0/"
-                className="notion-link link"
-                data-server-link={false}
-                data-link-uri="https://creativecommons.org/public-domain/cc0/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                CC0
-              </a>
-              . No rights reserved. Use, remix, and build freely.
-            </p>
-          </section>
         </div>
       </section>
     </main>
