@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 803,
+      "file": "803.js",
+      "name": "Chaostruct",
+      "description": "Click to evolve"
+    },
+    {
       "id": 802,
-      "file": "802.js",
       "name": "Centrix",
+      "file": "802.js",
       "description": "Hover over to interact"
     },
     {
