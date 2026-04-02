@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 805,
+      "file": "805.js",
+      "name": "Divinary",
+      "description": "Click to evolve"
+    },
+    {
       "id": 804,
-      "file": "804.js",
       "name": "Infinittern",
+      "file": "804.js",
       "description": "Drag to go infinite"
     },
     {
