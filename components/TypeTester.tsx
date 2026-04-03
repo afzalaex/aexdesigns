@@ -54,42 +54,43 @@ export function TypeTester({
         inputRef.current?.focus();
       }}
     >
-      <div className="aex-type-tester__controls">
-        <label htmlFor={`aex-size-${id}`} className="aex-type-tester__label">
-          Size
-        </label>
-        <input
-          id={`aex-size-${id}`}
-          className="aex-type-tester__range"
-          type="range"
-          min={minFontSize}
-          max={maxFontSize}
-          step={1}
-          value={currentFontSize}
-          onChange={(event) => setCurrentFontSize(Number(event.target.value))}
+      <div className="aex-type-tester__shell">
+        <div className="aex-type-tester__controls">
+          <label htmlFor={`aex-size-${id}`} className="aex-type-tester__label">
+            Size
+          </label>
+          <input
+            id={`aex-size-${id}`}
+            className="aex-type-tester__range"
+            type="range"
+            min={minFontSize}
+            max={maxFontSize}
+            step={1}
+            value={currentFontSize}
+            onChange={(event) => setCurrentFontSize(Number(event.target.value))}
+          />
+          <span className="aex-type-tester__value">{currentFontSize}px</span>
+        </div>
+        <div
+          ref={inputRef}
+          className={`aex-type-tester__input${isFocused ? " is-active" : ""}`}
+          contentEditable
+          suppressContentEditableWarning
+          spellCheck={false}
+          role="textbox"
+          aria-label="Type tester input"
+          data-placeholder={defaultText}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          style={{
+            fontFamily: `'${escapeFontFamily(fontFamily)}', 'Space Mono', monospace`,
+            fontSize: `${currentFontSize}px`,
+            lineHeight,
+            color: textColor,
+            opacity: isFocused ? 1 : 0.72,
+          }}
         />
-        <span className="aex-type-tester__value">{currentFontSize}px</span>
       </div>
-      <div
-        ref={inputRef}
-        className={`aex-type-tester__input${isFocused ? " is-active" : ""}`}
-        contentEditable
-        suppressContentEditableWarning
-        spellCheck={false}
-        role="textbox"
-        aria-label="Type tester input"
-        data-placeholder={defaultText}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        style={{
-          fontFamily: `'${escapeFontFamily(fontFamily)}', 'Space Mono', monospace`,
-          fontSize: `${currentFontSize}px`,
-          lineHeight,
-          color: textColor,
-          opacity: isFocused ? 1 : 0.72,
-        }}
-      />
-      <div className="aex-type-tester__footer">TypeTester</div>
     </section>
   );
 }

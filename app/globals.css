@@ -725,8 +725,16 @@ figure.notion-embed {
 
 .aex-type-tester {
   width: 100%;
-  background-color: #000;
-  padding: 10px;
+}
+
+.aex-type-tester__shell {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--color-border-default);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 42%),
+    #000;
+  overflow: hidden;
 }
 
 .aex-type-tester__controls {
@@ -734,6 +742,7 @@ figure.notion-embed {
   align-items: center;
   gap: 10px;
   width: 100%;
+  padding: 10px 10px 0;
   margin-bottom: 8px;
 }
 
@@ -810,17 +819,6 @@ figure.notion-embed {
   opacity: 0.55;
   color: #fff;
   pointer-events: none;
-}
-
-.aex-type-tester__footer {
-  margin-top: 8px;
-  width: 100%;
-  text-align: center;
-  font-size: 0.875rem;
-  color: #fff;
-  opacity: 0.7;
-  letter-spacing: 0.03em;
-  user-select: none;
 }
 
 .type-playground {
