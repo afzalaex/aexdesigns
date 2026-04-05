@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 808,
+      "file": "808.js",
+      "name": "Linote",
+      "description": "Click to evolve"
+    },
+    {
       "id": 807,
-      "file": "807.js",
       "name": "Radiganic",
+      "file": "807.js",
       "description": "Click to evolve"
     },
     {
