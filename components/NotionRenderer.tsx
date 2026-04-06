@@ -55,11 +55,10 @@ type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
 
 const expandableParentKeys = new Set([
   "da",
-  "dda",
-  "digitaldesignassets",
+  "assets",
   "archive",
 ]);
-const cardLayoutParentKeys = new Set(["da", "dda", "archive"]);
+const cardLayoutParentKeys = new Set(["da", "assets", "archive"]);
 
 const testerConfigs: Record<string, TesterConfig> = {
   "/typecheck-type-tester": {

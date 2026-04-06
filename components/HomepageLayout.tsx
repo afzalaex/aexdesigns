@@ -144,11 +144,10 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
                 label={
                   <span className={styles.multiline}>
                     <span>Digital</span>
-                    <span>Design</span>
                     <span>Assets</span>
                   </span>
                 }
-                ariaLabel="Digital Design Assets"
+                ariaLabel="Digital Assets"
                 href={links.digitalAssets}
                 style={localStyle(242.5, 190, 232.5, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
               />

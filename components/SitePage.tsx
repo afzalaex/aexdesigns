@@ -42,7 +42,7 @@ const everyDaysCanvasMarkers = new Set([
   "[[every-days-2026-canvas]]",
   "every-days-2026-canvas",
 ]);
-const childPageCardParentSlugs = new Set(["/da", "/dda", "/archive"]);
+const childPageCardParentSlugs = new Set(["/da", "/assets", "/archive"]);
 const priorityImageLoadLimit = 6;
 const priorityImagePreloadLimit = 3;
 

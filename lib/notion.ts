@@ -97,6 +97,8 @@ let routesRefreshPromise: Promise<RouteEntry[]> | undefined;
 const pageRefreshPromises = new Map<string, Promise<NotionPageData | null>>();
 const childPageCardCache = new Map<string, TimedCacheEntry<ChildPageCard>>();
 const childPageCardRefreshPromises = new Map<string, Promise<ChildPageCard>>();
+const ASSETS_PAGE_ID = "30cbdd8702e080b3851ac635358f809f";
+const ASSETS_PAGE_SLUG = "/assets";
 
 function getNotionClient(): Client {
   if (!notion) {
@@ -650,8 +652,14 @@ function loadStaticRoutes(): RouteEntry[] {
 
   const entries: RouteEntry[] = staticEntries
     .map((entry: any) => {
-      const slug = typeof entry.slug === "string" ? normalizeSlug(entry.slug) : "";
       const pageId = typeof entry.pageId === "string" ? entry.pageId.trim() : "";
+      const normalizedPageId = pageId ? normalizePageId(pageId) : "";
+      const slug =
+        normalizedPageId === normalizePageId(ASSETS_PAGE_ID)
+          ? ASSETS_PAGE_SLUG
+          : typeof entry.slug === "string"
+            ? normalizeSlug(entry.slug)
+            : "";
 
       if (!slug || !pageId) {
         return null;
@@ -659,7 +667,7 @@ function loadStaticRoutes(): RouteEntry[] {
 
       return {
         slug,
-        pageId: normalizePageId(pageId),
+        pageId: normalizedPageId,
         title: typeof entry.title === "string" ? entry.title : undefined,
         description:
           typeof entry.description === "string" ? entry.description : undefined,
@@ -710,6 +718,8 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
         continue;
       }
 
+      const normalizedPageId = normalizePageId(result.id);
+      const isAssetsPage = normalizedPageId === normalizePageId(ASSETS_PAGE_ID);
       const properties = result.properties as Record<string, any>;
       const slugProperty = findProperty(properties, slugPropertyName, ["slug", "Slug"]);
       const publishedProperty = findProperty(properties, publishedPropertyName, [
@@ -720,11 +730,13 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
       ]);
 
       const slugValue = getPropertyText(slugProperty);
-      if (!slugValue) {
+      if (!slugValue && !isAssetsPage) {
         continue;
       }
 
-      const slug = normalizeSlug(slugValue);
+      const slug = isAssetsPage
+        ? ASSETS_PAGE_SLUG
+        : normalizeSlug(slugValue as string);
       if (isHiddenRouteSlug(slug)) {
         continue;
       }
@@ -741,7 +753,7 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
 
       routes.push({
         slug,
-        pageId: normalizePageId(result.id),
+        pageId: normalizedPageId,
         title: extractTitle(result),
         description: getPropertyText(descriptionProperty),
         thumbnailUrl: extractThumbnailUrl(result),
@@ -1019,7 +1031,15 @@ async function refreshPage(slug: string): Promise<NotionPageData | null> {
     throw error;
   }
 
-  const route = routes.find((entry) => entry.slug === slug);
+  const route =
+    routes.find((entry) => entry.slug === slug) ??
+    (slug === ASSETS_PAGE_SLUG
+      ? ({
+          slug: ASSETS_PAGE_SLUG,
+          pageId: normalizePageId(ASSETS_PAGE_ID),
+          source: "map",
+        } satisfies RouteEntry)
+      : undefined);
 
   if (!route) {
     pageCache.set(slug, createTimedCacheEntry(null));

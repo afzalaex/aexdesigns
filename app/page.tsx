@@ -7,7 +7,7 @@ export const revalidate = 3600;
 
 const internalLinkCandidates = {
   designArt: ["/da", "/design-art", "/designart", "/onchain"],
-  digitalAssets: ["/dda", "/digital-design-assets", "/digitaldesignassets"],
+  digitalAssets: ["/assets"],
   archive: ["/archive"],
 } as const;
 
