@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 809,
+      "file": "809.js",
+      "name": "Isoplex",
+      "description": "Click to evolve"
+    },
+    {
       "id": 808,
-      "file": "808.js",
       "name": "Linote",
+      "file": "808.js",
       "description": "Click to evolve"
     },
     {
