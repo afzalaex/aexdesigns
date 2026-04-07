@@ -281,6 +281,11 @@ export function ScrollRevealScope({ children }: { children: ReactNode }) {
     const runInitialReveal = async () => {
       // Wait one frame so child effects (gate registrations) can run first.
       await waitFrame();
+      
+      // Wait for all critical fonts to load to prevent FOUT visual glitches during sequence
+      if ('fonts' in document) {
+        await document.fonts.ready;
+      }
 
       for (const { target, item } of initialTargets) {
         if (cancelled) {
