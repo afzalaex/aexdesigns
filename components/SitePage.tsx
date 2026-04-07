@@ -1,8 +1,7 @@
-import { preconnect, prefetchDNS, preload } from "react-dom";
 import { EveryDays2026Viewer } from "@/components/EveryDays2026Viewer";
 import { NotionRenderer } from "@/components/NotionRenderer";
+import { ScrollRevealItem, ScrollRevealScope } from "@/components/ScrollReveal";
 import everyDaysCollection2026 from "@/public/data/collection-2026.json";
-import { resolveNotionImagePrimarySrc } from "@/lib/notion-images";
 import {
   getChildPageCards,
   getPageBySlug,
@@ -43,8 +42,6 @@ const everyDaysCanvasMarkers = new Set([
   "every-days-2026-canvas",
 ]);
 const childPageCardParentSlugs = new Set(["/da", "/assets", "/archive"]);
-const priorityImageLoadLimit = 6;
-const priorityImagePreloadLimit = 3;
 
 function getLatestEveryDaysArtworkId(): number | null {
   const collection =
@@ -241,72 +238,6 @@ async function isChildPageCardSourcePage(pageId: string): Promise<boolean> {
   return false;
 }
 
-function collectPriorityImageIds(
-  blocks: NotionBlock[],
-  limit: number
-): Set<string> {
-  const ids = new Set<string>();
-
-  function walk(currentBlocks: NotionBlock[]): void {
-    for (const block of currentBlocks) {
-      if (ids.size >= limit) {
-        return;
-      }
-
-      if (block.type === "image") {
-        ids.add(block.id);
-      }
-
-      if (block.children?.length) {
-        walk(block.children);
-      }
-    }
-  }
-
-  if (limit > 0) {
-    walk(blocks);
-  }
-
-  return ids;
-}
-
-function collectPriorityImageSources(
-  blocks: NotionBlock[],
-  limit: number
-): string[] {
-  const sources: string[] = [];
-
-  function pushIfPresent(value: string | undefined): void {
-    if (!value || sources.length >= limit) {
-      return;
-    }
-
-    sources.push(value);
-  }
-
-  function walk(currentBlocks: NotionBlock[]): void {
-    for (const block of currentBlocks) {
-      if (sources.length >= limit) {
-        return;
-      }
-
-      if (block.type === "image") {
-        pushIfPresent(resolveNotionImagePrimarySrc(block) ?? undefined);
-      }
-
-      if (block.children?.length) {
-        walk(block.children);
-      }
-    }
-  }
-
-  if (limit > 0) {
-    walk(blocks);
-  }
-
-  return sources;
-}
-
 const topActionBySlug: Record<string, TopActionConfig> = {
   "/p5nels": {
     metaClassName: "cc0",
@@ -411,86 +342,72 @@ export async function SitePage({ page }: { page: NotionPageData }) {
     page.slug === "/every-days" && everyDaysCanvasMarkerIndex >= 0;
   const shouldRenderEveryDaysCanvasFallback =
     page.slug === "/every-days" && everyDaysCanvasMarkerIndex < 0;
-  const priorityImageIds = collectPriorityImageIds(
-    page.blocks,
-    priorityImageLoadLimit
-  );
-  const priorityImageSources = collectPriorityImageSources(
-    page.blocks,
-    priorityImagePreloadLimit
-  );
   const everyDaysLatestArtworkId =
     page.slug === "/every-days" ? getLatestEveryDaysArtworkId() : null;
 
-  for (const source of priorityImageSources) {
-    preload(source, {
-      as: "image",
-      fetchPriority: "high",
-      referrerPolicy: "no-referrer",
-    });
-
-    try {
-      const origin = new URL(source).origin;
-      preconnect(origin);
-      prefetchDNS(origin);
-    } catch {
-      // Ignore invalid upstream URLs from Notion content.
-    }
-  }
-
   return (
     <main id={`page-${pageClass}`} className={`site-content page__${pageClass}`}>
-      {topAction ? (
-        <div className="site-top-actions">
-          <div className="site-top-actions__meta">
-            <a className={topAction.metaClassName} href={topAction.metaHref}>
-              {topAction.metaLabel}
-            </a>
-            <span className="site-top-actions__release">
-              Released: {topAction.releaseYear}
-            </span>
-          </div>
-          <a className={topAction.buttonClassName} href={topAction.buttonHref}>
-            {topAction.buttonLabel}
-          </a>
-        </div>
-      ) : everyDaysLatestArtworkId !== null ? (
-        <div className="site-top-actions">
-          <div className="site-top-actions__meta">
-            <span className="site-top-stat">
-              {`Artworks: ${everyDaysLatestArtworkId}`}
-            </span>
-            <span className="site-top-actions__release">Since 2024</span>
-          </div>
-        </div>
-      ) : null}
-      {shouldRenderEveryDaysCanvasFallback ? (
-        <section className="notion-root max-width">
-          <EveryDays2026Viewer />
-        </section>
-      ) : null}
+      <ScrollRevealScope>
+        {topAction ? (
+          <ScrollRevealItem>
+            <div className="site-top-actions">
+              <div className="site-top-actions__meta">
+                <a className={topAction.metaClassName} href={topAction.metaHref}>
+                  {topAction.metaLabel}
+                </a>
+                <span className="site-top-actions__release">
+                  Released: {topAction.releaseYear}
+                </span>
+              </div>
+              <a className={topAction.buttonClassName} href={topAction.buttonHref}>
+                {topAction.buttonLabel}
+              </a>
+            </div>
+          </ScrollRevealItem>
+        ) : everyDaysLatestArtworkId !== null ? (
+          <ScrollRevealItem>
+            <div className="site-top-actions">
+              <div className="site-top-actions__meta">
+                <span className="site-top-stat">
+                  {`Artworks: ${everyDaysLatestArtworkId}`}
+                </span>
+                <span className="site-top-actions__release">Since 2024</span>
+              </div>
+            </div>
+          </ScrollRevealItem>
+        ) : null}
+        {shouldRenderEveryDaysCanvasFallback ? (
+          <ScrollRevealItem>
+            <section className="notion-root max-width">
+              <EveryDays2026Viewer />
+            </section>
+          </ScrollRevealItem>
+        ) : null}
 
-      <article id={articleId} className="notion-root max-width">
-        <NotionRenderer
-          blocks={blocksBeforeEveryDaysCanvas}
-          pageSlug={page.slug}
-          routeEntries={routeEntries}
-          childPageCards={childPageCards}
-          hiddenBlockIds={hiddenBlockIds}
-          priorityImageIds={priorityImageIds}
-        />
-        {shouldRenderEveryDaysCanvasAtMarker ? <EveryDays2026Viewer /> : null}
-        {blocksAfterEveryDaysCanvas.length > 0 ? (
+        <article id={articleId} className="notion-root max-width">
           <NotionRenderer
-            blocks={blocksAfterEveryDaysCanvas}
+            blocks={blocksBeforeEveryDaysCanvas}
             pageSlug={page.slug}
             routeEntries={routeEntries}
             childPageCards={childPageCards}
             hiddenBlockIds={hiddenBlockIds}
-            priorityImageIds={priorityImageIds}
           />
-        ) : null}
-      </article>
+          {shouldRenderEveryDaysCanvasAtMarker ? (
+            <ScrollRevealItem>
+              <EveryDays2026Viewer />
+            </ScrollRevealItem>
+          ) : null}
+          {blocksAfterEveryDaysCanvas.length > 0 ? (
+            <NotionRenderer
+              blocks={blocksAfterEveryDaysCanvas}
+              pageSlug={page.slug}
+              routeEntries={routeEntries}
+              childPageCards={childPageCards}
+              hiddenBlockIds={hiddenBlockIds}
+            />
+          ) : null}
+        </article>
+      </ScrollRevealScope>
     </main>
   );
 }

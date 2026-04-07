@@ -5,6 +5,7 @@ import { resolveNotionImageFallbackSrc, resolveNotionImagePrimarySrc } from "@/l
 import type { ChildPageCard, NotionBlock } from "@/lib/notion";
 import { IntentPrefetchLink } from "@/components/IntentPrefetchLink";
 import { NotionCardImage, NotionImage } from "@/components/NotionImage";
+import { ScrollRevealItem, SequentialCardGrid } from "@/components/ScrollReveal";
 import { TypeTester } from "@/components/TypeTester";
 
 type TesterConfig = {
@@ -48,8 +49,18 @@ type RouteRenderContextValue = {
   childRoutesByParentSlug: Map<string, ExpandableChildRoute[]>;
   childPageCardByPageId: Map<string, ChildPageCard>;
   hiddenBlockIds: Set<string>;
-  priorityImageIds: Set<string>;
 };
+
+type ChildPageCardLinkProps = {
+  id: string;
+  href: string;
+  title: string;
+  description?: string;
+  thumbnailUrl?: string;
+  thumbnailFallbackUrl?: string;
+};
+
+type ResolvedChildPageCard = ChildPageCardLinkProps;
 
 type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
 
@@ -192,7 +203,6 @@ function resolveRouteEntries(
 function buildRouteRenderContext(
   routeEntries?: RouteInputEntry[],
   expandableRouteGroups?: ExpandableRouteGroups,
-  priorityImageIds?: Set<string>,
   childPageCards?: ChildPageCard[],
   hiddenBlockIds?: Set<string>
 ): RouteRenderContextValue {
@@ -288,7 +298,6 @@ function buildRouteRenderContext(
     childRoutesByParentSlug,
     childPageCardByPageId,
     hiddenBlockIds: hiddenBlockIds ?? new Set<string>(),
-    priorityImageIds: priorityImageIds ?? new Set<string>(),
   };
 }
 
@@ -303,6 +312,35 @@ function headingAnchorId(id: string): string {
 function childPageBlockId(slug: string): string {
   const path = slug.replace(/^\//, "").replace(/\//g, "-");
   return `block-${path || "home"}`;
+}
+
+function resolveChildPageCard(
+  block: NotionBlock,
+  routeContext: RouteRenderContextValue
+): ResolvedChildPageCard | null {
+  if (block.type !== "child_page") {
+    return null;
+  }
+
+  const pageId = normalizePageId(block.id);
+  const mappedSlug = routeContext.slugByPageId.get(pageId);
+  const card = routeContext.childPageCardByPageId.get(pageId);
+  const slug = card?.slug ?? mappedSlug ?? slugFromTitle(block.child_page.title);
+
+  if (/-type-tester$/i.test(slug)) {
+    return null;
+  }
+
+  const thumbnailUrl = card?.thumbnailUrl;
+
+  return {
+    id: childPageBlockId(slug),
+    href: slug,
+    title: card?.title ?? block.child_page.title,
+    description: card?.description,
+    thumbnailUrl,
+    thumbnailFallbackUrl: card?.thumbnailFallbackUrl,
+  };
 }
 
 function joinRichText(items: RichTextItemResponse[]): string {
@@ -348,21 +386,37 @@ function renderBlocks({
         index += 1;
       }
 
+      const childPageCards = childPageBlocks
+        .map((childPageBlock) => resolveChildPageCard(childPageBlock, routeContext))
+        .filter(
+          (childPageCard): childPageCard is ResolvedChildPageCard =>
+            childPageCard !== null
+        );
+
+      if (childPageCards.length === 0) {
+        continue;
+      }
+
       renderedBlocks.push(
-        <section
+        <SequentialCardGrid
           key={`child-page-cards-${childPageBlocks[0]?.id ?? index}`}
-          className="notion-card-grid"
+          itemImageSources={childPageCards.map((childPageCard) => ({
+            primarySrc: childPageCard.thumbnailUrl,
+            fallbackSrc: childPageCard.thumbnailFallbackUrl,
+          }))}
         >
-          {childPageBlocks.map((childPageBlock, childPageIndex) => (
-            <Block
-              key={childPageBlock.id}
-              block={childPageBlock}
-              pageSlug={pageSlug}
-              routeContext={routeContext}
-              cardIndex={childPageIndex}
+          {childPageCards.map((childPageCard) => (
+            <ChildPageCardLink
+              key={childPageCard.id}
+              id={childPageCard.id}
+              href={childPageCard.href}
+              title={childPageCard.title}
+              description={childPageCard.description}
+              thumbnailUrl={childPageCard.thumbnailUrl}
+              thumbnailFallbackUrl={childPageCard.thumbnailFallbackUrl}
             />
           ))}
-        </section>
+        </SequentialCardGrid>
       );
       continue;
     }
@@ -641,16 +695,7 @@ function ChildPageCardLink({
   description,
   thumbnailUrl,
   thumbnailFallbackUrl,
-  eager,
-}: {
-  id: string;
-  href: string;
-  title: string;
-  description?: string;
-  thumbnailUrl?: string;
-  thumbnailFallbackUrl?: string;
-  eager?: boolean;
-}) {
+}: ChildPageCardLinkProps) {
   const hasThumbnail = typeof thumbnailUrl === "string" && thumbnailUrl.trim().length > 0;
 
   return (
@@ -669,7 +714,6 @@ function ChildPageCardLink({
             primarySrc={thumbnailUrl}
             fallbackSrc={thumbnailFallbackUrl}
             alt=""
-            eager={eager}
           />
         ) : (
           <PageIcon />
@@ -693,44 +737,56 @@ function Block({
   block,
   pageSlug,
   routeContext,
-  cardIndex,
 }: {
   block: NotionBlock;
   pageSlug?: string;
   routeContext: RouteRenderContextValue;
-  cardIndex?: number;
 }) {
+  function reveal(content: ReactNode, className?: string) {
+    return (
+      <ScrollRevealItem className={className}>
+        {content}
+      </ScrollRevealItem>
+    );
+  }
+
+  function revealWithChildren(content: ReactNode) {
+    return (
+      <>
+        {reveal(content)}
+        <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
+      </>
+    );
+  }
+
   switch (block.type) {
     case "heading_1":
-      return (
+      return revealWithChildren(
         <>
           <span className="notion-heading__anchor" id={headingAnchorId(block.id)} />
           <h1 id={blockDomId(block.id)} className="notion-heading notion-semantic-string">
             <RichText items={block.heading_1.rich_text} />
           </h1>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
     case "heading_2":
-      return (
+      return revealWithChildren(
         <>
           <span className="notion-heading__anchor" id={headingAnchorId(block.id)} />
           <h2 id={blockDomId(block.id)} className="notion-heading notion-semantic-string">
             <RichText items={block.heading_2.rich_text} />
           </h2>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
     case "heading_3":
-      return (
+      return revealWithChildren(
         <>
           <span className="notion-heading__anchor" id={headingAnchorId(block.id)} />
           <h3 id={blockDomId(block.id)} className="notion-heading notion-semantic-string">
             <RichText items={block.heading_3.rich_text} />
           </h3>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
@@ -744,7 +800,7 @@ function Block({
         const markerCaption = marker?.caption;
 
         if (markerTesterConfig) {
-          return (
+          return reveal(
             <TesterFigure
               id={blockDomId(block.id)}
               testerConfig={markerTesterConfig}
@@ -755,7 +811,7 @@ function Block({
       }
 
       if (block.paragraph.rich_text.length === 0) {
-        return (
+        return reveal(
           <p
             id={blockDomId(block.id)}
             className="notion-text notion-text__content notion-semantic-string"
@@ -766,17 +822,16 @@ function Block({
         );
       }
 
-      return (
+      return revealWithChildren(
         <>
           <p id={blockDomId(block.id)} className="notion-text notion-text__content notion-semantic-string">
             <RichText items={block.paragraph.rich_text} />
           </p>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
     case "quote":
-      return (
+      return revealWithChildren(
         <>
           <blockquote
             id={blockDomId(block.id)}
@@ -784,12 +839,11 @@ function Block({
           >
             <RichText items={block.quote.rich_text} />
           </blockquote>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
     case "bulleted_list_item":
-      return (
+      return reveal(
         <ul className="notion-list notion-list-disc">
           <li id={blockDomId(block.id)} className="notion-text notion-semantic-string">
             <RichText items={block.bulleted_list_item.rich_text} />
@@ -799,7 +853,7 @@ function Block({
       );
 
     case "numbered_list_item":
-      return (
+      return reveal(
         <ol className="notion-list notion-list-numbered">
           <li id={blockDomId(block.id)} className="notion-text notion-semantic-string">
             <RichText items={block.numbered_list_item.rich_text} />
@@ -809,7 +863,7 @@ function Block({
       );
 
     case "to_do":
-      return (
+      return revealWithChildren(
         <>
           <label id={blockDomId(block.id)} className="notion-to-do__content">
             <input type="checkbox" checked={block.to_do.checked} readOnly />
@@ -817,7 +871,6 @@ function Block({
               <RichText items={block.to_do.rich_text} />
             </span>
           </label>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
 
@@ -830,7 +883,7 @@ function Block({
 
       const hasChildren = Boolean(block.children?.length);
 
-      return (
+      return reveal(
         <div id={blockDomId(block.id)} className="notion-toggle closed">
           <div className="notion-toggle__summary">
             <div className="notion-toggle__trigger">
@@ -854,7 +907,7 @@ function Block({
     case "callout": {
       const icon = block.callout.icon?.type === "emoji" ? block.callout.icon.emoji : "";
 
-      return (
+      return revealWithChildren(
         <>
           <div id={blockDomId(block.id)} className="notion-callout">
             <p className="notion-text notion-semantic-string">
@@ -864,16 +917,15 @@ function Block({
               </span>
             </p>
           </div>
-          <BlockChildren blocks={block.children} pageSlug={pageSlug} routeContext={routeContext} />
         </>
       );
     }
 
     case "divider":
-      return <hr id={blockDomId(block.id)} className="notion-divider" />;
+      return reveal(<hr id={blockDomId(block.id)} className="notion-divider" />);
 
     case "code":
-      return (
+      return reveal(
         <div id={blockDomId(block.id)} className="notion-code">
           <pre data-language={block.code.language}>
             <code>{joinRichText(block.code.rich_text)}</code>
@@ -886,22 +938,20 @@ function Block({
       const fallbackSrc = resolveNotionImageFallbackSrc(block);
       const rawCaptionText = joinRichText(block.image.caption).trim();
       const { captionText, eager } = parseImageCaptionDirectives(rawCaptionText);
-      const shouldPrioritize =
-        eager || routeContext.priorityImageIds.has(block.id);
       const captionNode = captionText
         ? captionText === rawCaptionText
           ? <RichText items={block.image.caption} />
           : textWithLineBreaks(captionText, `image-caption-${block.id}`)
         : null;
 
-      return (
+      return reveal(
         <figure id={blockDomId(block.id)} className="notion-image page-width">
           <span style={{ display: "contents" }}>
             <NotionImage
               primarySrc={primarySrc ?? ""}
               fallbackSrc={fallbackSrc}
               alt={captionText || "image"}
-              eager={shouldPrioritize}
+              eager={eager}
             />
           </span>
           {captionNode ? (
@@ -914,7 +964,7 @@ function Block({
     }
 
     case "bookmark":
-      return (
+      return reveal(
         <p id={blockDomId(block.id)} className="notion-text notion-text__content notion-semantic-string">
           <a href={block.bookmark.url} className="notion-link link" data-link-uri={block.bookmark.url}>
             {block.bookmark.url}
@@ -928,7 +978,7 @@ function Block({
       const testerConfig = testerConfigFromUrl(embedUrl);
 
       if (testerConfig) {
-        return (
+        return reveal(
           <TesterFigure
             id={blockDomId(block.id)}
             testerConfig={testerConfig}
@@ -942,7 +992,7 @@ function Block({
       }
 
       if (isEmbeddableUrl(embedUrl)) {
-        return (
+        return reveal(
           <figure id={blockDomId(block.id)} className="notion-embed page-width notion-block aex-generic-embed">
             <span className="notion-embed__container__wrapper">
               <span className="notion-embed__container">
@@ -965,7 +1015,7 @@ function Block({
         );
       }
 
-      return (
+      return reveal(
         <section id={blockDomId(block.id)} className="notion-embed page-width notion-block">
           <p className="notion-text notion-text__content notion-semantic-string">
             <a href={embedUrl} className="notion-link link" data-link-uri={embedUrl}>
@@ -982,33 +1032,35 @@ function Block({
     }
 
     case "child_page": {
-      const pageId = normalizePageId(block.id);
-      const mappedSlug = routeContext.slugByPageId.get(pageId);
-      const card = routeContext.childPageCardByPageId.get(pageId);
-      const slug = card?.slug ?? mappedSlug ?? slugFromTitle(block.child_page.title);
+      const resolvedChildPageCard = resolveChildPageCard(block, routeContext);
+      const slug = resolvedChildPageCard?.href ?? slugFromTitle(block.child_page.title);
 
       if (/-type-tester$/i.test(slug)) {
         return null;
       }
 
       if (shouldRenderChildPageCards(pageSlug)) {
-        return (
+        if (!resolvedChildPageCard) {
+          return null;
+        }
+
+        return reveal(
           <ChildPageCardLink
-            id={childPageBlockId(slug)}
-            href={slug}
-            title={card?.title ?? block.child_page.title}
-            description={card?.description}
-            thumbnailUrl={card?.thumbnailUrl}
-            thumbnailFallbackUrl={card?.thumbnailFallbackUrl}
-            eager={typeof cardIndex === "number" && cardIndex < 4}
-          />
+            id={resolvedChildPageCard.id}
+            href={resolvedChildPageCard.href}
+            title={resolvedChildPageCard.title}
+            description={resolvedChildPageCard.description}
+            thumbnailUrl={resolvedChildPageCard.thumbnailUrl}
+            thumbnailFallbackUrl={resolvedChildPageCard.thumbnailFallbackUrl}
+          />,
+          "scroll-reveal-item--card"
         );
       }
 
       const expandableChildren = routeContext.childRoutesByParentSlug.get(slug);
 
       if (pageSlug === "/" && expandableChildren && expandableChildren.length > 0) {
-        return (
+        return reveal(
           <div id={childPageBlockId(slug)} className="notion-page-group">
             <IntentPrefetchLink
               href={slug}
@@ -1058,7 +1110,7 @@ function Block({
         );
       }
 
-      return (
+      return reveal(
         <IntentPrefetchLink
           id={childPageBlockId(slug)}
           href={slug}
@@ -1116,7 +1168,6 @@ export function NotionRenderer({
   expandableRouteGroups,
   childPageCards,
   hiddenBlockIds,
-  priorityImageIds,
 }: {
   blocks: NotionBlock[];
   pageSlug?: string;
@@ -1124,17 +1175,15 @@ export function NotionRenderer({
   expandableRouteGroups?: ExpandableRouteGroups;
   childPageCards?: ChildPageCard[];
   hiddenBlockIds?: Set<string>;
-  priorityImageIds?: Set<string>;
 }) {
   const routeContext = buildRouteRenderContext(
     routeEntries,
     expandableRouteGroups,
-    priorityImageIds,
     childPageCards,
     hiddenBlockIds
   );
 
   return <>{renderBlocks({ blocks, pageSlug, routeContext })}</>;
+
+
 }
-
-

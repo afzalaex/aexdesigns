@@ -9,17 +9,17 @@ type NotionImageProps = {
   eager?: boolean;
 };
 
-export function NotionImage({
+function BaseNotionImage({
   primarySrc,
   fallbackSrc,
   alt,
   eager = false,
 }: NotionImageProps) {
-  const [src, setSrc] = useState(primarySrc);
+  const [src, setSrc] = useState(primarySrc || fallbackSrc || "");
 
   useEffect(() => {
-    setSrc(primarySrc);
-  }, [primarySrc]);
+    setSrc(primarySrc || fallbackSrc || "");
+  }, [primarySrc, fallbackSrc]);
 
   if (!src) {
     return null;
@@ -30,7 +30,7 @@ export function NotionImage({
       src={src}
       alt={alt}
       loading={eager ? "eager" : "lazy"}
-      fetchPriority={eager ? "high" : "low"}
+      fetchPriority={eager ? "high" : "auto"}
       decoding="async"
       onError={() => {
         if (fallbackSrc && src !== fallbackSrc) {
@@ -41,36 +41,10 @@ export function NotionImage({
   );
 }
 
-export function NotionCardImage({
-  primarySrc,
-  fallbackSrc,
-  alt,
-  eager = false,
-}: NotionImageProps) {
-  const [src, setSrc] = useState(primarySrc);
+export function NotionImage(props: NotionImageProps) {
+  return <BaseNotionImage {...props} />;
+}
 
-  useEffect(() => {
-    setSrc(primarySrc);
-  }, [primarySrc]);
-
-  if (!src) {
-    return null;
-  }
-
-  const handleError = () => {
-    if (fallbackSrc && src !== fallbackSrc) {
-      setSrc(fallbackSrc);
-    }
-  };
-
-  return (
-    <img
-      src={src}
-      alt={alt}
-      loading={eager ? "eager" : "lazy"}
-      fetchPriority={eager ? "high" : "low"}
-      decoding="async"
-      onError={handleError}
-    />
-  );
+export function NotionCardImage(props: NotionImageProps) {
+  return <BaseNotionImage {...props} eager={props.eager ?? true} />;
 }
