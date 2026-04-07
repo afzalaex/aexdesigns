@@ -14,7 +14,7 @@ import {
 
 const initialRevealOffsetPx = 120;
 const sequentialRevealGapMs = 70;
-const imageReadyTimeoutMs = 1400;
+const imageReadyTimeoutMs = 4000;
 const cardRevealObserverMarginPx = 120;
 const cardGridGapPx = 18;
 const cardGridMinWidthPx = 220;
