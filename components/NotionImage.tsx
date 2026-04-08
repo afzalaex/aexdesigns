@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { CardImageSequenceContext } from "./ScrollReveal";
 
 type NotionImageProps = {
   primarySrc: string;
@@ -15,15 +16,23 @@ function BaseNotionImage({
   alt,
   eager = false,
 }: NotionImageProps) {
+  const isVisibleInSequence = useContext(CardImageSequenceContext);
   const [src, setSrc] = useState(primarySrc || fallbackSrc || "");
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     setSrc(primarySrc || fallbackSrc || "");
   }, [primarySrc, fallbackSrc]);
 
+  useEffect(() => {
+    setIsLoaded(false); // Reset loading state when source changes
+  }, [src]);
+
   if (!src) {
     return null;
   }
+
+  const shouldReveal = isLoaded && isVisibleInSequence;
 
   return (
     <img
@@ -32,6 +41,23 @@ function BaseNotionImage({
       loading={eager ? "eager" : "lazy"}
       fetchPriority={eager ? "high" : "auto"}
       decoding="async"
+      style={{
+        opacity: shouldReveal ? 1 : 0,
+        transition: "opacity 0.5s ease-out",
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+      }}
+      onLoad={() => setIsLoaded(true)}
+      ref={(img) => {
+        if (img?.complete && img.naturalWidth > 0 && !isLoaded) {
+          window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
+              setIsLoaded(true);
+            });
+          });
+        }
+      }}
       onError={() => {
         if (fallbackSrc && src !== fallbackSrc) {
           setSrc(fallbackSrc);

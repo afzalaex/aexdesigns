@@ -12,7 +12,7 @@ import {
   type ReactNode,
 } from "react";
 
-const initialRevealOffsetPx = 120;
+const initialRevealOffsetPx = 800;
 const sequentialRevealGapMs = 70;
 const imageReadyTimeoutMs = 4000;
 const cardRevealObserverMarginPx = 120;
@@ -44,6 +44,8 @@ type RevealGateRegistrar = {
 };
 
 const RevealGateContext = createContext<RevealGateRegistrar | null>(null);
+
+export const CardImageSequenceContext = createContext<boolean>(true);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -430,6 +432,10 @@ export function SequentialCardGrid({
   const [activeIndex, setActiveIndex] = useState(-1);
   const [visibleCount, setVisibleCount] = useState(0);
   const [columnCount, setColumnCount] = useState(1);
+  
+  // Image sequencing state
+  const [activeImageIndex, setActiveImageIndex] = useState(-1);
+  const [visibleImageCount, setVisibleImageCount] = useState(0);
 
   // Register the gate with ScrollRevealScope (runs before the scope's
   // layout effect because children effects fire first in React).
@@ -507,9 +513,7 @@ export function SequentialCardGrid({
     };
   }, [childNodes.length]);
 
-  // Start the card sequence.
-  // • If inside ScrollRevealScope AND near viewport: wait for gate trigger.
-  // • Otherwise: use IntersectionObserver (below-fold or no scope).
+  // Start the card layout sequence.
   useEffect(() => {
     const grid = gridRef.current;
 
@@ -519,6 +523,7 @@ export function SequentialCardGrid({
 
     const startSequence = () => {
       setActiveIndex((current) => (current < 0 ? 0 : current));
+      setActiveImageIndex((current) => (current < 0 ? 0 : current));
     };
 
     // Inside a ScrollRevealScope and in the initial viewport: let the
@@ -562,7 +567,7 @@ export function SequentialCardGrid({
     };
   }, [childNodes.length, gateRegistrar, gateTriggered]);
 
-  // Resolve the gate's done-promise once every card is visible.
+  // Resolve the gate's done-promise once every card layout is visible.
   useEffect(() => {
     if (childNodes.length === 0 || activeIndex < childNodes.length) {
       return;
@@ -572,7 +577,7 @@ export function SequentialCardGrid({
     resolveCompletionRef.current = null;
   }, [activeIndex, childNodes.length]);
 
-  // Advance the activeIndex card by card.
+  // Advance the layout activeIndex card by card (Fast sequence).
   useEffect(() => {
     if (
       activeIndex < 0 ||
@@ -586,12 +591,6 @@ export function SequentialCardGrid({
     const currentIndex = activeIndex;
 
     const revealCurrentCard = async () => {
-      await waitForImageSourceReady(itemImageSources?.[currentIndex]);
-
-      if (cancelled) {
-        return;
-      }
-
       setVisibleCount((current) => Math.max(current, currentIndex + 1));
       await waitMs(sequentialRevealGapMs);
 
@@ -609,7 +608,41 @@ export function SequentialCardGrid({
     return () => {
       cancelled = true;
     };
-  }, [activeIndex, childNodes.length, itemImageSources]);
+  }, [activeIndex, childNodes.length]);
+
+  // Advance the image activeImageIndex card by card (Slow sequence waiting for downloads).
+  useEffect(() => {
+    if (
+      activeImageIndex < 0 ||
+      activeImageIndex >= childNodes.length ||
+      activeImageIndex < visibleImageCount
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    const currentIndex = activeImageIndex;
+
+    const revealCurrentImage = async () => {
+      await waitForImageSourceReady(itemImageSources?.[currentIndex]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setVisibleImageCount((current) => Math.max(current, currentIndex + 1));
+
+      setActiveImageIndex((current) =>
+        current === currentIndex ? currentIndex + 1 : current
+      );
+    };
+
+    void revealCurrentImage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeImageIndex, childNodes.length, itemImageSources, visibleImageCount]);
 
   if (childNodes.length === 0) {
     return null;
@@ -617,7 +650,6 @@ export function SequentialCardGrid({
 
   return (
     <>
-      {/* Invisible sentinel participates in ScrollRevealScope's chain */}
       <span
         ref={gateRef}
         data-scroll-reveal-item="true"
@@ -640,12 +672,13 @@ export function SequentialCardGrid({
         }}
       >
         {childNodes.map((child, index) => (
-          <SequentialCardGridItem
-            key={index}
-            isVisible={visibleCount > index}
-          >
-            {child}
-          </SequentialCardGridItem>
+          <CardImageSequenceContext.Provider key={index} value={visibleImageCount > index}>
+            <SequentialCardGridItem
+              isVisible={visibleCount > index}
+            >
+              {child}
+            </SequentialCardGridItem>
+          </CardImageSequenceContext.Provider>
         ))}
       </section>
     </>
