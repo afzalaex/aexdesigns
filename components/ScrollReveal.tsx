@@ -434,7 +434,6 @@ export function SequentialCardGrid({
   const [columnCount, setColumnCount] = useState(1);
   
   // Image sequencing state
-  const [activeImageIndex, setActiveImageIndex] = useState(-1);
   const [visibleImageCount, setVisibleImageCount] = useState(0);
 
   // Register the gate with ScrollRevealScope (runs before the scope's
@@ -523,7 +522,6 @@ export function SequentialCardGrid({
 
     const startSequence = () => {
       setActiveIndex((current) => (current < 0 ? 0 : current));
-      setActiveImageIndex((current) => (current < 0 ? 0 : current));
     };
 
     // Inside a ScrollRevealScope and in the initial viewport: let the
@@ -567,15 +565,15 @@ export function SequentialCardGrid({
     };
   }, [childNodes.length, gateRegistrar, gateTriggered]);
 
-  // Resolve the gate's done-promise once every card layout is visible.
+  // Resolve the gate's done-promise once every card image has faded in.
   useEffect(() => {
-    if (childNodes.length === 0 || activeIndex < childNodes.length) {
+    if (childNodes.length === 0 || visibleImageCount < childNodes.length) {
       return;
     }
 
     resolveCompletionRef.current?.();
     resolveCompletionRef.current = null;
-  }, [activeIndex, childNodes.length]);
+  }, [visibleImageCount, childNodes.length]);
 
   // Advance the layout activeIndex card by card (Fast sequence).
   useEffect(() => {
@@ -610,39 +608,37 @@ export function SequentialCardGrid({
     };
   }, [activeIndex, childNodes.length]);
 
-  // Advance the image activeImageIndex card by card (Slow sequence waiting for downloads).
+  // Reveal all images in the grid together once they are ready.
   useEffect(() => {
-    if (
-      activeImageIndex < 0 ||
-      activeImageIndex >= childNodes.length ||
-      activeImageIndex < visibleImageCount
-    ) {
+    // Only start if the grid layout sequence has started.
+    if (activeIndex < 0 || childNodes.length === 0 || visibleImageCount > 0) {
       return;
     }
 
     let cancelled = false;
-    const currentIndex = activeImageIndex;
 
-    const revealCurrentImage = async () => {
-      await waitForImageSourceReady(itemImageSources?.[currentIndex]);
+    const revealAllImages = async () => {
+      const sources = itemImageSources || [];
+      
+      // Wait for all images in parallel (with our 4s internal timeouts).
+      await Promise.all(
+        sources.map((source) => waitForImageSourceReady(source))
+      );
 
       if (cancelled) {
         return;
       }
 
-      setVisibleImageCount((current) => Math.max(current, currentIndex + 1));
-
-      setActiveImageIndex((current) =>
-        current === currentIndex ? currentIndex + 1 : current
-      );
+      // Flip them all to visible at once.
+      setVisibleImageCount(childNodes.length);
     };
 
-    void revealCurrentImage();
+    void revealAllImages();
 
     return () => {
       cancelled = true;
     };
-  }, [activeImageIndex, childNodes.length, itemImageSources, visibleImageCount]);
+  }, [activeIndex, childNodes.length, itemImageSources, visibleImageCount]);
 
   if (childNodes.length === 0) {
     return null;
