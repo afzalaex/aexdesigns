@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useContext } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { CardImageSequenceContext } from "./ScrollReveal";
 
 type NotionImageProps = {
@@ -16,23 +16,36 @@ function BaseNotionImage({
   alt,
   eager = false,
 }: NotionImageProps) {
-  const isVisibleInSequence = useContext(CardImageSequenceContext);
-  const [src, setSrc] = useState(primarySrc || fallbackSrc || "");
+  const imageSequence = useContext(CardImageSequenceContext);
+  const shouldLoad = imageSequence?.shouldLoad ?? true;
+  const shouldRevealInSequence = imageSequence?.shouldReveal ?? true;
+  const reportImageReady = imageSequence?.reportImageReady;
+  const [src, setSrc] = useState(
+    shouldLoad ? primarySrc || fallbackSrc || "" : ""
+  );
   const [isLoaded, setIsLoaded] = useState(false);
+  const hasReportedReadyRef = useRef(false);
 
   useEffect(() => {
-    setSrc(primarySrc || fallbackSrc || "");
-  }, [primarySrc, fallbackSrc]);
-
-  useEffect(() => {
-    setIsLoaded(false); // Reset loading state when source changes
-  }, [src]);
+    hasReportedReadyRef.current = false;
+    setIsLoaded(false);
+    setSrc(shouldLoad ? primarySrc || fallbackSrc || "" : "");
+  }, [shouldLoad, primarySrc, fallbackSrc]);
 
   if (!src) {
     return null;
   }
 
-  const shouldReveal = isLoaded && isVisibleInSequence;
+  const markImageReady = () => {
+    if (hasReportedReadyRef.current) {
+      return;
+    }
+
+    hasReportedReadyRef.current = true;
+    reportImageReady?.();
+  };
+
+  const shouldReveal = isLoaded && shouldRevealInSequence;
 
   return (
     <img
@@ -48,12 +61,16 @@ function BaseNotionImage({
         height: "100%",
         objectFit: "cover",
       }}
-      onLoad={() => setIsLoaded(true)}
+      onLoad={() => {
+        setIsLoaded(true);
+        markImageReady();
+      }}
       ref={(img) => {
         if (img?.complete && img.naturalWidth > 0 && !isLoaded) {
           window.requestAnimationFrame(() => {
             window.requestAnimationFrame(() => {
               setIsLoaded(true);
+              markImageReady();
             });
           });
         }
@@ -61,7 +78,12 @@ function BaseNotionImage({
       onError={() => {
         if (fallbackSrc && src !== fallbackSrc) {
           setSrc(fallbackSrc);
+          setIsLoaded(false);
+          return;
         }
+
+        markImageReady();
+        setSrc("");
       }}
     />
   );

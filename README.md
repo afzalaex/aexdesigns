@@ -56,10 +56,10 @@ http://localhost:3000/every-days
 - There is no active R2 or Cloudflare image migration path in the repo anymore.
 
 ### Sequencer & Scroll Reveal
-- Implemented natively via `ScrollRevealScope`, `ScrollRevealItem`, and `SequentialCardGrid` components.
-- Notion blocks, typography tools, and card layouts organically fade in via a deterministic tracking sequence (70ms stagger) preventing premature flicker.
-- Content situated deep below the viewport is natively monitored using an `IntersectionObserver` to trigger seamlessly when scrolled into view.
-- To seamlessly handle massive media, the sequencer forces a deliberate stagger hold until the network parses custom typography (`document.fonts.ready`) and large images, enforced by a graceful 4-second timeout limit.
+- Implemented natively via `ScrollRevealScope`, `ScrollRevealItem`, and `SequentialCardGrid`.
+- Initial viewport blocks still reveal top-to-bottom with a deterministic 70ms stagger after fonts settle.
+- Content below the fold is monitored with an `IntersectionObserver` and reveals when it approaches the viewport.
+- Child-page card grids render their full layout immediately, begin loading inside the initial reveal window, and any grids already in view fade their images in together once that opening batch settles.
 
 ### `/every-days`
 - The `/every-days` page combines local metadata from `public/data/collection-2026.json` with sketch files fetched live from the sibling `every-days-2026` repo / GitHub raw.

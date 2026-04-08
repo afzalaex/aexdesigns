@@ -3,6 +3,7 @@
 import {
   Children,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -16,38 +17,37 @@ const initialRevealOffsetPx = 800;
 const sequentialRevealGapMs = 70;
 const imageReadyTimeoutMs = 4000;
 const cardRevealObserverMarginPx = 120;
-const cardGridGapPx = 18;
-const cardGridMinWidthPx = 220;
-const mobileBreakpointPx = 900;
-const mobileCardGridColumns = 2;
+const gridImageLoadOffsetPx = initialRevealOffsetPx;
 
 type SequentialCardGridImageSource = {
   primarySrc?: string;
   fallbackSrc?: string;
 };
 
-// ─── Gate context ─────────────────────────────────────────────────────────────
-// ScrollRevealScope provides this. Each SequentialCardGrid registers a "gate":
-// an invisible sentinel that participates in the sequential reveal chain so
-// the grid only starts (and the next block only reveals) after the grid is done.
-
-type GateEntry = {
-  /** Called by ScrollRevealScope to kick off the card sequence. */
-  triggerStart: () => void;
-  /** Resolves when every card in the grid has been revealed. */
-  done: Promise<void>;
+type CardImageSequenceContextValue = {
+  shouldLoad: boolean;
+  shouldReveal: boolean;
+  reportImageReady: () => void;
 };
 
-type RevealGateRegistrar = {
-  register: (el: Element, entry: GateEntry) => void;
-  unregister: (el: Element) => void;
+type GridRevealEntry = {
+  settled: boolean;
 };
 
-const RevealGateContext = createContext<RevealGateRegistrar | null>(null);
+type GridRevealSequenceRegistrar = {
+  batchVersion: number;
+  register: (el: HTMLElement) => void;
+  unregister: (el: HTMLElement) => void;
+  markSettled: (el: HTMLElement) => void;
+  isInitialBatchMember: (el: HTMLElement) => boolean;
+  isInitialBatchReady: () => boolean;
+};
 
-export const CardImageSequenceContext = createContext<boolean>(true);
+export const CardImageSequenceContext =
+  createContext<CardImageSequenceContextValue | null>(null);
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+const GridRevealSequenceContext =
+  createContext<GridRevealSequenceRegistrar | null>(null);
 
 function getRevealTarget(item: HTMLElement): HTMLElement {
   const children = Array.from(item.children) as HTMLElement[];
@@ -63,12 +63,27 @@ function getRevealTarget(item: HTMLElement): HTMLElement {
   return item;
 }
 
-function isInInitialRevealZone(target: HTMLElement): boolean {
+function isWithinViewportOffset(
+  target: HTMLElement,
+  offsetPx: number
+): boolean {
   const rect = target.getBoundingClientRect();
   const viewportHeight =
     window.innerHeight || document.documentElement.clientHeight;
 
-  return rect.top <= viewportHeight + initialRevealOffsetPx;
+  return rect.top <= viewportHeight + offsetPx;
+}
+
+function isInInitialRevealZone(target: HTMLElement): boolean {
+  return isWithinViewportOffset(target, initialRevealOffsetPx);
+}
+
+function isInGridLoadZone(target: HTMLElement): boolean {
+  return isWithinViewportOffset(target, gridImageLoadOffsetPx);
+}
+
+function shouldSkipTargetImageWait(target: HTMLElement): boolean {
+  return target.dataset.scrollRevealSkipImageWait === "true";
 }
 
 function waitForImageReady(image: HTMLImageElement): Promise<void> {
@@ -106,6 +121,10 @@ function waitForImageReady(image: HTMLImageElement): Promise<void> {
 }
 
 function waitForTargetReady(target: HTMLElement): Promise<void> {
+  if (shouldSkipTargetImageWait(target)) {
+    return Promise.resolve();
+  }
+
   const image = target.querySelector("img");
 
   if (image instanceof HTMLImageElement) {
@@ -127,106 +146,107 @@ function waitMs(durationMs: number): Promise<void> {
   });
 }
 
-function isNearViewport(target: HTMLElement): boolean {
-  const rect = target.getBoundingClientRect();
-  const viewportHeight =
-    window.innerHeight || document.documentElement.clientHeight;
-
-  return rect.top <= viewportHeight + cardRevealObserverMarginPx;
-}
-
-function waitForImageSourceReady(
-  source?: SequentialCardGridImageSource
-): Promise<void> {
-  const candidates = [source?.primarySrc, source?.fallbackSrc].filter(
-    (candidate): candidate is string =>
-      typeof candidate === "string" && candidate.trim().length > 0
+function hasImageSource(source?: SequentialCardGridImageSource): boolean {
+  return (
+    (typeof source?.primarySrc === "string" &&
+      source.primarySrc.trim().length > 0) ||
+    (typeof source?.fallbackSrc === "string" &&
+      source.fallbackSrc.trim().length > 0)
   );
-
-  if (candidates.length === 0) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve) => {
-    let resolved = false;
-    let timeoutId: number | null = null;
-    let loader: HTMLImageElement | null = null;
-
-    const cleanupLoader = () => {
-      if (!loader) {
-        return;
-      }
-
-      loader.onload = null;
-      loader.onerror = null;
-      loader = null;
-    };
-
-    const finish = () => {
-      if (resolved) {
-        return;
-      }
-
-      resolved = true;
-      cleanupLoader();
-
-      if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
-      }
-
-      resolve();
-    };
-
-    const tryCandidate = (index: number) => {
-      if (resolved) {
-        return;
-      }
-
-      cleanupLoader();
-
-      if (index >= candidates.length) {
-        finish();
-        return;
-      }
-
-      loader = new window.Image();
-      loader.decoding = "async";
-      loader.onload = finish;
-      loader.onerror = () => tryCandidate(index + 1);
-      loader.src = candidates[index];
-
-      if (loader.complete) {
-        if (loader.naturalWidth > 0) {
-          finish();
-          return;
-        }
-
-        tryCandidate(index + 1);
-      }
-    };
-
-    timeoutId = window.setTimeout(finish, imageReadyTimeoutMs);
-    tryCandidate(0);
-  });
 }
-
-// ─── ScrollRevealScope ────────────────────────────────────────────────────────
 
 export function ScrollRevealScope({ children }: { children: ReactNode }) {
   const scopeRef = useRef<HTMLDivElement | null>(null);
-  // Map from gate-sentinel element → gate entry, populated by SequentialCardGrid
-  const gateMapRef = useRef(new Map<Element, GateEntry>());
+  const gridEntriesRef = useRef(new Map<HTMLElement, GridRevealEntry>());
+  const initialGridSetRef = useRef(new Set<HTMLElement>());
+  const initialBatchReadyRef = useRef(true);
+  const [batchVersion, setBatchVersion] = useState(0);
 
-  const registrar = useMemo<RevealGateRegistrar>(
-    () => ({
-      register: (el, entry) => {
-        gateMapRef.current.set(el, entry);
-      },
-      unregister: (el) => {
-        gateMapRef.current.delete(el);
-      },
-    }),
+  const updateInitialBatchReady = useCallback((forceVersionBump = false) => {
+    const initialGrids = Array.from(initialGridSetRef.current);
+    const nextReady =
+      initialGrids.length === 0 ||
+      initialGrids.every((grid) => gridEntriesRef.current.get(grid)?.settled);
+
+    if (!forceVersionBump && initialBatchReadyRef.current === nextReady) {
+      return;
+    }
+
+    initialBatchReadyRef.current = nextReady;
+    setBatchVersion((current) => current + 1);
+  }, []);
+
+  const registerInitialGridIfNeeded = useCallback((el: HTMLElement): boolean => {
+    if (initialGridSetRef.current.has(el) || !isInInitialRevealZone(el)) {
+      return false;
+    }
+
+    initialGridSetRef.current.add(el);
+    return true;
+  }, []);
+
+  const registerGrid = useCallback(
+    (el: HTMLElement) => {
+      gridEntriesRef.current.set(el, { settled: false });
+      const didAddInitialGrid = registerInitialGridIfNeeded(el);
+      updateInitialBatchReady(didAddInitialGrid);
+    },
+    [registerInitialGridIfNeeded, updateInitialBatchReady]
+  );
+
+  const unregisterGrid = useCallback(
+    (el: HTMLElement) => {
+      gridEntriesRef.current.delete(el);
+      initialGridSetRef.current.delete(el);
+      updateInitialBatchReady(true);
+    },
+    [updateInitialBatchReady]
+  );
+
+  const markGridSettled = useCallback(
+    (el: HTMLElement) => {
+      const entry = gridEntriesRef.current.get(el);
+
+      if (!entry || entry.settled) {
+        return;
+      }
+
+      entry.settled = true;
+
+      if (initialGridSetRef.current.has(el)) {
+        updateInitialBatchReady();
+      }
+    },
+    [updateInitialBatchReady]
+  );
+
+  const isInitialBatchMember = useCallback(
+    (el: HTMLElement) => initialGridSetRef.current.has(el),
     []
+  );
+
+  const isInitialBatchReady = useCallback(
+    () => initialBatchReadyRef.current,
+    []
+  );
+
+  const gridSequenceRegistrar = useMemo<GridRevealSequenceRegistrar>(
+    () => ({
+      batchVersion,
+      register: registerGrid,
+      unregister: unregisterGrid,
+      markSettled: markGridSettled,
+      isInitialBatchMember,
+      isInitialBatchReady,
+    }),
+    [
+      batchVersion,
+      isInitialBatchMember,
+      isInitialBatchReady,
+      markGridSettled,
+      registerGrid,
+      unregisterGrid,
+    ]
   );
 
   useLayoutEffect(() => {
@@ -240,8 +260,18 @@ export function ScrollRevealScope({ children }: { children: ReactNode }) {
       scope.querySelectorAll<HTMLElement>('[data-scroll-reveal-item="true"]')
     );
     const targets = items.map(getRevealTarget);
-    const initialTargets: Array<{ target: HTMLElement; item: HTMLElement }> =
-      [];
+    const initialTargets: HTMLElement[] = [];
+    const nextInitialGridSet = new Set(
+      Array.from(gridEntriesRef.current.keys()).filter((grid) =>
+        isInInitialRevealZone(grid)
+      )
+    );
+    const hasInitialGridMembershipChanged =
+      nextInitialGridSet.size !== initialGridSetRef.current.size ||
+      Array.from(nextInitialGridSet).some((grid) => !initialGridSetRef.current.has(grid));
+
+    initialGridSetRef.current = nextInitialGridSet;
+    updateInitialBatchReady(hasInitialGridMembershipChanged);
 
     for (const [index, target] of targets.entries()) {
       target.classList.add("scroll-reveal-target");
@@ -249,7 +279,7 @@ export function ScrollRevealScope({ children }: { children: ReactNode }) {
 
       if (isInInitialRevealZone(target)) {
         target.dataset.scrollPending = "true";
-        initialTargets.push({ target, item: items[index] });
+        initialTargets.push(target);
         continue;
       }
 
@@ -281,41 +311,17 @@ export function ScrollRevealScope({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     const runInitialReveal = async () => {
-      // Wait one frame so child effects (gate registrations) can run first.
       await waitFrame();
-      
-      // Wait for all critical fonts to load to prevent FOUT visual glitches during sequence
-      if ('fonts' in document) {
+
+      if ("fonts" in document) {
         await document.fonts.ready;
       }
 
-      for (const { target, item } of initialTargets) {
+      for (const target of initialTargets) {
         if (cancelled) {
           return;
         }
 
-        // Is this slot a card-grid gate?
-        const gateEntry = gateMapRef.current.get(item);
-
-        if (gateEntry) {
-          // Make the invisible sentinel "visible" (no visual effect).
-          target.classList.add("is-visible");
-          target.removeAttribute("data-scroll-pending");
-
-          // Kick off the card sequence and wait until every card is shown.
-          gateEntry.triggerStart();
-          await gateEntry.done;
-
-          if (cancelled) {
-            return;
-          }
-
-          // Small gap before the next block starts.
-          await waitMs(sequentialRevealGapMs);
-          continue;
-        }
-
-        // Regular block: wait for its image then reveal it.
         await waitForTargetReady(target);
 
         if (cancelled) {
@@ -333,19 +339,19 @@ export function ScrollRevealScope({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
       scrollObserver.disconnect();
+      initialGridSetRef.current = new Set();
+      initialBatchReadyRef.current = true;
     };
   }, []);
 
   return (
-    <RevealGateContext.Provider value={registrar}>
+    <GridRevealSequenceContext.Provider value={gridSequenceRegistrar}>
       <div ref={scopeRef} className="scroll-reveal-scope">
         {children}
       </div>
-    </RevealGateContext.Provider>
+    </GridRevealSequenceContext.Provider>
   );
 }
-
-// ─── ScrollRevealItem ─────────────────────────────────────────────────────────
 
 export function ScrollRevealItem({
   children,
@@ -363,56 +369,6 @@ export function ScrollRevealItem({
   );
 }
 
-// ─── SequentialCardGridItem ───────────────────────────────────────────────────
-
-function SequentialCardGridItem({
-  children,
-  isVisible,
-}: {
-  children: ReactNode;
-  isVisible: boolean;
-}) {
-  const [shouldRender, setShouldRender] = useState(isVisible);
-  const [isPresented, setIsPresented] = useState(false);
-
-  useEffect(() => {
-    if (!isVisible) {
-      return;
-    }
-
-    setShouldRender(true);
-  }, [isVisible]);
-
-  useLayoutEffect(() => {
-    if (!shouldRender) {
-      return;
-    }
-
-    const frameId = window.requestAnimationFrame(() => {
-      setIsPresented(true);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, [shouldRender]);
-
-  if (!shouldRender) {
-    return null;
-  }
-
-  return (
-    <div
-      className="scroll-reveal-item scroll-reveal-item--card"
-      data-scroll-reveal-visible={isPresented ? "true" : undefined}
-    >
-      {children}
-    </div>
-  );
-}
-
-// ─── SequentialCardGrid ───────────────────────────────────────────────────────
-
 export function SequentialCardGrid({
   children,
   itemImageSources,
@@ -420,99 +376,49 @@ export function SequentialCardGrid({
   children: ReactNode;
   itemImageSources?: SequentialCardGridImageSource[];
 }) {
-  const gateRegistrar = useContext(RevealGateContext);
-  const gateRef = useRef<HTMLSpanElement | null>(null);
-  const resolveCompletionRef = useRef<(() => void) | null>(null);
-
-  // Whether ScrollRevealScope has signalled this grid to start.
-  const [gateTriggered, setGateTriggered] = useState(false);
-
+  const gridSequenceRegistrar = useContext(GridRevealSequenceContext);
   const gridRef = useRef<HTMLElement | null>(null);
+  const readyImagesRef = useRef(new Set<number>());
+  const hasMarkedSettledRef = useRef(false);
   const childNodes = Children.toArray(children);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [visibleCount, setVisibleCount] = useState(0);
-  const [columnCount, setColumnCount] = useState(1);
-  
-  // Image sequencing state
-  const [visibleImageCount, setVisibleImageCount] = useState(0);
+  const imageSourceKey = (itemImageSources ?? [])
+    .map((source) => `${source?.primarySrc ?? ""}|${source?.fallbackSrc ?? ""}`)
+    .join("::");
+  let trackedImageCount = 0;
 
-  // Register the gate with ScrollRevealScope (runs before the scope's
-  // layout effect because children effects fire first in React).
-  useLayoutEffect(() => {
-    if (!gateRegistrar || !gateRef.current) {
-      return;
+  childNodes.forEach((_child, index) => {
+    if (hasImageSource(itemImageSources?.[index])) {
+      trackedImageCount += 1;
     }
+  });
 
-    const gateEl = gateRef.current;
+  const [shouldLoadImages, setShouldLoadImages] = useState(false);
+  const [readyImageCount, setReadyImageCount] = useState(0);
+  const [imagesSettled, setImagesSettled] = useState(trackedImageCount === 0);
+  const registerGrid = gridSequenceRegistrar?.register;
+  const unregisterGrid = gridSequenceRegistrar?.unregister;
 
-    const done = new Promise<void>((resolve) => {
-      resolveCompletionRef.current = resolve;
-    });
-
-    const entry: GateEntry = {
-      triggerStart: () => setGateTriggered(true),
-      done,
-    };
-
-    gateRegistrar.register(gateEl, entry);
-
-    return () => {
-      gateRegistrar.unregister(gateEl);
-    };
-  }, [gateRegistrar]);
-
-  // Column count from ResizeObserver.
   useLayoutEffect(() => {
     const grid = gridRef.current;
 
-    if (!grid || childNodes.length === 0) {
+    if (!grid || !registerGrid || !unregisterGrid) {
       return;
     }
 
-    const updateColumnCount = () => {
-      const width = grid.clientWidth;
-
-      if (width <= 0) {
-        return;
-      }
-
-      const nextColumnCount =
-        window.innerWidth <= mobileBreakpointPx
-          ? mobileCardGridColumns
-          : Math.max(
-              1,
-              Math.floor(
-                (width + cardGridGapPx) / (cardGridMinWidthPx + cardGridGapPx)
-              )
-            );
-
-      setColumnCount(Math.min(childNodes.length, nextColumnCount));
-    };
-
-    updateColumnCount();
-
-    if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", updateColumnCount);
-
-      return () => {
-        window.removeEventListener("resize", updateColumnCount);
-      };
-    }
-
-    const observer = new ResizeObserver(() => {
-      updateColumnCount();
-    });
-
-    observer.observe(grid);
-    window.addEventListener("resize", updateColumnCount);
+    registerGrid(grid);
 
     return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateColumnCount);
+      unregisterGrid(grid);
     };
-  }, [childNodes.length]);
+  }, [registerGrid, unregisterGrid]);
 
-  // Start the card layout sequence.
+  useEffect(() => {
+    readyImagesRef.current.clear();
+    hasMarkedSettledRef.current = false;
+    setReadyImageCount(0);
+    setImagesSettled(trackedImageCount === 0);
+  }, [childNodes.length, imageSourceKey, trackedImageCount]);
+
   useEffect(() => {
     const grid = gridRef.current;
 
@@ -520,27 +426,17 @@ export function SequentialCardGrid({
       return;
     }
 
-    const startSequence = () => {
-      setActiveIndex((current) => (current < 0 ? 0 : current));
+    const startLoading = () => {
+      setShouldLoadImages(true);
     };
 
-    // Inside a ScrollRevealScope and in the initial viewport: let the
-    // scope drive the start via the gate trigger.
-    if (gateRegistrar && isNearViewport(grid)) {
-      if (gateTriggered) {
-        startSequence();
-      }
-      return;
-    }
-
-    // Below the fold or no scope present: use viewport / IntersectionObserver.
-    if (isNearViewport(grid)) {
-      startSequence();
+    if (isInGridLoadZone(grid)) {
+      startLoading();
       return;
     }
 
     if (!("IntersectionObserver" in window)) {
-      startSequence();
+      startLoading();
       return;
     }
 
@@ -551,10 +447,10 @@ export function SequentialCardGrid({
         }
 
         observer.disconnect();
-        startSequence();
+        startLoading();
       },
       {
-        rootMargin: `${cardRevealObserverMarginPx}px 0px ${cardRevealObserverMarginPx}px 0px`,
+        rootMargin: `${gridImageLoadOffsetPx}px 0px ${gridImageLoadOffsetPx}px 0px`,
       }
     );
 
@@ -563,120 +459,101 @@ export function SequentialCardGrid({
     return () => {
       observer.disconnect();
     };
-  }, [childNodes.length, gateRegistrar, gateTriggered]);
+  }, [childNodes.length]);
 
-  // Resolve the gate's done-promise once every card image has faded in.
   useEffect(() => {
-    if (childNodes.length === 0 || visibleImageCount < childNodes.length) {
+    if (!shouldLoadImages || imagesSettled || trackedImageCount === 0) {
       return;
     }
 
-    resolveCompletionRef.current?.();
-    resolveCompletionRef.current = null;
-  }, [visibleImageCount, childNodes.length]);
+    const timeoutId = window.setTimeout(() => {
+      setImagesSettled(true);
+    }, imageReadyTimeoutMs);
 
-  // Advance the layout activeIndex card by card (Fast sequence).
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [imagesSettled, shouldLoadImages, trackedImageCount]);
+
   useEffect(() => {
+    if (!shouldLoadImages || imagesSettled || trackedImageCount === 0) {
+      return;
+    }
+
+    if (readyImageCount < trackedImageCount) {
+      return;
+    }
+
+    setImagesSettled(true);
+  }, [imagesSettled, readyImageCount, shouldLoadImages, trackedImageCount]);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+
     if (
-      activeIndex < 0 ||
-      activeIndex >= childNodes.length ||
-      activeIndex < visibleCount
+      !grid ||
+      !gridSequenceRegistrar ||
+      !imagesSettled ||
+      hasMarkedSettledRef.current
     ) {
       return;
     }
 
-    let cancelled = false;
-    const currentIndex = activeIndex;
+    hasMarkedSettledRef.current = true;
+    gridSequenceRegistrar.markSettled(grid);
+  }, [gridSequenceRegistrar, imagesSettled]);
 
-    const revealCurrentCard = async () => {
-      setVisibleCount((current) => Math.max(current, currentIndex + 1));
-      await waitMs(sequentialRevealGapMs);
+  const grid = gridRef.current;
+  const isInitialBatchMember =
+    !!grid && !!gridSequenceRegistrar?.isInitialBatchMember(grid);
+  const canRevealGrid =
+    shouldLoadImages &&
+    imagesSettled &&
+    (!isInitialBatchMember || !!gridSequenceRegistrar?.isInitialBatchReady());
 
-      if (cancelled) {
-        return;
-      }
-
-      setActiveIndex((current) =>
-        current === currentIndex ? currentIndex + 1 : current
-      );
-    };
-
-    void revealCurrentCard();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeIndex, childNodes.length]);
-
-  // Reveal all images in the grid together once they are ready.
-  useEffect(() => {
-    // Only start if the grid layout sequence has started.
-    if (activeIndex < 0 || childNodes.length === 0 || visibleImageCount > 0) {
+  const reportImageReady = (index: number) => {
+    if (!hasImageSource(itemImageSources?.[index])) {
       return;
     }
 
-    let cancelled = false;
+    const readyImages = readyImagesRef.current;
 
-    const revealAllImages = async () => {
-      const sources = itemImageSources || [];
-      
-      // Wait for all images in parallel (with our 4s internal timeouts).
-      await Promise.all(
-        sources.map((source) => waitForImageSourceReady(source))
-      );
+    if (readyImages.has(index)) {
+      return;
+    }
 
-      if (cancelled) {
-        return;
-      }
-
-      // Flip them all to visible at once.
-      setVisibleImageCount(childNodes.length);
-    };
-
-    void revealAllImages();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeIndex, childNodes.length, itemImageSources, visibleImageCount]);
+    readyImages.add(index);
+    setReadyImageCount(readyImages.size);
+  };
 
   if (childNodes.length === 0) {
     return null;
   }
 
   return (
-    <>
-      <span
-        ref={gateRef}
-        data-scroll-reveal-item="true"
-        data-card-grid-gate="true"
-        aria-hidden="true"
-        style={{
-          display: "block",
-          position: "absolute",
-          width: 0,
-          height: 0,
-          overflow: "hidden",
-          pointerEvents: "none",
-        }}
-      />
+    <div data-scroll-reveal-item="true" className="scroll-reveal-item">
       <section
         ref={gridRef}
         className="notion-card-grid"
-        style={{
-          gridTemplateColumns: `repeat(${Math.max(1, columnCount)}, minmax(0, 1fr))`,
-        }}
+        data-scroll-reveal-skip-image-wait="true"
       >
-        {childNodes.map((child, index) => (
-          <CardImageSequenceContext.Provider key={index} value={visibleImageCount > index}>
-            <SequentialCardGridItem
-              isVisible={visibleCount > index}
+        {childNodes.map((child, index) => {
+          const shouldRevealCard = canRevealGrid;
+
+          return (
+            <CardImageSequenceContext.Provider
+              key={index}
+              value={{
+                shouldLoad: shouldLoadImages,
+                shouldReveal: shouldRevealCard,
+                reportImageReady: () => reportImageReady(index),
+              }}
             >
               {child}
-            </SequentialCardGridItem>
-          </CardImageSequenceContext.Provider>
-        ))}
+            </CardImageSequenceContext.Provider>
+          );
+        })}
       </section>
-    </>
+    </div>
   );
 }

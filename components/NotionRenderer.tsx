@@ -723,11 +723,14 @@ function ChildPageCardLink({
         <span className="notion-page-card__title notion-semantic-string">
           {title}
         </span>
-        {description ? (
-          <span className="notion-page-card__description notion-semantic-string">
-            {description}
-          </span>
-        ) : null}
+        <span
+          className={`notion-page-card__description notion-semantic-string${
+            description ? "" : " notion-page-card__description--empty"
+          }`}
+          aria-hidden={description ? undefined : true}
+        >
+          {description ?? ""}
+        </span>
       </span>
     </IntentPrefetchLink>
   );
