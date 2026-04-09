@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
         destination: "/pixcapes",
         permanent: true,
       },
+      {
+        source: "/designassetpack1",
+        destination: "/dsp1",
+        permanent: true,
+      },
+      {
+        source: "/designassetpack2",
+        destination: "/dsp2",
+        permanent: true,
+      },
     ];
   },
 };

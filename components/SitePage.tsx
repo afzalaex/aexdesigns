@@ -155,6 +155,7 @@ function collectChildPageCardSeeds(
             title: route?.title ?? block.child_page.title,
             description: route?.description,
             thumbnailUrl: route?.thumbnailUrl,
+            thumbnailFallbackUrl: route?.thumbnailFallbackUrl,
             source: route?.source,
           });
         }
@@ -275,6 +276,15 @@ const topActionBySlug: Record<string, TopActionConfig> = {
     buttonHref: "https://store.aex.design/l/aexpective",
     buttonLabel: "Get-Free",
   },
+  "/dsp2": {
+    metaClassName: "license-one",
+    metaHref: "https://aex.design/license-one",
+    metaLabel: "License",
+    releaseYear: 2023,
+    buttonClassName: "buy-button",
+    buttonHref: "https://store.aex.design/l/designassetpack2",
+    buttonLabel: "Buy-$1",
+  },
   "/designassetpack2": {
     metaClassName: "license-one",
     metaHref: "https://aex.design/license-one",
@@ -300,6 +310,15 @@ const topActionBySlug: Record<string, TopActionConfig> = {
     releaseYear: 2021,
     buttonClassName: "get-button",
     buttonHref: "https://store.aex.design/l/aextract36",
+    buttonLabel: "Get-Free",
+  },
+  "/dsp1": {
+    metaClassName: "cc0",
+    metaHref: "https://creativecommons.org/share-your-work/public-domain/cc0/",
+    metaLabel: "License",
+    releaseYear: 2021,
+    buttonClassName: "get-button",
+    buttonHref: "https://store.aex.design/l//designassetpack1",
     buttonLabel: "Get-Free",
   },
   "/designassetpack1": {

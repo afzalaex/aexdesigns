@@ -22,7 +22,7 @@ export function resolveNotionImagePrimarySrc(block: NotionBlock): string | null 
     return block.image.external.url;
   }
 
-  return buildNotionImageProxyUrl(block.id, block.image.file.url);
+  return buildNotionImageProxyUrl(block.id);
 }
 
 export function resolveNotionImageFallbackSrc(
@@ -32,5 +32,5 @@ export function resolveNotionImageFallbackSrc(
     return undefined;
   }
 
-  return buildNotionImageProxyUrl(block.id);
+  return buildNotionImageProxyUrl(block.id, block.image.file.url);
 }

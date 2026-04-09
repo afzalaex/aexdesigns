@@ -15,6 +15,7 @@ export type RouteEntry = {
   title?: string;
   description?: string;
   thumbnailUrl?: string;
+  thumbnailFallbackUrl?: string;
   source: "database" | "map";
 };
 
@@ -24,6 +25,7 @@ export type ChildPageCardSeed = {
   title?: string;
   description?: string;
   thumbnailUrl?: string;
+  thumbnailFallbackUrl?: string;
   source?: RouteEntry["source"];
 };
 
@@ -436,7 +438,13 @@ function buildNotionImageProxyUrl(
   return `${proxyPath}?${searchParams.toString()}`;
 }
 
-function proxyCardThumbnailUrl(pageId: string, sourceUrl: string): string {
+function resolveCardThumbnailSources(
+  pageId: string,
+  sourceUrl: string
+): {
+  primaryUrl: string;
+  fallbackUrl?: string;
+} {
   try {
     const parsed = new URL(sourceUrl);
     const hostname = parsed.hostname.toLowerCase();
@@ -446,11 +454,20 @@ function proxyCardThumbnailUrl(pageId: string, sourceUrl: string): string {
         hostname === "prod-files-secure.s3.us-west-2.amazonaws.com" ||
         hostname.endsWith(".notion-static.com"));
 
-    return isNotionHosted
-      ? buildNotionImageProxyUrl(pageId, parsed.toString())
-      : sourceUrl;
+    if (isNotionHosted) {
+      return {
+        primaryUrl: buildNotionImageProxyUrl(pageId),
+        fallbackUrl: buildNotionImageProxyUrl(pageId, parsed.toString()),
+      };
+    }
+
+    return {
+      primaryUrl: sourceUrl,
+    };
   } catch {
-    return sourceUrl;
+    return {
+      primaryUrl: sourceUrl,
+    };
   }
 }
 
@@ -463,7 +480,7 @@ function resolveCardImagePrimarySrc(block: NotionBlock): string | undefined {
     return block.image.external.url;
   }
 
-  return buildNotionImageProxyUrl(block.id, block.image.file.url);
+  return buildNotionImageProxyUrl(block.id);
 }
 
 function resolveCardImageFallbackSrc(block: NotionBlock): string | undefined {
@@ -471,7 +488,7 @@ function resolveCardImageFallbackSrc(block: NotionBlock): string | undefined {
     return undefined;
   }
 
-  return buildNotionImageProxyUrl(block.id);
+  return buildNotionImageProxyUrl(block.id, block.image.file.url);
 }
 
 function getPropertyCheckbox(property: any, fallback = true): boolean {
@@ -519,7 +536,10 @@ function extractDescription(page: PageObjectResponse): string | undefined {
   return getPropertyText(descriptionProperty);
 }
 
-function extractThumbnailUrl(page: PageObjectResponse): string | undefined {
+function extractThumbnailSources(page: PageObjectResponse): {
+  thumbnailUrl?: string;
+  thumbnailFallbackUrl?: string;
+} {
   const properties = page.properties as Record<string, any>;
   const thumbnailProperty = findProperty(
     properties,
@@ -529,29 +549,58 @@ function extractThumbnailUrl(page: PageObjectResponse): string | undefined {
   const propertyUrl = getPropertyFileUrl(thumbnailProperty);
 
   if (propertyUrl) {
-    return proxyCardThumbnailUrl(page.id, propertyUrl);
+    const { primaryUrl, fallbackUrl } = resolveCardThumbnailSources(
+      page.id,
+      propertyUrl
+    );
+    return {
+      thumbnailUrl: primaryUrl,
+      thumbnailFallbackUrl: fallbackUrl,
+    };
   }
 
   const firstFilesPropertyUrl = getFirstFilesPropertyUrl(properties);
   if (firstFilesPropertyUrl) {
-    return proxyCardThumbnailUrl(page.id, firstFilesPropertyUrl);
+    const { primaryUrl, fallbackUrl } = resolveCardThumbnailSources(
+      page.id,
+      firstFilesPropertyUrl
+    );
+    return {
+      thumbnailUrl: primaryUrl,
+      thumbnailFallbackUrl: fallbackUrl,
+    };
   }
 
   if (page.cover?.type === "external") {
-    return proxyCardThumbnailUrl(page.id, page.cover.external.url);
+    const { primaryUrl, fallbackUrl } = resolveCardThumbnailSources(
+      page.id,
+      page.cover.external.url
+    );
+    return {
+      thumbnailUrl: primaryUrl,
+      thumbnailFallbackUrl: fallbackUrl,
+    };
   }
 
   if (page.cover?.type === "file") {
-    return proxyCardThumbnailUrl(page.id, page.cover.file.url);
+    const { primaryUrl, fallbackUrl } = resolveCardThumbnailSources(
+      page.id,
+      page.cover.file.url
+    );
+    return {
+      thumbnailUrl: primaryUrl,
+      thumbnailFallbackUrl: fallbackUrl,
+    };
   }
 
-  return undefined;
+  return {};
 }
 
 function buildChildPageCard(seed: ChildPageCardSeed): ChildPageCard {
   const normalizedTitle = seed.title?.trim();
   const normalizedDescription = seed.description?.trim();
   const normalizedThumbnailUrl = seed.thumbnailUrl?.trim();
+  const normalizedThumbnailFallbackUrl = seed.thumbnailFallbackUrl?.trim();
 
   return {
     pageId: normalizePageId(seed.pageId),
@@ -565,6 +614,10 @@ function buildChildPageCard(seed: ChildPageCardSeed): ChildPageCard {
       normalizedThumbnailUrl && normalizedThumbnailUrl.length > 0
         ? normalizedThumbnailUrl
         : undefined,
+    thumbnailFallbackUrl:
+      normalizedThumbnailFallbackUrl && normalizedThumbnailFallbackUrl.length > 0
+        ? normalizedThumbnailFallbackUrl
+        : undefined,
   };
 }
 
@@ -575,6 +628,7 @@ function mergeChildPageCard(
   const normalizedSeedTitle = seed.title?.trim();
   const normalizedSeedDescription = seed.description?.trim();
   const normalizedSeedThumbnailUrl = seed.thumbnailUrl?.trim();
+  const normalizedSeedThumbnailFallbackUrl = seed.thumbnailFallbackUrl?.trim();
 
   return {
     pageId: normalizePageId(seed.pageId),
@@ -594,7 +648,12 @@ function mergeChildPageCard(
       (normalizedSeedThumbnailUrl && normalizedSeedThumbnailUrl.length > 0
         ? normalizedSeedThumbnailUrl
         : undefined),
-    thumbnailFallbackUrl: card.thumbnailFallbackUrl,
+    thumbnailFallbackUrl:
+      card.thumbnailFallbackUrl ??
+      (normalizedSeedThumbnailFallbackUrl &&
+      normalizedSeedThumbnailFallbackUrl.length > 0
+        ? normalizedSeedThumbnailFallbackUrl
+        : undefined),
   };
 }
 
@@ -677,6 +736,10 @@ function loadStaticRoutes(): RouteEntry[] {
             : typeof entry.thumbnail === "string"
               ? entry.thumbnail
               : undefined,
+        thumbnailFallbackUrl:
+          typeof entry.thumbnailFallbackUrl === "string"
+            ? entry.thumbnailFallbackUrl
+            : undefined,
         source: "map" as const,
       };
     })
@@ -750,13 +813,17 @@ async function loadDatabaseRoutes(): Promise<RouteEntry[]> {
         descriptionPropertyName,
         ["description", "Description", "Summary", "Excerpt"]
       );
+      const { thumbnailUrl, thumbnailFallbackUrl } = extractThumbnailSources(
+        result
+      );
 
       routes.push({
         slug,
         pageId: normalizedPageId,
         title: extractTitle(result),
         description: getPropertyText(descriptionProperty),
-        thumbnailUrl: extractThumbnailUrl(result),
+        thumbnailUrl,
+        thumbnailFallbackUrl,
         source: "database",
       });
     }
