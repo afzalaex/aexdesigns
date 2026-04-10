@@ -322,6 +322,10 @@ h3.notion-heading {
   transition: opacity 120ms ease-in, border-color 120ms ease-in;
 }
 
+.notion-semantic-string .notion-italic {
+  opacity: 0.7;
+}
+
 .notion-semantic-string .link:hover,
 .notion-semantic-string .link:focus-visible {
   opacity: 1;

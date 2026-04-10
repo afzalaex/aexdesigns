@@ -642,7 +642,7 @@ function RichText({ items }: { items: RichTextItemResponse[] }) {
           node = <strong>{node}</strong>;
         }
         if (item.annotations.italic) {
-          node = <em>{node}</em>;
+          node = <em className={item.href ? undefined : "notion-italic"}>{node}</em>;
         }
         if (item.annotations.strikethrough) {
           node = <s>{node}</s>;
