@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 816,
+      "file": "816.js",
+      "name": "Checkbit",
+      "description": "Click to evolve"
+    },
+    {
       "id": 815,
-      "file": "815.js",
       "name": "Pixellular",
+      "file": "815.js",
       "description": "Click to evolve"
     },
     {
