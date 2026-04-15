@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 818,
+      "file": "818.js",
+      "name": "Rectrix",
+      "description": "Click to evolve"
+    },
+    {
       "id": 817,
-      "file": "817.js",
       "name": "Veilocity",
+      "file": "817.js",
       "description": "Scroll over to interact"
     },
     {
