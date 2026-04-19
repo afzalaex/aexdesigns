@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 821,
+      "file": "821.js",
+      "name": "Flowcus",
+      "description": "Hover over to change focus"
+    },
+    {
       "id": 820,
-      "file": "820.js",
       "name": "Linkture",
+      "file": "820.js",
       "description": "Click to evolve"
     },
     {
