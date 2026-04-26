@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 829,
+      "file": "829.js",
+      "name": "Sindex",
+      "description": "Click to evolve"
+    },
+    {
       "id": 828,
-      "file": "828.js",
       "name": "In-spire",
+      "file": "828.js",
       "description": "Click to evolve"
     },
     {
