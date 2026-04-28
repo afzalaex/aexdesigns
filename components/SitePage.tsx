@@ -1,4 +1,7 @@
-import { EveryDays2026Viewer } from "@/components/EveryDays2026Viewer";
+import {
+  EveryDays2026Viewer,
+  EveryDaysArtworkCounter,
+} from "@/components/EveryDays2026Viewer";
 import { NotionRenderer } from "@/components/NotionRenderer";
 import { ScrollRevealItem, ScrollRevealScope } from "@/components/ScrollReveal";
 import everyDaysCollection2026 from "@/public/data/collection-2026.json";
@@ -387,9 +390,7 @@ export async function SitePage({ page }: { page: NotionPageData }) {
           <ScrollRevealItem>
             <div className="site-top-actions">
               <div className="site-top-actions__meta">
-                <span className="site-top-stat">
-                  {`Artworks: ${everyDaysLatestArtworkId}`}
-                </span>
+                <EveryDaysArtworkCounter initialLatestId={everyDaysLatestArtworkId} />
                 <span className="site-top-actions__release">Since 2024</span>
               </div>
             </div>

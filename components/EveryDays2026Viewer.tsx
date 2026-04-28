@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import styles from "./EveryDays2026Viewer.module.css";
 
 const COLLECTION_URL = "/data/collection-2026.json";
@@ -8,6 +8,8 @@ const P5_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js";
 const SKETCH_BASE_URL =
   "https://raw.githubusercontent.com/afzalaex/every-days-2026/main/sketches";
 const LOADER_MIN_VISIBLE_MS = 180;
+const RESUME_REFRESH_DEBOUNCE_MS = 15_000;
+const COLLECTION_REFRESH_EVENT = "aex:every-days-collection";
 
 type PoweredByLink = {
   href: string;
@@ -48,6 +50,10 @@ type Artwork = {
 
 type CollectionResponse = {
   artworks?: unknown;
+};
+
+type CollectionRefreshDetail = {
+  latestId: number | null;
 };
 
 type FrameState = "idle" | "loading" | "ready" | "error";
@@ -107,9 +113,104 @@ function normalizeCollection(data: unknown): Artwork[] {
     .sort((a, b) => a.id - b.id);
 }
 
+function getLatestArtworkId(artworks: Artwork[]): number | null {
+  const latestArtwork = artworks[artworks.length - 1];
+  return latestArtwork ? latestArtwork.id : null;
+}
+
+function areCollectionsEqual(first: Artwork[], second: Artwork[]): boolean {
+  if (first.length !== second.length) {
+    return false;
+  }
+
+  return first.every((artwork, index) => {
+    const otherArtwork = second[index];
+
+    return (
+      otherArtwork !== undefined &&
+      artwork.id === otherArtwork.id &&
+      artwork.name === otherArtwork.name &&
+      artwork.file === otherArtwork.file &&
+      artwork.description === otherArtwork.description
+    );
+  });
+}
+
+async function fetchCollection(): Promise<Artwork[]> {
+  const url = `${COLLECTION_URL}?t=${Date.now()}`;
+  const response = await fetch(url, { cache: "no-store" });
+
+  if (!response.ok) {
+    throw new Error(`Collection request failed with ${response.status}.`);
+  }
+
+  return normalizeCollection((await response.json()) as unknown);
+}
+
+function emitCollectionRefresh(artworks: Artwork[]): void {
+  window.dispatchEvent(
+    new CustomEvent<CollectionRefreshDetail>(COLLECTION_REFRESH_EVENT, {
+      detail: {
+        latestId: getLatestArtworkId(artworks),
+      },
+    })
+  );
+}
+
 function formatArtworkLabel(artwork: Artwork): string {
   const name = artwork.name.trim().length > 0 ? artwork.name.trim() : "Untitled";
   return `${name} #${artwork.id}`;
+}
+
+function usePageResumeRefresh(onRefresh: () => void): void {
+  useEffect(() => {
+    function refreshIfVisible() {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      onRefresh();
+    }
+
+    document.addEventListener("visibilitychange", refreshIfVisible);
+    window.addEventListener("focus", refreshIfVisible);
+    window.addEventListener("pageshow", refreshIfVisible);
+
+    return () => {
+      document.removeEventListener("visibilitychange", refreshIfVisible);
+      window.removeEventListener("focus", refreshIfVisible);
+      window.removeEventListener("pageshow", refreshIfVisible);
+    };
+  }, [onRefresh]);
+}
+
+export function EveryDaysArtworkCounter({
+  initialLatestId,
+}: {
+  initialLatestId: number;
+}) {
+  const [latestId, setLatestId] = useState(initialLatestId);
+
+  useEffect(() => {
+    function handleCollectionRefresh(event: Event) {
+      const detail = (event as CustomEvent<CollectionRefreshDetail>).detail;
+
+      if (typeof detail?.latestId === "number") {
+        setLatestId(detail.latestId);
+      }
+    }
+
+    window.addEventListener(COLLECTION_REFRESH_EVENT, handleCollectionRefresh);
+    return () => {
+      window.removeEventListener(COLLECTION_REFRESH_EVENT, handleCollectionRefresh);
+    };
+  }, []);
+
+  return (
+    <span className="site-top-stat" aria-live="polite">
+      {`Artworks: ${latestId}`}
+    </span>
+  );
 }
 
 function EveryDaysLoadingIcon() {
@@ -342,6 +443,9 @@ export function EveryDays2026Viewer() {
   const selectorRef = useRef<HTMLDivElement | null>(null);
   const loadingStartedAtRef = useRef<number | null>(null);
   const frameTransitionTimerRef = useRef<number | null>(null);
+  const shouldFollowLatestRef = useRef(true);
+  const lastCollectionRefreshAtRef = useRef(0);
+  const collectionRequestIdRef = useRef(0);
 
   function clearPendingFrameTransition() {
     if (frameTransitionTimerRef.current !== null) {
@@ -379,58 +483,86 @@ export function EveryDays2026Viewer() {
     }, remaining);
   }
 
-  useEffect(() => {
-    let cancelled = false;
+  const applyCollection = useCallback((nextArtworks: Artwork[]) => {
+    const latestId = getLatestArtworkId(nextArtworks);
 
-    async function loadCollection() {
-      try {
-        const response = await fetch(COLLECTION_URL, { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error(`Collection request failed with ${response.status}.`);
-        }
+    setArtworks((currentArtworks) =>
+      areCollectionsEqual(currentArtworks, nextArtworks)
+        ? currentArtworks
+        : nextArtworks
+    );
+    setCollectionError(
+      nextArtworks.length === 0 ? "No 2026 artworks were found." : null
+    );
+    setSelectedId((current) => {
+      if (latestId === null) {
+        shouldFollowLatestRef.current = true;
+        return null;
+      }
 
-        const data = (await response.json()) as unknown;
-        const nextArtworks = normalizeCollection(data);
+      const currentStillExists =
+        current !== null && nextArtworks.some((artwork) => artwork.id === current);
+      const nextId =
+        currentStillExists && !shouldFollowLatestRef.current ? current : latestId;
 
-        if (cancelled) {
-          return;
-        }
+      shouldFollowLatestRef.current = nextId === latestId;
+      return nextId;
+    });
+    emitCollectionRefresh(nextArtworks);
+  }, []);
 
-        setArtworks(nextArtworks);
-        setCollectionError(
-          nextArtworks.length === 0 ? "No 2026 artworks were found." : null
-        );
-        setIsCollectionLoading(false);
-        setSelectedId((current) => {
-          if (
-            current !== null &&
-            nextArtworks.some((artwork) => artwork.id === current)
-          ) {
-            return current;
+  const loadCollection = useCallback(
+    (options: { silent?: boolean; force?: boolean } = {}) => {
+      const now = Date.now();
+
+      if (
+        options.silent &&
+        !options.force &&
+        now - lastCollectionRefreshAtRef.current < RESUME_REFRESH_DEBOUNCE_MS
+      ) {
+        return;
+      }
+
+      lastCollectionRefreshAtRef.current = now;
+      const requestId = collectionRequestIdRef.current + 1;
+      collectionRequestIdRef.current = requestId;
+
+      void fetchCollection()
+        .then((nextArtworks) => {
+          if (collectionRequestIdRef.current !== requestId) {
+            return;
           }
 
-          const latestArtwork = nextArtworks[nextArtworks.length - 1];
-          return latestArtwork ? latestArtwork.id : null;
+          applyCollection(nextArtworks);
+          setIsCollectionLoading(false);
+        })
+        .catch((error) => {
+          if (collectionRequestIdRef.current !== requestId) {
+            return;
+          }
+
+          console.error("Failed to load 2026 collection:", error);
+          if (!options.silent) {
+            setArtworks([]);
+            setSelectedId(null);
+            setCollectionError("Unable to load the 2026 collection.");
+          }
+
+          setIsCollectionLoading(false);
         });
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
+    },
+    [applyCollection]
+  );
 
-        console.error("Failed to load 2026 collection:", error);
-        setArtworks([]);
-        setSelectedId(null);
-        setIsCollectionLoading(false);
-        setCollectionError("Unable to load the 2026 collection.");
-      }
-    }
+  useEffect(() => {
+    loadCollection({ force: true });
+  }, [loadCollection]);
 
-    loadCollection();
+  const refreshCollectionOnResume = useCallback(() => {
+    loadCollection({ silent: true });
+  }, [loadCollection]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  usePageResumeRefresh(refreshCollectionOnResume);
 
   useEffect(() => {
     if (selectedId === null) {
@@ -623,6 +755,8 @@ export function EveryDays2026Viewer() {
                     aria-selected={isSelected}
                     className={`${styles.selectorOption}${isSelected ? ` ${styles.selectorOptionActive}` : ""}`}
                     onClick={() => {
+                      shouldFollowLatestRef.current =
+                        artwork.id === getLatestArtworkId(artworks);
                       setSelectedId(artwork.id);
                       setIsSelectorOpen(false);
                     }}
