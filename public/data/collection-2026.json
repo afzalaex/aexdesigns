@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 832,
+      "file": "832.js",
+      "name": "Movsaic",
+      "description": "Click & drag to move the mosaic"
+    },
+    {
       "id": 831,
-      "file": "831.js",
       "name": "Mondiff",
+      "file": "831.js",
       "description": "Click to evolve"
     },
     {
