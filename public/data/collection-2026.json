@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 834,
+      "file": "834.js",
+      "name": "Cuphere",
+      "description": "Click to enhance"
+    },
+    {
       "id": 833,
-      "file": "833.js",
       "name": "Clusture",
+      "file": "833.js",
       "description": "Click to evolve"
     },
     {
