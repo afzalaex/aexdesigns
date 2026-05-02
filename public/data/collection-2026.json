@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 835,
+      "file": "835.js",
+      "name": "Radience",
+      "description": "Hover over to evolve"
+    },
+    {
       "id": 834,
-      "file": "834.js",
       "name": "Cuphere",
+      "file": "834.js",
       "description": "Click to enhance"
     },
     {
