@@ -208,6 +208,12 @@ export function SiteBreadcrumbBar() {
 }
 
 export function SiteSocialFooter() {
+  const pathname = usePathname() ?? "/";
+
+  if (normalizeSlug(pathname) === "/") {
+    return null;
+  }
+
   return (
     <footer className="site-social-footer">
       <div className="site-social-footer__content">
