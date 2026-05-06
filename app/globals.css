@@ -46,6 +46,8 @@
   --padding-right-mobile: calc(env(safe-area-inset-right) + 24px);
   --padding-left-mobile: calc(env(safe-area-inset-left) + 24px);
   --navbar-height: 71px;
+  --site-footer-height: 42px;
+  --site-footer-total-height: calc(var(--site-footer-height) + env(safe-area-inset-bottom));
   --navbar-shadow: none;
   --page-display: flex;
   --content-right-edge: max(20px, calc((100vw - var(--layout-max-width)) / 2));
@@ -121,7 +123,146 @@ a {
 }
 
 .site-content:not(.page__index) {
-  padding-bottom: 20px;
+  padding-bottom: calc(20px + var(--site-footer-total-height));
+}
+
+.site-footer-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9000;
+  height: var(--site-footer-total-height);
+  padding-bottom: env(safe-area-inset-bottom);
+  color: #fff;
+  background: #000;
+  border-top: 0;
+  box-shadow: none;
+}
+
+.site-footer-nav__content {
+  width: 100%;
+  max-width: var(--layout-max-width);
+  height: var(--site-footer-height);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: max(var(--navbar-inline-pad), env(safe-area-inset-left));
+  padding-right: max(var(--navbar-inline-pad), env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.site-footer-nav__breadcrumbs {
+  height: 30px;
+  min-width: 0;
+  width: max-content;
+  max-width: calc(100% - 132px);
+  flex: 0 1 auto;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.site-footer-nav__breadcrumb-list {
+  height: 100%;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.site-footer-nav__breadcrumb-item {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.site-footer-nav__breadcrumb-item:last-child {
+  flex: 1 1 auto;
+}
+
+.site-footer-nav__breadcrumb-separator {
+  flex: 0 0 auto;
+  margin-left: 7px;
+  margin-right: 7px;
+  font-size: 0.72rem;
+  line-height: 1;
+  opacity: 0.45;
+}
+
+.site-footer-nav__breadcrumb-label {
+  min-width: 0;
+  max-width: 100%;
+  display: inline-block;
+  overflow: hidden;
+  color: inherit;
+  font-size: 0.72rem;
+  line-height: 1;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  opacity: 0.64;
+  border: 1px solid transparent;
+  padding: 2px 2px 3px;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in;
+}
+
+a.site-footer-nav__breadcrumb-label:hover,
+a.site-footer-nav__breadcrumb-label:focus-visible {
+  opacity: 1;
+  border-color: #fff;
+  outline: none;
+}
+
+.site-footer-nav__breadcrumb-label.is-current {
+  opacity: 1;
+}
+
+.site-footer-nav__social-links {
+  height: 30px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+.site-footer-nav__social-link {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.72;
+  border: 1px solid transparent;
+  transition: opacity 120ms ease-in, border-color 120ms ease-in;
+}
+
+.site-footer-nav__social-link:hover,
+.site-footer-nav__social-link:focus-visible {
+  opacity: 1;
+  border-color: #fff;
+  outline: none;
+}
+
+.site-footer-nav__social-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  object-fit: contain;
 }
 
 .site-navbar {
@@ -1054,7 +1195,7 @@ figure.notion-embed {
 
 .error-shell {
   width: 100%;
-  min-height: calc(100dvh - var(--navbar-height));
+  min-height: calc(100dvh - var(--navbar-height) - var(--site-footer-total-height));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1124,6 +1265,26 @@ figure.notion-embed {
   .notion-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+  }
+
+  .site-footer-nav__content {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    gap: 10px;
+  }
+
+  .site-footer-nav__breadcrumb-label {
+    font-size: 0.68rem;
+  }
+
+  .site-footer-nav__social-link {
+    width: 23px;
+    height: 23px;
+  }
+
+  .site-footer-nav__social-icon {
+    width: 16px;
+    height: 16px;
   }
 
   .aex-type-tester__input {

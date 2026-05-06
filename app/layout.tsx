@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Mono } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 import { SiteNav } from "@/components/SiteNav";
 import "./globals.css";
 
@@ -68,6 +69,7 @@ export default function RootLayout({
           <SiteNav />
           <div className="site-content-wrapper">{children}</div>
         </div>
+        <SiteFooterNav />
         <Analytics />
         <Script src="https://visitoralerts.com/tracker.js" strategy="lazyOnload" />
       </body>
