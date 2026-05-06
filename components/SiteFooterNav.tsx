@@ -179,7 +179,7 @@ export function SiteBreadcrumbBar() {
               <li className="site-breadcrumb-bar__item" key={breadcrumb.href}>
                 {index > 0 ? (
                   <span className="site-breadcrumb-bar__separator" aria-hidden="true">
-                    /
+                    ›
                   </span>
                 ) : null}
                 {isCurrent ? (

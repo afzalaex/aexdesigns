@@ -120,9 +120,15 @@ a {
   padding-bottom: 0;
 }
 
+@keyframes site-chrome-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 .site-breadcrumb-bar {
   width: 100%;
   color: #fff;
+  animation: site-chrome-fadein 220ms ease-out 80ms both;
 }
 
 .site-breadcrumb-bar__content {
@@ -200,6 +206,7 @@ a.site-breadcrumb-bar__label:focus-visible {
   width: 100%;
   color: #fff;
   padding-top: 24px;
+  animation: site-chrome-fadein 220ms ease-out 80ms both;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
@@ -831,6 +838,11 @@ h3.notion-heading {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .site-breadcrumb-bar,
+  .site-social-footer {
+    animation: none;
+  }
+
   .scroll-reveal-item > * {
     transform: none;
   }
