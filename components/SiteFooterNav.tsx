@@ -215,7 +215,7 @@ export function SiteSocialFooter() {
     setVisible(false);
     const handler = () => setVisible(true);
     window.addEventListener("site-reveal-done", handler, { once: true });
-    const timer = window.setTimeout(() => setVisible(true), 700);
+    const timer = window.setTimeout(() => setVisible(true), 5000);
     return () => {
       window.removeEventListener("site-reveal-done", handler);
       window.clearTimeout(timer);
