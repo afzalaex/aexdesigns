@@ -159,7 +159,7 @@ function buildBreadcrumbs(pathname: string): BreadcrumbItem[] {
   return breadcrumbs;
 }
 
-export function SiteFooterNav() {
+export function SiteBreadcrumbBar() {
   const pathname = usePathname() ?? "/";
   const breadcrumbs = useMemo(() => buildBreadcrumbs(pathname), [pathname]);
 
@@ -168,45 +168,53 @@ export function SiteFooterNav() {
   }
 
   return (
-    <footer className="site-footer-nav">
-      <div className="site-footer-nav__content">
-        <nav className="site-footer-nav__breadcrumbs" aria-label="Breadcrumb">
-          <ol className="site-footer-nav__breadcrumb-list">
-            {breadcrumbs.map((breadcrumb, index) => {
-              const isCurrent = index === breadcrumbs.length - 1;
+    <nav className="site-breadcrumb-bar" aria-label="Breadcrumb">
+      <div className="site-breadcrumb-bar__content">
+        <div className="site-breadcrumb-bar__tag">
+        <ol className="site-breadcrumb-bar__list">
+          {breadcrumbs.map((breadcrumb, index) => {
+            const isCurrent = index === breadcrumbs.length - 1;
 
-              return (
-                <li className="site-footer-nav__breadcrumb-item" key={breadcrumb.href}>
-                  {index > 0 ? (
-                    <span className="site-footer-nav__breadcrumb-separator" aria-hidden="true">
-                      /
-                    </span>
-                  ) : null}
-                  {isCurrent ? (
-                    <span
-                      className="site-footer-nav__breadcrumb-label is-current"
-                      aria-current="page"
-                    >
-                      {breadcrumb.label}
-                    </span>
-                  ) : (
-                    <IntentPrefetchLink
-                      className="site-footer-nav__breadcrumb-label"
-                      href={breadcrumb.href}
-                    >
-                      {breadcrumb.label}
-                    </IntentPrefetchLink>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </nav>
+            return (
+              <li className="site-breadcrumb-bar__item" key={breadcrumb.href}>
+                {index > 0 ? (
+                  <span className="site-breadcrumb-bar__separator" aria-hidden="true">
+                    /
+                  </span>
+                ) : null}
+                {isCurrent ? (
+                  <span
+                    className="site-breadcrumb-bar__label is-current"
+                    aria-current="page"
+                  >
+                    {breadcrumb.label}
+                  </span>
+                ) : (
+                  <IntentPrefetchLink
+                    className="site-breadcrumb-bar__label"
+                    href={breadcrumb.href}
+                  >
+                    {breadcrumb.label}
+                  </IntentPrefetchLink>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        </div>
+      </div>
+    </nav>
+  );
+}
 
-        <nav className="site-footer-nav__social-links" aria-label="Social links">
+export function SiteSocialFooter() {
+  return (
+    <footer className="site-social-footer">
+      <div className="site-social-footer__content">
+        <nav className="site-social-footer__links" aria-label="Social links">
           {socialLinks.map((link) => (
             <a
-              className="site-footer-nav__social-link"
+              className="site-social-footer__link"
               href={link.href}
               key={link.href}
               target="_blank"
@@ -214,12 +222,12 @@ export function SiteFooterNav() {
               aria-label={link.label}
             >
               <img
-                className="site-footer-nav__social-icon"
+                className="site-social-footer__icon"
                 src={link.icon}
                 alt=""
                 aria-hidden="true"
-                width={18}
-                height={18}
+                width={20}
+                height={20}
               />
             </a>
           ))}
