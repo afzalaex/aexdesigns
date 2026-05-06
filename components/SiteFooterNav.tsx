@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import routeMap from "@/content/route-map.json";
 import { IntentPrefetchLink } from "./IntentPrefetchLink";
@@ -209,13 +209,28 @@ export function SiteBreadcrumbBar() {
 
 export function SiteSocialFooter() {
   const pathname = usePathname() ?? "/";
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setVisible(false);
+    const handler = () => setVisible(true);
+    window.addEventListener("site-reveal-done", handler, { once: true });
+    const timer = window.setTimeout(() => setVisible(true), 700);
+    return () => {
+      window.removeEventListener("site-reveal-done", handler);
+      window.clearTimeout(timer);
+    };
+  }, [pathname]);
 
   if (normalizeSlug(pathname) === "/") {
     return null;
   }
 
   return (
-    <footer className="site-social-footer">
+    <footer
+      className="site-social-footer"
+      style={{ opacity: visible ? 1 : 0, transition: visible ? "opacity 220ms ease-out" : "none" }}
+    >
       <div className="site-social-footer__content">
         <nav className="site-social-footer__links" aria-label="Social links">
           {socialLinks.map((link) => (

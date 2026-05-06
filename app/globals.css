@@ -177,6 +177,7 @@ a {
   margin-right: 7px;
   font-size: 0.78rem;
   line-height: 1;
+  padding: 2px 0 3px;
   opacity: 1;
 }
 
@@ -206,7 +207,6 @@ a.site-breadcrumb-bar__label:focus-visible {
   width: 100%;
   color: #fff;
   padding-top: 24px;
-  animation: site-chrome-fadein 220ms ease-out 80ms both;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
@@ -838,8 +838,7 @@ h3.notion-heading {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-breadcrumb-bar,
-  .site-social-footer {
+  .site-breadcrumb-bar {
     animation: none;
   }
 

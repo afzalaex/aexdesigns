@@ -332,6 +332,10 @@ export function ScrollRevealScope({ children }: { children: ReactNode }) {
         target.removeAttribute("data-scroll-pending");
         await waitMs(sequentialRevealGapMs);
       }
+
+      if (!cancelled) {
+        window.dispatchEvent(new CustomEvent("site-reveal-done"));
+      }
     };
 
     void runInitialReveal();
