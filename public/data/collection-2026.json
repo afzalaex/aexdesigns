@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 840,
+      "file": "840.js",
+      "name": "Rectenza",
+      "description": "Click to evolve"
+    },
+    {
       "id": 839,
-      "file": "839.js",
       "name": "Beatense",
+      "file": "839.js",
       "description": ""
     },
     {
@@ -244,7 +250,7 @@
       "id": 799,
       "name": "Unstill",
       "file": "799.js",
-      "description": "Click & holde to make it move"
+      "description": "Click & hold to make it move"
     },
     {
       "id": 798,
