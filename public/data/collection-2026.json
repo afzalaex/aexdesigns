@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 841,
+      "file": "841.js",
+      "name": "Directangle",
+      "description": "Click to evolve"
+    },
+    {
       "id": 840,
-      "file": "840.js",
       "name": "Rectenza",
+      "file": "840.js",
       "description": "Click to evolve"
     },
     {
