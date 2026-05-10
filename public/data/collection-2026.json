@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 842,
+      "file": "842.js",
+      "name": "Framatrix",
+      "description": "Click to evolve"
+    },
+    {
       "id": 841,
-      "file": "841.js",
       "name": "Directangle",
+      "file": "841.js",
       "description": "Click to evolve"
     },
     {
