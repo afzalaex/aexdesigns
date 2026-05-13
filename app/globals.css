@@ -127,8 +127,8 @@ a {
 
 .site-breadcrumb-bar {
   width: 100%;
-  color: #fff;
-  animation: site-chrome-fadein 220ms ease-out 80ms both;
+  color: rgba(255, 255, 255, 0.7);
+  animation: site-chrome-fadein 220ms ease-out 80ms backwards;
 }
 
 .site-breadcrumb-bar__content {
@@ -145,8 +145,7 @@ a {
   height: 28px;
   max-width: 100%;
   min-width: 0;
-  border: 1px solid #fff;
-  padding: 0 10px;
+  padding: 0;
 }
 
 .site-breadcrumb-bar__list {
@@ -194,11 +193,14 @@ a {
   opacity: 1;
   border: 1px solid transparent;
   padding: 2px 2px 3px;
-  transition: border-color 120ms ease-in;
+  transition:
+    border-color 120ms ease-in,
+    color 120ms ease-in;
 }
 
 a.site-breadcrumb-bar__label:hover,
 a.site-breadcrumb-bar__label:focus-visible {
+  color: #fff;
   border-color: #fff;
   outline: none;
 }
