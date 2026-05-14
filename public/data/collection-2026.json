@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 847,
+      "file": "847.js",
+      "name": "Shardiameter",
+      "description": "Click to evolve"
+    },
+    {
       "id": 846,
-      "file": "846.js",
       "name": "Cosmap",
+      "file": "846.js",
       "description": "Click to evolve"
     },
     {
