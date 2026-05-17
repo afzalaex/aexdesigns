@@ -202,9 +202,26 @@ If no marker is present, the viewer is rendered above the page content.
 ### Typical Update Flow
 
 1. Add and push the new sketch file in the `every-days-2026` repo.
-2. Update [`public/data/collection-2026.json`](./public/data/collection-2026.json) in this repo.
+2. Run `npm run sync:collection-2026` in this repo to add the next metadata entry.
 3. Test `/every-days` locally.
 4. Push this repo to trigger deployment of the metadata change.
+
+The sync script reads the current maximum ID from
+[`public/data/collection-2026.json`](./public/data/collection-2026.json), adds
+the next integer ID automatically, and keeps the file ordered newest first. It
+also validates the existing IDs before writing, including duplicate IDs, gaps in
+the sequence, and mismatched `id`/`file` pairs. If the current newest entry still
+has a blank `name`, the script stops instead of adding another placeholder.
+
+Validation-only commands:
+
+```sh
+npm run sync:collection-2026 -- --check
+npm run sync:collection-2026 -- --dry-run
+```
+
+Use `--check` to verify the current JSON without writing. Use `--dry-run` to see
+which ID the next normal sync would add.
 
 ## Scripts
 
@@ -220,7 +237,8 @@ npm run start
 Content utilities:
 
 ```sh
-npm run sync:collection-2026 -- <latest-id>
+npm run sync:collection-2026
+npm run sync:collection-2026 -- --check
 npm run seed:route-map
 npm run fill:route-map-live
 ```
