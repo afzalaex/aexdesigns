@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 859,
+      "file": "859.js",
+      "name": "Meshift",
+      "description": "Hover over to connect"
+    },
+    {
       "id": 858,
-      "file": "858.js",
       "name": "Frequentative",
+      "file": "858.js",
       "description": ""
     },
     {
