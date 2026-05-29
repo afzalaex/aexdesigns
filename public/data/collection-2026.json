@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 861,
+      "file": "861.js",
+      "name": "Tesshift",
+      "description": "Hover over to shift"
+    },
+    {
       "id": 860,
-      "file": "860.js",
       "name": "Bitellar",
+      "file": "860.js",
       "description": "Click to evolve"
     },
     {
