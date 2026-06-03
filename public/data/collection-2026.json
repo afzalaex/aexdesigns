@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 867,
+      "file": "867.js",
+      "name": "Rectopolis",
+      "description": "Click to evolve"
+    },
+    {
       "id": 866,
-      "file": "866.js",
       "name": "Scalines",
+      "file": "866.js",
       "description": "Click to evolve"
     },
     {
