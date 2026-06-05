@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 869,
+      "file": "869.js",
+      "name": "Stackture",
+      "description": "Click to evolve"
+    },
+    {
       "id": 868,
-      "file": "868.js",
       "name": "Monderivative",
+      "file": "868.js",
       "description": "Click to evolve"
     },
     {
