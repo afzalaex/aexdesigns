@@ -83,10 +83,22 @@ const footerLinks = [
 
 export async function generateMetadata(): Promise<Metadata> {
   const url = new URL("/typeplayground", getSiteUrl()).toString();
+  const description =
+    "Try Aex Designs typefaces in an interactive browser playground.";
 
   return {
     title: "Type Playground",
+    description,
     alternates: { canonical: url },
+    openGraph: {
+      title: "Type Playground",
+      description,
+      url,
+    },
+    twitter: {
+      title: "Type Playground",
+      description,
+    },
   };
 }
 

@@ -8,6 +8,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
+      disallow: ["/api/notion-revalidate"],
     },
     sitemap: new URL("/sitemap.xml", siteUrl).toString(),
   };

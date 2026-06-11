@@ -6,10 +6,44 @@ import { SiteBreadcrumbBar, SiteSocialFooter } from "@/components/SiteFooterNav"
 import { SiteNav } from "@/components/SiteNav";
 import "./globals.css";
 
-const siteUrl = process.env.SITE_URL || "https://www.aex.design";
+const siteUrl = (process.env.SITE_URL?.trim() || "https://aex.design").replace(
+  /\/+$/,
+  ""
+);
+const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const previewTitle = "Aex Designs";
-const previewDescription = "Intangible internet things.";
+const previewDescription = "Design, art, writing, and digital assets by Aex Designs.";
 const previewImagePath = "/icon-512.png";
+const previewImageUrl = new URL(previewImagePath, siteUrl).toString();
+const socialProfiles = [
+  "https://x.com/aexdesigns",
+  "https://instagram.com/aex_designs",
+  "https://github.com/afzalaex",
+];
+
+const siteStructuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: previewTitle,
+      url: siteUrl,
+      logo: previewImageUrl,
+      sameAs: socialProfiles,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: previewTitle,
+      url: siteUrl,
+      description: previewDescription,
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+    },
+  ],
+};
 
 const spaceMono = Space_Mono({
   weight: ["400", "700"],
@@ -20,13 +54,36 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  applicationName: previewTitle,
   title: {
     default: previewTitle,
     template: `%s | ${previewTitle}`,
   },
   description: previewDescription,
+  authors: [{ name: previewTitle, url: siteUrl }],
+  creator: previewTitle,
+  publisher: previewTitle,
+  category: "design",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  ...(googleSiteVerification
+    ? { verification: { google: googleSiteVerification } }
+    : {}),
   openGraph: {
     type: "website",
+    url: "/",
     siteName: previewTitle,
     title: previewTitle,
     description: previewDescription,
@@ -41,6 +98,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@aexdesigns",
+    creator: "@aexdesigns",
     title: previewTitle,
     description: previewDescription,
     images: [previewImagePath],
@@ -65,6 +124,12 @@ export default function RootLayout({
   return (
     <html lang="en" dir="ltr" className={`theme-dark ${spaceMono.variable}`}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(siteStructuredData),
+          }}
+        />
         <div className="site-root">
           <SiteNav />
           <SiteBreadcrumbBar />

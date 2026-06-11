@@ -51,7 +51,11 @@ export function generateMetadata(): Metadata {
   const url = new URL("/", getSiteUrl()).toString();
 
   return {
+    description: "Design, art, writing, and digital assets by Aex Designs.",
     alternates: { canonical: url },
+    openGraph: {
+      url,
+    },
   };
 }
 

@@ -67,7 +67,7 @@ Useful local routes:
 Required:
 
 - `NOTION_TOKEN`: Notion integration token used to fetch pages and blocks
-- `SITE_URL`: canonical site URL, for example `https://www.aex.design`
+- `SITE_URL`: canonical site URL, for example `https://aex.design`
 
 Optional routing:
 
@@ -89,7 +89,21 @@ Optional admin:
 
 - `NOTION_REVALIDATE_SECRET`: protects the on-demand revalidation endpoint
 
+Optional SEO:
+
+- `GOOGLE_SITE_VERIFICATION`: Google Search Console HTML tag verification token. Use only the token from the `content` attribute, not the full meta tag.
+
 See [`.env.example`](./.env.example) for the full template.
+
+## Google Search Setup
+
+The site exposes `/robots.txt` and `/sitemap.xml` from the canonical `SITE_URL`.
+After deployment:
+
+1. Add `https://aex.design` as a Google Search Console property.
+2. If you choose HTML tag verification, set `GOOGLE_SITE_VERIFICATION` to the provided token and redeploy.
+3. In Search Console, submit `https://aex.design/sitemap.xml`.
+4. Use URL Inspection for priority pages such as the homepage, `/typeplayground`, and key project pages.
 
 ## Routing Model
 

@@ -1,19 +1,29 @@
 import type { MetadataRoute } from "next";
-import routeMap from "@/content/route-map.json";
-import { getSiteUrl } from "@/lib/notion";
+import { getAllSlugs, getSiteUrl } from "@/lib/notion";
 
-const routeMapSlugs = (Array.isArray(routeMap) ? routeMap : [])
-  .map((entry: any) => (typeof entry?.slug === "string" ? entry.slug.trim() : ""))
-  .filter((slug) => slug.length > 0);
+export const revalidate = 3600;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+const staticSlugs = ["/typeplayground"];
+
+function normalizeSlug(raw: string): string {
+  const withoutDomain = raw.trim().replace(/^https?:\/\/[^/]+/i, "");
+  const withoutQuery = withoutDomain.split(/[?#]/)[0] ?? "";
+  const withLeadingSlash = withoutQuery.startsWith("/")
+    ? withoutQuery
+    : `/${withoutQuery}`;
+  const cleaned = withLeadingSlash.replace(/\/+/g, "/").replace(/\/$/, "");
+
+  return cleaned || "/";
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
-  const staticSlugs = ["/typeplayground"];
-  const allSlugs = Array.from(new Set([...routeMapSlugs, ...staticSlugs]));
+  const routeSlugs = await getAllSlugs();
+  const allSlugs = Array.from(
+    new Set(["/", ...routeSlugs, ...staticSlugs].map(normalizeSlug))
+  ).sort((a, b) => a.localeCompare(b));
 
   return allSlugs.map((slug) => ({
     url: new URL(slug, siteUrl).toString(),
-    changeFrequency: "weekly",
-    priority: slug === "/" ? 1 : 0.7,
   }));
 }

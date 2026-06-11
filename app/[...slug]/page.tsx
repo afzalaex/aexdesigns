@@ -67,10 +67,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const url = new URL(page.slug, getSiteUrl()).toString();
+  const description = page.description?.trim();
 
   return {
     title: page.title,
+    description,
     alternates: { canonical: url },
+    openGraph: {
+      title: page.title,
+      description,
+      url,
+    },
+    twitter: {
+      title: page.title,
+      description,
+    },
   };
 }
 
