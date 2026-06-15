@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 879,
+      "file": "879.js",
+      "name": "Vectrum",
+      "description": "Click to evolve"
+    },
+    {
       "id": 878,
-      "file": "878.js",
       "name": "Gridistort",
+      "file": "878.js",
       "description": "Click to evolve"
     },
     {
