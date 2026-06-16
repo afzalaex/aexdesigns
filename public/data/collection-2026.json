@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 880,
+      "file": "880.js",
+      "name": "Attrect",
+      "description": "Hover over to interact"
+    },
+    {
       "id": 879,
-      "file": "879.js",
       "name": "Vectrum",
+      "file": "879.js",
       "description": "Click to evolve"
     },
     {
