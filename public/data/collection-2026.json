@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 881,
+      "file": "881.js",
+      "name": "Maglow",
+      "description": "Click to evolve"
+    },
+    {
       "id": 880,
-      "file": "880.js",
       "name": "Attrect",
+      "file": "880.js",
       "description": "Hover over to interact"
     },
     {
