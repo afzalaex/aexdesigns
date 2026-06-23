@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 887,
+      "file": "887.js",
+      "name": "Linenergy",
+      "description": "Click to evolve"
+    },
+    {
       "id": 886,
-      "file": "886.js",
       "name": "Ringularity",
+      "file": "886.js",
       "description": "Click to evolve"
     },
     {
