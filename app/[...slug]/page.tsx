@@ -90,6 +90,36 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     pageDescription = "I'm Afzal, an internet artist/designer/craftsman. Aex Designs is my digital playground/archive/canvas, where I share experiments, wip, releases, writings, and more.";
   }
 
+  if (slug === "/every-days") {
+    pageTitle = "e/very days";
+    pageDescription = "A daily art practice. Primarily generative art rooted in abstraction. The name is an ode to e/acc.";
+  }
+
+  if (slug === "/pixcapes") {
+    pageTitle = "Pixcapes";
+    pageDescription = "Scapes from the pixel world, generated via p5js.";
+  }
+
+  if (slug === "/emopepen") {
+    pageTitle = "Emopepen";
+    pageDescription = "Opepen X Emoji remix";
+  }
+
+  if (slug === "/remix") {
+    pageTitle = "Derivatives/Remixes";
+    pageDescription = "Artworks that are derived/remixed from other artworks";
+  }
+
+  if (slug === "/aexthetics") {
+    pageTitle = "Aexthetics";
+    pageDescription = "“Philosophical” art";
+  }
+
+  if (slug === "/cc") {
+    pageTitle = "Commission/Collab Works";
+    pageDescription = "Commissions & collaborations archive";
+  }
+
   return {
     title: pageTitle,
     description: pageDescription,
