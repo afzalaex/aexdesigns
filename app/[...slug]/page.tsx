@@ -165,6 +165,121 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     pageDescription = "Explore the Type";
   }
 
+  if (slug === "/archive/2025") {
+    pageTitle = "2025 - A Good Run";
+    pageDescription = "Another year of trying to make it as an artist";
+  }
+
+  if (slug === "/archive/imadearteveryday") {
+    pageTitle = "I made art every day for a year";
+    pageDescription = "I made art every day for a year, what changed?";
+  }
+
+  if (slug === "/archive/wtfisanartcourse") {
+    pageTitle = "WTF is an Art Course?";
+    pageDescription = "True artists don't go to art schools.";
+  }
+
+  if (slug === "/archive/everydays") {
+    pageTitle = "e/very days";
+    pageDescription = "e/acc can change the world, e/very days can change your creative life";
+  }
+
+  if (slug === "/archive/stealtheiraudience") {
+    pageTitle = "Steal Their Audience";
+    pageDescription = "One way to build an audience is to steal from those who have one";
+  }
+
+  if (slug === "/archive/output") {
+    pageTitle = "Output > Input";
+    pageDescription = "In creative domains, all that matters is what you create(Output), not how much time you took or what tools you used(Input)";
+  }
+
+  if (slug === "/archive/ageofjudgement") {
+    pageTitle = "Age of Judgement";
+    pageDescription = "AI age, the age of judgement, direction, and taste";
+  }
+
+  if (slug === "/archive/pfp") {
+    pageTitle = "PFP: Proliferation Prime";
+    pageDescription = "PFP Projects, not about Profile Picture Projects but about Proliferation Prime Projects";
+  }
+
+  if (slug === "/archive/curatoreconomy") {
+    pageTitle = "Curator Economy";
+    pageDescription = "In an era where there's a digital abundance of everything on the internet, curation becomes as rewarding as creation";
+  }
+
+  if (slug === "/archive/nft") {
+    pageTitle = "NFT: Not For Trade";
+    pageDescription = "NFT might die as a trade but will live as a tech";
+  }
+
+  if (slug === "/archive/influencer") {
+    pageTitle = "Influencer";
+    pageDescription = "Influencers sell influence. Creators sell creations";
+  }
+
+  if (slug === "/archive/innovation") {
+    pageTitle = "Innovation";
+    pageDescription = "Original craft is a remix of inspiration. Innovative craft is a remix of intuition and inspiration";
+  }
+
+  if (slug === "/archive/constraints") {
+    pageTitle = "Constraints";
+    pageDescription = "Creativity goes hand in hand with constraints, not freedom";
+  }
+
+  if (slug === "/archive/way") {
+    pageTitle = "Way";
+    pageDescription = "You need to find and go your own way, following a prescribed way might never lead to your destination";
+  }
+
+  if (slug === "/archive/repetition") {
+    pageTitle = "Repetition";
+    pageDescription = "Repetition wields the strongest influence over the human mind";
+  }
+
+  if (slug === "/archive/craft") {
+    pageTitle = "Craft - Commercial vs Contributory";
+    pageDescription = "Commercial craft makes money. Contributory craft makes impact";
+  }
+
+  if (slug === "/archive/identity") {
+    pageTitle = "Identity";
+    pageDescription = "Your unique identity lies at the intersection of your passions";
+  }
+
+  if (slug === "/archive/community") {
+    pageTitle = "Community";
+    pageDescription = "Community is where everyone is an artist and audience at the same time";
+  }
+
+  if (slug === "/archive/excellence") {
+    pageTitle = "Excellence - Technical vs Creative";
+    pageDescription = "Technical excellence executes. Creative excellence experiments";
+  }
+
+  if (slug === "/archive/ip") {
+    pageTitle = "IP - Prohibit vs Proliferate";
+    pageDescription = "Copyright allows prohibition, CC0 allows proliferation";
+  }
+
+  if (slug === "/archive/value") {
+    pageTitle = "Value - Craftsman vs Businessman";
+    pageDescription = "Creating value isn't enough. You also need to capture some of the value you create — Peter Thiel";
+  }
+
+  if (slug === "/archive/growth") {
+    pageTitle = "Growth - Random vs Compound";
+    pageDescription = "What people call success is sometimes randomness and often times a compound of failures";
+  }
+
+  if (slug === "/archive/p-o-p") {
+    pageTitle = "POP";
+    pageDescription = "Portfolio of products > Portfolio of clients";
+  }
+
   return {
     title: pageTitle,
     description: pageDescription,
