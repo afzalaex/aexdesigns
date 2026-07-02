@@ -94,10 +94,20 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "Type Playground",
       description,
       url,
+      images: [
+        {
+          url: "/icon-512.png",
+          width: 512,
+          height: 512,
+          alt: "Type Playground",
+        },
+      ],
     },
     twitter: {
+      card: "summary_large_image",
       title: "Type Playground",
       description,
+      images: ["/icon-512.png"],
     },
   };
 }

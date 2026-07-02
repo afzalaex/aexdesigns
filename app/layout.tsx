@@ -12,7 +12,7 @@ const siteUrl = (process.env.SITE_URL?.trim() || "https://aex.design").replace(
 );
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const previewTitle = "Aex Designs";
-const previewDescription = "Design, art, writing, and digital assets by Aex Designs.";
+const previewDescription = "Intangible internet things by Afzal";
 const previewImagePath = "/icon-512.png";
 const previewImageUrl = new URL(previewImagePath, siteUrl).toString();
 const socialProfiles = [
@@ -106,8 +106,8 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/assets/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico" },
+      { url: "/assets/favicon.svg", type: "image/svg+xml" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],

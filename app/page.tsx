@@ -51,10 +51,27 @@ export function generateMetadata(): Metadata {
   const url = new URL("/", getSiteUrl()).toString();
 
   return {
-    description: "Design, art, writing, and digital assets by Aex Designs.",
+    title: "Aex Designs",
+    description: "Intangible internet things by Afzal",
     alternates: { canonical: url },
     openGraph: {
+      title: "Aex Designs",
+      description: "Intangible internet things by Afzal",
       url,
+      images: [
+        {
+          url: "/icon-512.png",
+          width: 512,
+          height: 512,
+          alt: "Aex Designs",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Aex Designs",
+      description: "Intangible internet things by Afzal",
+      images: ["/icon-512.png"],
     },
   };
 }

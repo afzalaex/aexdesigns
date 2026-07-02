@@ -67,20 +67,51 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const url = new URL(page.slug, getSiteUrl()).toString();
-  const description = page.description?.trim();
+  let pageTitle = page.title;
+  let pageDescription = page.description?.trim() || "Intangible internet things by Afzal";
+
+  if (slug === "/assets") {
+    pageTitle = "Assets";
+    pageDescription = "Digital assets for the internet";
+  }
+
+  if (slug === "/da") {
+    pageTitle = "Design/Art";
+    pageDescription = "Explore my design and art related projects";
+  }
+
+  if (slug === "/archive") {
+    pageTitle = "Archive";
+    pageDescription = "Writings on design/art, internet, philosophy & more";
+  }
+
+  if (slug === "/about") {
+    pageTitle = "About";
+    pageDescription = "I'm Afzal, an internet artist/designer/craftsman. Aex Designs is my digital playground/archive/canvas, where I share experiments, wip, releases, writings, and more.";
+  }
 
   return {
-    title: page.title,
-    description,
+    title: pageTitle,
+    description: pageDescription,
     alternates: { canonical: url },
     openGraph: {
-      title: page.title,
-      description,
+      title: pageTitle,
+      description: pageDescription,
       url,
+      images: [
+        {
+          url: "/icon-512.png",
+          width: 512,
+          height: 512,
+          alt: pageTitle,
+        },
+      ],
     },
     twitter: {
-      title: page.title,
-      description,
+      card: "summary_large_image",
+      title: pageTitle,
+      description: pageDescription,
+      images: ["/icon-512.png"],
     },
   };
 }
