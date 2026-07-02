@@ -120,6 +120,51 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     pageDescription = "Commissions & collaborations archive";
   }
 
+  if (slug === "/p5nels") {
+    pageTitle = "P5NELS";
+    pageDescription = "50 free abstract mobile wallpapers";
+  }
+
+  if (slug === "/typecheck") {
+    pageTitle = "TypeCheck";
+    pageDescription = "A font NFT derivative of the Checks art";
+  }
+
+  if (slug === "/dsp2") {
+    pageTitle = "Design Asset Pack #2";
+    pageDescription = "20 abstract kinetic patterns";
+  }
+
+  if (slug === "/nounty") {
+    pageTitle = "Nounty";
+    pageDescription = "First ever ready to use Nounish themed font";
+  }
+
+  if (slug === "/aexpective") {
+    pageTitle = "AEXPECTIVE";
+    pageDescription = "Geometric font with some perspective";
+  }
+
+  if (slug === "/aextract") {
+    pageTitle = "Aextract";
+    pageDescription = "A bold, geometric and modular font";
+  }
+
+  if (slug === "/aextract36") {
+    pageTitle = "AEXTRACT 36";
+    pageDescription = "Free modular geometric font";
+  }
+
+  if (slug === "/dsp1") {
+    pageTitle = "Design Asset Pack #1";
+    pageDescription = "20 free abstract marks for your next creative project";
+  }
+
+  if (slug === "/typeplayground") {
+    pageTitle = "Type Playground";
+    pageDescription = "Explore the Type";
+  }
+
   return {
     title: pageTitle,
     description: pageDescription,
