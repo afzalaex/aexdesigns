@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 900,
+      "file": "900.js",
+      "name": "Vector Wall",
+      "description": "Click to evolve"
+    },
+    {
       "id": 899,
-      "file": "899.js",
       "name": "Spheresis",
+      "file": "899.js",
       "description": "Click to evolve"
     },
     {
