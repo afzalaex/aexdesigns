@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 901,
+      "file": "901.js",
+      "name": "Triscape",
+      "description": "Click to evolve"
+    },
+    {
       "id": 900,
-      "file": "900.js",
       "name": "Vector Wall",
+      "file": "900.js",
       "description": "Click to evolve"
     },
     {
