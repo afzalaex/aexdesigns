@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 903,
+      "file": "903.js",
+      "name": "Mazetrix",
+      "description": "Click to evolve"
+    },
+    {
       "id": 902,
-      "file": "902.js",
       "name": "Rhombopolis",
+      "file": "902.js",
       "description": "Click to evolve"
     },
     {
