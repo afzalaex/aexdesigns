@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 928,
+      "file": "928.js",
+      "name": "Gradience",
+      "description": "Click to evolve"
+    },
+    {
       "id": 927,
-      "file": "927.js",
       "name": "GenDe Stijl",
+      "file": "927.js",
       "description": "Click to evolve"
     },
     {
