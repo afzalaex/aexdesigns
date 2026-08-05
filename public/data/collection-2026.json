@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 930,
+      "file": "930.js",
+      "name": "Bit Swatches",
+      "description": "Click to evolve"
+    },
+    {
       "id": 929,
-      "file": "929.js",
       "name": "Bitflow",
+      "file": "929.js",
       "description": "Click to evolve"
     },
     {
