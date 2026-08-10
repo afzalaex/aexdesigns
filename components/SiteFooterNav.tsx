@@ -20,6 +20,8 @@ const labelOverrides: Record<string, string> = {
   "/cc": "CC",
   "/ccarchive": "CC Archive",
   "/da": "Design/Art",
+  "/ta": "Tools/Assets",
+  "/assets": "Tools/Assets",
   "/ig": "IG",
   "/gh": "GH",
   "/typeplayground": "Type Playground",
@@ -51,23 +53,23 @@ const socialLinks = [
 
 const virtualParentBySlug: Record<string, BreadcrumbItem> = {
   "/aexthetics": { href: "/da", label: "Design/Art" },
-  "/aexpective": { href: "/assets", label: "Assets" },
-  "/aextract": { href: "/assets", label: "Assets" },
-  "/aextract36": { href: "/assets", label: "Assets" },
+  "/aexpective": { href: "/ta", label: "Tools/Assets" },
+  "/aextract": { href: "/ta", label: "Tools/Assets" },
+  "/aextract36": { href: "/ta", label: "Tools/Assets" },
   "/cc": { href: "/da", label: "Design/Art" },
-  "/designassetpack1": { href: "/assets", label: "Assets" },
-  "/designassetpack2": { href: "/assets", label: "Assets" },
-  "/dsp1": { href: "/assets", label: "Assets" },
-  "/dsp2": { href: "/assets", label: "Assets" },
+  "/designassetpack1": { href: "/ta", label: "Tools/Assets" },
+  "/designassetpack2": { href: "/ta", label: "Tools/Assets" },
+  "/dsp1": { href: "/ta", label: "Tools/Assets" },
+  "/dsp2": { href: "/ta", label: "Tools/Assets" },
   "/emopepen": { href: "/da", label: "Design/Art" },
   "/every-days": { href: "/da", label: "Design/Art" },
-  "/nounty": { href: "/assets", label: "Assets" },
-  "/p5nels": { href: "/assets", label: "Assets" },
+  "/nounty": { href: "/ta", label: "Tools/Assets" },
+  "/p5nels": { href: "/ta", label: "Tools/Assets" },
   "/pixcapes": { href: "/da", label: "Design/Art" },
   "/remix": { href: "/da", label: "Design/Art" },
-  "/typecheck": { href: "/assets", label: "Assets" },
-  "/typeplayground": { href: "/assets", label: "Assets" },
-  "/type-playground": { href: "/assets", label: "Assets" },
+  "/typecheck": { href: "/ta", label: "Tools/Assets" },
+  "/typeplayground": { href: "/ta", label: "Tools/Assets" },
+  "/type-playground": { href: "/ta", label: "Tools/Assets" },
 };
 
 function normalizeSlug(raw: string): string {
@@ -213,12 +215,41 @@ export function SiteSocialFooter() {
 
   useEffect(() => {
     setVisible(false);
-    const handler = () => setVisible(true);
-    window.addEventListener("site-reveal-done", handler, { once: true });
-    const timer = window.setTimeout(() => setVisible(true), 5000);
+    let shown = false;
+    let cancelled = false;
+    let outerFrame = 0;
+    let innerFrame = 0;
+
+    const show = () => {
+      if (shown || cancelled) {
+        return;
+      }
+
+      shown = true;
+      setVisible(true);
+    };
+
+    // Notion pages with ScrollReveal fire this after the intro sequence.
+    window.addEventListener("site-reveal-done", show, { once: true });
+
+    // Static app routes (e.g. /typeplayground) never mount ScrollRevealScope,
+    // so they would otherwise wait for the long fallback timeout below.
+    outerFrame = window.requestAnimationFrame(() => {
+      innerFrame = window.requestAnimationFrame(() => {
+        if (!document.querySelector(".scroll-reveal-scope")) {
+          show();
+        }
+      });
+    });
+
+    const fallbackTimer = window.setTimeout(show, 5000);
+
     return () => {
-      window.removeEventListener("site-reveal-done", handler);
-      window.clearTimeout(timer);
+      cancelled = true;
+      window.removeEventListener("site-reveal-done", show);
+      window.cancelAnimationFrame(outerFrame);
+      window.cancelAnimationFrame(innerFrame);
+      window.clearTimeout(fallbackTimer);
     };
   }, [pathname]);
 

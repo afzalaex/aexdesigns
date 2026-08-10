@@ -100,7 +100,7 @@ const pageRefreshPromises = new Map<string, Promise<NotionPageData | null>>();
 const childPageCardCache = new Map<string, TimedCacheEntry<ChildPageCard>>();
 const childPageCardRefreshPromises = new Map<string, Promise<ChildPageCard>>();
 const ASSETS_PAGE_ID = "30cbdd8702e080b3851ac635358f809f";
-const ASSETS_PAGE_SLUG = "/assets";
+const ASSETS_PAGE_SLUG = "/ta";
 
 function getNotionClient(): Client {
   if (!notion) {

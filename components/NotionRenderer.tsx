@@ -3,6 +3,11 @@ import type { RichTextItemResponse } from "@notionhq/client/build/src/api-endpoi
 import routeMap from "@/content/route-map.json";
 import { resolveNotionImageFallbackSrc, resolveNotionImagePrimarySrc } from "@/lib/notion-images";
 import type { ChildPageCard, NotionBlock } from "@/lib/notion";
+import {
+  getLinkCardPresentation,
+  getNotionCardOverride,
+  hrefToCardKey,
+} from "@/lib/static-page-cards";
 import { IntentPrefetchLink } from "@/components/IntentPrefetchLink";
 import { NotionCardImage, NotionImage } from "@/components/NotionImage";
 import { ScrollRevealItem, SequentialCardGrid } from "@/components/ScrollReveal";
@@ -58,6 +63,7 @@ type ChildPageCardLinkProps = {
   description?: string;
   thumbnailUrl?: string;
   thumbnailFallbackUrl?: string;
+  external?: boolean;
 };
 
 type ResolvedChildPageCard = ChildPageCardLinkProps;
@@ -66,10 +72,10 @@ type ExpandableRouteGroups = Record<string, ExpandableChildRoute[]>;
 
 const expandableParentKeys = new Set([
   "da",
-  "assets",
+  "ta",
   "archive",
 ]);
-const cardLayoutParentKeys = new Set(["da", "assets", "archive"]);
+const cardLayoutParentKeys = new Set(["da", "ta", "archive"]);
 
 const testerConfigs: Record<string, TesterConfig> = {
   "/typecheck-type-tester": {
@@ -331,16 +337,180 @@ function resolveChildPageCard(
     return null;
   }
 
-  const thumbnailUrl = card?.thumbnailUrl;
+  const override = getNotionCardOverride(slug);
+  const href = override?.href ? normalizeSlug(override.href) : slug;
+  const title =
+    override?.title?.trim() ||
+    card?.title ||
+    block.child_page.title;
+  const description =
+    override?.description?.trim() ||
+    card?.description ||
+    undefined;
+  const thumbnailUrl =
+    override?.thumbnailUrl?.trim() ||
+    card?.thumbnailUrl ||
+    undefined;
+  const thumbnailFallbackUrl =
+    override?.thumbnailFallbackUrl?.trim() ||
+    card?.thumbnailFallbackUrl ||
+    undefined;
 
   return {
     id: childPageBlockId(slug),
-    href: slug,
-    title: card?.title ?? block.child_page.title,
-    description: card?.description,
+    href,
+    title,
+    description,
     thumbnailUrl,
-    thumbnailFallbackUrl: card?.thumbnailFallbackUrl,
+    thumbnailFallbackUrl,
   };
+}
+
+function richTextPrimaryHref(items: RichTextItemResponse[]): string | null {
+  for (const item of items) {
+    const href =
+      (typeof item.href === "string" && item.href) ||
+      (item.type === "text" && item.text?.link?.url) ||
+      undefined;
+
+    if (typeof href === "string" && href.trim()) {
+      return href.trim();
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Promote a Notion paragraph/bookmark link into a card when we have
+ * presentation metadata for that path (description, thumbnail, etc.).
+ * Title and href come from the Notion block itself.
+ */
+function resolveLinkCard(block: NotionBlock): ResolvedChildPageCard | null {
+  let rawHref: string | null = null;
+  let linkTitle = "";
+
+  if (block.type === "paragraph") {
+    const items = block.paragraph.rich_text;
+    const plain = joinRichText(items).trim();
+    if (!plain) {
+      return null;
+    }
+
+    rawHref = richTextPrimaryHref(items);
+    if (!rawHref) {
+      return null;
+    }
+
+    // Only promote link-focused paragraphs (all non-empty text is linked).
+    const unlinkedText = items
+      .filter((item) => {
+        const href =
+          (typeof item.href === "string" && item.href) ||
+          (item.type === "text" && item.text?.link?.url);
+        return !href && item.plain_text.trim().length > 0;
+      })
+      .map((item) => item.plain_text)
+      .join("")
+      .trim();
+
+    if (unlinkedText) {
+      return null;
+    }
+
+    linkTitle = plain;
+  } else if (block.type === "bookmark") {
+    rawHref = block.bookmark.url;
+    linkTitle = rawHref;
+  } else {
+    return null;
+  }
+
+  const cardKey = hrefToCardKey(rawHref);
+  if (!cardKey) {
+    return null;
+  }
+
+  const presentation = getLinkCardPresentation(cardKey);
+  if (!presentation) {
+    return null;
+  }
+
+  const resolvedHref = (() => {
+    if (presentation.href?.trim()) {
+      return presentation.href.trim();
+    }
+
+    if (isInternalHref(rawHref)) {
+      return toInternalHref(rawHref);
+    }
+
+    return rawHref;
+  })();
+
+  const external = !isInternalHref(resolvedHref);
+  const href = external ? resolvedHref : normalizeSlug(resolvedHref);
+  const title = presentation.title?.trim() || linkTitle || href;
+
+  return {
+    id: `block-link-card-${normalizePageId(block.id)}`,
+    href,
+    title,
+    description: presentation.description,
+    thumbnailUrl: presentation.thumbnailUrl,
+    thumbnailFallbackUrl: presentation.thumbnailFallbackUrl,
+    external,
+  };
+}
+
+function resolveCardFromBlock(
+  block: NotionBlock,
+  routeContext: RouteRenderContextValue
+): ResolvedChildPageCard | null {
+  if (block.type === "child_page") {
+    return resolveChildPageCard(block, routeContext);
+  }
+
+  return resolveLinkCard(block);
+}
+
+function isCardSourceBlock(
+  block: NotionBlock,
+  routeContext: RouteRenderContextValue
+): boolean {
+  return resolveCardFromBlock(block, routeContext) !== null;
+}
+
+function renderCardGrid(
+  cards: ResolvedChildPageCard[],
+  key: string
+): ReactNode {
+  if (cards.length === 0) {
+    return null;
+  }
+
+  return (
+    <SequentialCardGrid
+      key={key}
+      itemImageSources={cards.map((card) => ({
+        primarySrc: card.thumbnailUrl,
+        fallbackSrc: card.thumbnailFallbackUrl,
+      }))}
+    >
+      {cards.map((card) => (
+        <ChildPageCardLink
+          key={card.id}
+          id={card.id}
+          href={card.href}
+          title={card.title}
+          description={card.description}
+          thumbnailUrl={card.thumbnailUrl}
+          thumbnailFallbackUrl={card.thumbnailFallbackUrl}
+          external={card.external}
+        />
+      ))}
+    </SequentialCardGrid>
+  );
 }
 
 function joinRichText(items: RichTextItemResponse[]): string {
@@ -378,46 +548,40 @@ function renderBlocks({
       continue;
     }
 
-    if (renderChildPageCards && block.type === "child_page") {
-      const childPageBlocks: NotionBlock[] = [block];
+    // On card-layout parents, group consecutive child pages + promoted link
+    // cards into one grid, preserving Notion block order.
+    if (
+      renderChildPageCards &&
+      isCardSourceBlock(block, routeContext)
+    ) {
+      const cardSourceBlocks: NotionBlock[] = [block];
 
-      while (index + 1 < blocks.length && blocks[index + 1]?.type === "child_page") {
-        childPageBlocks.push(blocks[index + 1]);
+      while (
+        index + 1 < blocks.length &&
+        !routeContext.hiddenBlockIds.has(blocks[index + 1].id) &&
+        isCardSourceBlock(blocks[index + 1], routeContext)
+      ) {
+        cardSourceBlocks.push(blocks[index + 1]);
         index += 1;
       }
 
-      const childPageCards = childPageBlocks
-        .map((childPageBlock) => resolveChildPageCard(childPageBlock, routeContext))
+      const cardsForGrid = cardSourceBlocks
+        .map((sourceBlock) => resolveCardFromBlock(sourceBlock, routeContext))
         .filter(
-          (childPageCard): childPageCard is ResolvedChildPageCard =>
-            childPageCard !== null
+          (card): card is ResolvedChildPageCard => card !== null
         );
 
-      if (childPageCards.length === 0) {
+      if (cardsForGrid.length === 0) {
         continue;
       }
 
-      renderedBlocks.push(
-        <SequentialCardGrid
-          key={`child-page-cards-${childPageBlocks[0]?.id ?? index}`}
-          itemImageSources={childPageCards.map((childPageCard) => ({
-            primarySrc: childPageCard.thumbnailUrl,
-            fallbackSrc: childPageCard.thumbnailFallbackUrl,
-          }))}
-        >
-          {childPageCards.map((childPageCard) => (
-            <ChildPageCardLink
-              key={childPageCard.id}
-              id={childPageCard.id}
-              href={childPageCard.href}
-              title={childPageCard.title}
-              description={childPageCard.description}
-              thumbnailUrl={childPageCard.thumbnailUrl}
-              thumbnailFallbackUrl={childPageCard.thumbnailFallbackUrl}
-            />
-          ))}
-        </SequentialCardGrid>
+      const cardGrid = renderCardGrid(
+        cardsForGrid,
+        `page-cards-${cardSourceBlocks[0]?.id ?? index}`
       );
+      if (cardGrid) {
+        renderedBlocks.push(cardGrid);
+      }
       continue;
     }
 
@@ -695,8 +859,58 @@ function ChildPageCardLink({
   description,
   thumbnailUrl,
   thumbnailFallbackUrl,
+  external = false,
 }: ChildPageCardLinkProps) {
   const hasThumbnail = typeof thumbnailUrl === "string" && thumbnailUrl.trim().length > 0;
+
+  const media = (
+    <span
+      className={`notion-page-card__media${hasThumbnail ? "" : " notion-page-card__media--empty"}`}
+    >
+      {hasThumbnail ? (
+        <NotionCardImage
+          primarySrc={thumbnailUrl}
+          fallbackSrc={thumbnailFallbackUrl}
+          alt=""
+        />
+      ) : (
+        <PageIcon />
+      )}
+    </span>
+  );
+
+  const body = (
+    <span className="notion-page-card__body">
+      <span className="notion-page-card__title notion-semantic-string">
+        {title}
+      </span>
+      <span
+        className={`notion-page-card__description notion-semantic-string${
+          description ? "" : " notion-page-card__description--empty"
+        }`}
+        aria-hidden={description ? undefined : true}
+      >
+        {description ?? ""}
+      </span>
+    </span>
+  );
+
+  if (external) {
+    return (
+      <a
+        id={id}
+        href={href}
+        className="notion-page-card"
+        data-server-link={false}
+        data-link-uri={href}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {media}
+        {body}
+      </a>
+    );
+  }
 
   return (
     <IntentPrefetchLink
@@ -706,32 +920,8 @@ function ChildPageCardLink({
       data-server-link={true}
       data-link-uri={href}
     >
-      <span
-        className={`notion-page-card__media${hasThumbnail ? "" : " notion-page-card__media--empty"}`}
-      >
-        {hasThumbnail ? (
-          <NotionCardImage
-            primarySrc={thumbnailUrl}
-            fallbackSrc={thumbnailFallbackUrl}
-            alt=""
-          />
-        ) : (
-          <PageIcon />
-        )}
-      </span>
-      <span className="notion-page-card__body">
-        <span className="notion-page-card__title notion-semantic-string">
-          {title}
-        </span>
-        <span
-          className={`notion-page-card__description notion-semantic-string${
-            description ? "" : " notion-page-card__description--empty"
-          }`}
-          aria-hidden={description ? undefined : true}
-        >
-          {description ?? ""}
-        </span>
-      </span>
+      {media}
+      {body}
     </IntentPrefetchLink>
   );
 }

@@ -44,7 +44,7 @@ const everyDaysCanvasMarkers = new Set([
   "[[every-days-2026-canvas]]",
   "every-days-2026-canvas",
 ]);
-const childPageCardParentSlugs = new Set(["/da", "/assets", "/archive"]);
+const childPageCardParentSlugs = new Set(["/da", "/ta", "/archive"]);
 
 function getLatestEveryDaysArtworkId(): number | null {
   const collection =

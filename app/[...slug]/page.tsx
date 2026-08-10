@@ -70,9 +70,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   let pageTitle = page.title;
   let pageDescription = page.description?.trim() || "Intangible internet things by Afzal";
 
-  if (slug === "/assets") {
-    pageTitle = "Assets";
-    pageDescription = "Digital assets for the internet";
+  if (slug === "/ta" || slug === "/assets") {
+    pageTitle = "Tools/Assets";
+    if (!page.description?.trim()) {
+      pageDescription = "Tools and digital assets for the internet";
+    }
   }
 
   if (slug === "/da") {

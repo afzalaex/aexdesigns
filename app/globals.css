@@ -1183,10 +1183,6 @@ figure.notion-embed {
   border-color: #fff;
 }
 
-.type-playground__footer-links {
-  margin-top: 8px;
-}
-
 .error-shell {
   width: 100%;
   min-height: calc(100dvh - var(--navbar-height));

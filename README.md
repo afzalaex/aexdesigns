@@ -103,7 +103,8 @@ After deployment:
 1. Add `https://aex.design` as a Google Search Console property.
 2. If you choose HTML tag verification, set `GOOGLE_SITE_VERIFICATION` to the provided token and redeploy.
 3. In Search Console, submit `https://aex.design/sitemap.xml`.
-4. Use URL Inspection for priority pages such as the homepage, `/typeplayground`, and key project pages.
+4. Use URL Inspection for priority pages such as the homepage, `/ta` (Tools/Assets), `/da` (Design/Art), `/typeplayground`, and key project pages.
+   Note: `/assets` permanently redirects to `/ta` and is excluded from the sitemap.
 
 ## Routing Model
 

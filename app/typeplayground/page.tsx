@@ -75,12 +75,6 @@ const playgroundFonts: PlaygroundFont[] = [
   },
 ];
 
-const footerLinks = [
-  { label: "Newsletter", href: "http://letter.aex.design/" },
-  { label: "\u{1D54F}", href: "https://x.com/aexdesigns" },
-  { label: "Instagram", href: "http://instagram.com/aex_designs" },
-];
-
 export async function generateMetadata(): Promise<Metadata> {
   const url = new URL("/typeplayground", getSiteUrl()).toString();
   const description = "Explore the Type";
@@ -119,21 +113,6 @@ export default function TypePlaygroundPage() {
           Explore the Type
         </h1>
         <TypePlayground fonts={playgroundFonts} />
-        <p className="notion-text notion-text__content notion-semantic-string type-playground__footer-links">
-          {footerLinks.map((link, index) => (
-            <span key={link.href}>
-              {index > 0 ? " | " : null}
-              <a
-                className="notion-link link"
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {link.label}
-              </a>
-            </span>
-          ))}
-        </p>
       </section>
     </main>
   );

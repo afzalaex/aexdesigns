@@ -5,7 +5,7 @@ import styles from "./HomepageLayout.module.css";
 
 export type HomepageLinks = {
   designArt: string;
-  digitalAssets: string;
+  assetsTools: string;
   newsletter: string;
   archive: string;
   x: string;
@@ -141,14 +141,9 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
               />
               <Cell
                 className={`${styles.groupMember} ${styles.groupChild}`}
-                label={
-                  <span className={styles.multiline}>
-                    <span>Digital</span>
-                    <span>Assets</span>
-                  </span>
-                }
-                ariaLabel="Digital Assets"
-                href={links.digitalAssets}
+                label="Tools/Assets"
+                ariaLabel="Tools/Assets"
+                href={links.assetsTools}
                 style={localStyle(242.5, 190, 232.5, 180, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}
               />
             </div>

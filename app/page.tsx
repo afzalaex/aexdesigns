@@ -7,7 +7,7 @@ export const revalidate = 3600;
 
 const internalLinkCandidates = {
   designArt: ["/da", "/design-art", "/designart", "/onchain"],
-  digitalAssets: ["/assets"],
+  assetsTools: ["/ta", "/assets"],
   archive: ["/archive"],
 } as const;
 
@@ -39,7 +39,7 @@ function resolveInternalLink(key: InternalHomepageLinkKey): string {
 
 const homepageLinks: HomepageLinks = {
   designArt: resolveInternalLink("designArt"),
-  digitalAssets: resolveInternalLink("digitalAssets"),
+  assetsTools: resolveInternalLink("assetsTools"),
   archive: resolveInternalLink("archive"),
   newsletter: externalLinkFallbacks.newsletter,
   x: externalLinkFallbacks.x,

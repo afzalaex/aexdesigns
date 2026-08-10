@@ -9,10 +9,14 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       disallow: [
-        "/api/notion-revalidate",  // private revalidation endpoint
-        "/_next/static/",          // Next.js internal static files (JS chunks, CSS, fonts in /media/, etc.)
+        // Private revalidation endpoint
+        "/api/notion-revalidate",
+        // Next.js internal static files (JS chunks, CSS, fonts in /media/, etc.)
+        "/_next/static/",
       ],
     },
+    // Canonical sitemap includes /ta (Tools/Assets), not legacy /assets
     sitemap: new URL("/sitemap.xml", siteUrl).toString(),
+    host: siteUrl,
   };
 }

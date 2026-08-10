@@ -25,6 +25,18 @@ const nextConfig: NextConfig = {
         destination: "/dsp2",
         permanent: true,
       },
+      // Notion shell page under Tools/Assets → real app route
+      {
+        source: "/type-playground",
+        destination: "/typeplayground",
+        permanent: true,
+      },
+      // Old Assets slug → Tools/Assets
+      {
+        source: "/assets",
+        destination: "/ta",
+        permanent: true,
+      },
     ];
   },
 };
