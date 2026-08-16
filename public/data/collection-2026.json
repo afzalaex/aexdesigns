@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 940,
+      "file": "940.js",
+      "name": "Vecterra",
+      "description": "Click to evolve"
+    },
+    {
       "id": 939,
-      "file": "939.js",
       "name": "Distorture",
+      "file": "939.js",
       "description": "Click to evolve"
     },
     {
