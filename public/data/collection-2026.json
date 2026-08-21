@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 946,
+      "file": "946.js",
+      "name": "Gen De Stijl",
+      "description": "Click to evolve"
+    },
+    {
       "id": 945,
-      "file": "945.js",
       "name": "Rectrippy",
+      "file": "945.js",
       "description": "Click to evolve"
     },
     {
