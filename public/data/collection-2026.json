@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 968,
+      "file": "968.js",
+      "name": "Ellipsync",
+      "description": "Click to evolve"
+    },
+    {
       "id": 967,
-      "file": "967.js",
       "name": "Partricks",
+      "file": "967.js",
       "description": "Click to evolve"
     },
     {
