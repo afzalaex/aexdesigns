@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 974,
+      "file": "974.js",
+      "name": "Patternity",
+      "description": "Click to evolve"
+    },
+    {
       "id": 973,
-      "file": "973.js",
       "name": "Bandiags in Motion",
+      "file": "973.js",
       "description": "Click to evolve"
     },
     {
