@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 975,
+      "file": "975.js",
+      "name": "Homage to the Quad",
+      "description": "Click to evolve"
+    },
+    {
       "id": 974,
-      "file": "974.js",
       "name": "Patternity",
+      "file": "974.js",
       "description": "Click to evolve"
     },
     {
