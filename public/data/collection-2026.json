@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 978,
+      "file": "978.js",
+      "name": "diVision",
+      "description": "Click to evolve"
+    },
+    {
       "id": 977,
-      "file": "977.js",
       "name": "Confluence",
+      "file": "977.js",
       "description": "Click to evolve"
     },
     {
