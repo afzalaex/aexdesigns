@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 979,
+      "file": "979.js",
+      "name": "Slitbit",
+      "description": "Click to evolve"
+    },
+    {
       "id": 978,
-      "file": "978.js",
       "name": "diVision",
+      "file": "978.js",
       "description": "Click to evolve"
     },
     {
