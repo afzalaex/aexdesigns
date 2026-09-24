@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 980,
+      "file": "980.js",
+      "name": "Homage to the Circle",
+      "description": "Click to evolve"
+    },
+    {
       "id": 979,
-      "file": "979.js",
       "name": "Slitbit",
+      "file": "979.js",
       "description": "Click to evolve"
     },
     {
