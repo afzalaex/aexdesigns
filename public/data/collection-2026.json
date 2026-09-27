@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 983,
+      "file": "983.js",
+      "name": "Bitdrip",
+      "description": "Click to evolve"
+    },
+    {
       "id": 982,
-      "file": "982.js",
       "name": "Albers' Quad",
+      "file": "982.js",
       "description": "Click to evolve"
     },
     {
