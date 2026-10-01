@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 987,
+      "file": "987.js",
+      "name": "Splitype",
+      "description": "Click to evolve"
+    },
+    {
       "id": 986,
-      "file": "986.js",
       "name": "Geotone",
+      "file": "986.js",
       "description": "Click to evolve"
     },
     {
