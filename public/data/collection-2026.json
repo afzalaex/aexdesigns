@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 988,
+      "file": "988.js",
+      "name": "Triangula",
+      "description": "Click to evolve"
+    },
+    {
       "id": 987,
-      "file": "987.js",
       "name": "Splitype",
+      "file": "987.js",
       "description": "Click to evolve"
     },
     {
