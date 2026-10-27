@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 1012,
+      "file": "1012.js",
+      "name": "Modrects",
+      "description": "Click to evolve"
+    },
+    {
       "id": 1011,
-      "file": "1011.js",
       "name": "Polyunit",
+      "file": "1011.js",
       "description": "Click to evolve"
     },
     {
