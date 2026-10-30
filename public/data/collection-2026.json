@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 1016,
+      "file": "1016.js",
+      "name": "Inverted Homage",
+      "description": "Click to evolve"
+    },
+    {
       "id": 1015,
-      "file": "1015.js",
       "name": "Bitform",
+      "file": "1015.js",
       "description": "Click to evolve"
     },
     {
