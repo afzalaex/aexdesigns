@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 1017,
+      "file": "1017.js",
+      "name": "Disjoin",
+      "description": "Click to evolve"
+    },
+    {
       "id": 1016,
-      "file": "1016.js",
       "name": "Inverted Homage",
+      "file": "1016.js",
       "description": "Click to evolve"
     },
     {
