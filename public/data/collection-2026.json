@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 1025,
+      "file": "1025.js",
+      "name": "Bill Maxxing",
+      "description": "Click to evolve"
+    },
+    {
       "id": 1024,
-      "file": "1024.js",
       "name": "3x3-1",
+      "file": "1024.js",
       "description": "Click to evolve"
     },
     {
