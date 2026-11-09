@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 1026,
+      "file": "1026.js",
+      "name": "Subsplit",
+      "description": "Click to evolve"
+    },
+    {
       "id": 1025,
-      "file": "1025.js",
       "name": "Bill Maxxing",
+      "file": "1025.js",
       "description": "Click to evolve"
     },
     {
