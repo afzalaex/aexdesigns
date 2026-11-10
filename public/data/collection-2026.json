@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 1027,
+      "file": "1027.js",
+      "name": "Quadivide",
+      "description": "Click to evolve"
+    },
+    {
       "id": 1026,
-      "file": "1026.js",
       "name": "Subsplit",
+      "file": "1026.js",
       "description": "Click to evolve"
     },
     {
