@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 1032,
+      "file": "1032.js",
+      "name": "Homage to the Rect",
+      "description": "Click to evolve"
+    },
+    {
       "id": 1031,
-      "file": "1031.js",
       "name": "Concentense",
+      "file": "1031.js",
       "description": "Click to evolve"
     },
     {
