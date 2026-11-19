@@ -1,9 +1,15 @@
 {
   "artworks": [
     {
+      "id": 1036,
+      "file": "1036.js",
+      "name": "Lexica",
+      "description": "Click to evolve"
+    },
+    {
       "id": 1035,
-      "file": "1035.js",
       "name": "Distortia",
+      "file": "1035.js",
       "description": "Click to evolve"
     },
     {
