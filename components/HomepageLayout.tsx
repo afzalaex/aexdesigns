@@ -31,6 +31,7 @@ function toPercent(value: number, base = BOARD_SIZE): string {
 
 function boardStyle(x: number, y: number, width: number, height: number): CSSProperties {
   return {
+    position: "absolute",
     left: toPercent(x + BOARD_CONTENT_X_OFFSET - BOARD_CONTENT_MIN_X, BOARD_CONTENT_WIDTH),
     top: toPercent(y - BOARD_CONTENT_MIN_Y, BOARD_CONTENT_HEIGHT),
     width: toPercent(width, BOARD_CONTENT_WIDTH),
@@ -47,6 +48,7 @@ function localStyle(
   baseHeight: number
 ): CSSProperties {
   return {
+    position: "absolute",
     left: toPercent(x, baseWidth),
     top: toPercent(y, baseHeight),
     width: toPercent(width, baseWidth),
@@ -125,7 +127,10 @@ export function HomepageLayout({ links }: { links: HomepageLinks }) {
     <main id="page-index" className={`site-content page__index ${styles.homeMain}`}>
       <section className={styles.homeWrap}>
         <div className={styles.heroStack}>
-          <div className={styles.board}>
+          <div
+            className={styles.board}
+            style={{ position: "relative", width: "100%", aspectRatio: "1 / 1" }}
+          >
             <div className={styles.group} style={boardStyle(110, 110, WORKS_GROUP_WIDTH, WORKS_GROUP_HEIGHT)}>
               <Cell
                 className={`${styles.groupMember} ${styles.groupTitle} ${styles.titleCell}`}

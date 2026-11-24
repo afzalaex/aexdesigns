@@ -48,7 +48,11 @@ const siteStructuredData = {
 const spaceMono = Space_Mono({
   weight: ["400", "700"],
   subsets: ["latin"],
-  display: "swap",
+  // Block instead of swap so the first paint does not show the Arial
+  // metric fallback and then snap into Space Mono.
+  display: "block",
+  adjustFontFallback: false,
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
   variable: "--font-space-mono",
 });
 
